@@ -1,0 +1,34 @@
+[tool.black]
+line-length = 120
+target-version = ["py311","py312"]
+
+[tool.autopep8]
+max-line-length = 120
+ignore = ["E501"]
+in-place = true
+recursive = true
+aggressive = 1
+
+[tool.autoflake]
+remove-all-unused-imports = true
+remove-unused-variables = true
+ignore-init-module-imports = true
+expand-star-imports = true
+in-place = true
+exclude = ["__init__.py"]
+
+
+[tool.isort]
+profile = "black"
+line_length = 120
+py_version = ["py311","py312"]
+known_first_party = ""
+use_parentheses = true
+atomic= true
+verbose = true
+skip_gitignore = true
+skip = ["__init__.py"]
+combine_as_imports = true
+
+[tool.pyright]
+include = ["/Users/Akseldkw/coding/kretsinger/"]
