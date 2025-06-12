@@ -4,8 +4,8 @@ import typing as t
 
 import numpy as np
 
-NPT = t.TypeVar('NPT', bound=t.Any)
-T = t.TypeVar('T')
+NPT = t.TypeVar("NPT", bound=t.Any)
+T = t.TypeVar("T")
 
 
 class SingleReturnArray(np.ndarray, t.Generic[NPT]):
@@ -27,7 +27,7 @@ class SingleReturnArray(np.ndarray, t.Generic[NPT]):
         return super().ravel()  # type: ignore
 
 
-def solve_linear_system(A: np.ndarray, b: np.ndarray) -> SingleReturnArray[np.ndarray]:
+def solve_linear_system(X: np.ndarray, y: np.ndarray):
     """
     Solve the linear system Ax = b using NumPy's linear algebra solver.
 
@@ -38,9 +38,25 @@ def solve_linear_system(A: np.ndarray, b: np.ndarray) -> SingleReturnArray[np.nd
     Returns:
         SingleReturnArray[np.ndarray]: Solution vector x.
     """
-    try:
 
-        x = np.linalg.solve(A, b)  # only works if A is square and invertible
-    except np.linalg.LinAlgError as e:
-        x = np.linalg.lstsq(A, b, rcond=None)[0]
-    return x.view(SingleReturnArray)
+    x = np.linalg.lstsq(X, y, rcond=None)
+    return x
+
+
+def solve_linear_system_by_hand(X: np.ndarray, y: np.ndarray):
+    """
+    Solve the linear system Ax = b by hand using NumPy's matrix operations.
+
+    Parameters:
+        A (np.ndarray): Coefficient matrix.
+        b (np.ndarray): Right-hand side vector.
+    Returns:
+
+        SingleReturnArray[np.ndarray]: Solution vector x.
+    """
+    w_hat = np.linalg.inv(X.T @ X) @ X.T @ y
+    return w_hat.view(SingleReturnArray)
+
+
+def solve_psuedo_inverse(X: np.ndarray):
+    return np.linalg.pinv(X)

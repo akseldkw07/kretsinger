@@ -16,7 +16,6 @@ repos:
           - id: end-of-file-fixer
           - id: check-yaml
           - id: debug-statements
-          - id: double-quote-string-fixer
           - id: name-tests-test
           - id: requirements-txt-fixer
           - id: check-added-large-files
@@ -37,12 +36,6 @@ repos:
       rev: v2.8.0
       hooks:
           - id: setup-cfg-fmt
-    - repo: https://github.com/asottile/reorder-python-imports
-      rev: v3.14.0
-      hooks:
-          - id: reorder-python-imports
-            exclude: ^(pre_commit/resources/|testing/resources/python3_hooks_repo/)
-            args: [--py311-plus, --add-import, "from __future__ import annotations"]
     - repo: https://github.com/asottile/add-trailing-comma
       rev: v3.1.0
       hooks:
