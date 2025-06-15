@@ -86,7 +86,7 @@ def style_axes(fig: Figure, axes: Axes | t.Iterable[Axes]):
 
 rwg = ["red", "white", "green"]
 wg = ["white", "green"]
-wr = ["white", "red"]
+wr = ["red", "white"]
 
 red_green_centered = mcolors.LinearSegmentedColormap.from_list("RedWhiteGreen", rwg)
 white_green = mcolors.LinearSegmentedColormap.from_list("WhiteGreen", wg)
@@ -109,10 +109,10 @@ def _generate_heatmap_colors(df: pd.DataFrame) -> Heatmap_Params_TD:
 
     if df_min >= 0 and df_max >= 0:
         return {"vmin": 0, "vmax": abs_max, "cmap": white_green}
+    if df_min <= 0 and df_max <= 0:
+        return {"vmin": -abs_max, "vmax": 0, "cmap": white_red}
     if df_min < 0 and df_max >= 0:
         return {"vmin": -abs_max, "vmax": abs_max, "cmap": red_green_centered}
-    if df_min < 0 and df_max < 0:
-        return {"vmin": -abs_max, "vmax": 0, "cmap": white_red}
     else:
         raise ValueError(f"{df_min=} {df_max=}, {abs_max=}")
 

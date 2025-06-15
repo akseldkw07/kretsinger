@@ -52,37 +52,40 @@ def get_precision(data_range: list[float] | np.ndarray):
     scaled_p10 = p10 / scale_factor
     scaled_p90 = p90 / scale_factor
 
-    # Use max of scaled percentiles to guide decimal places, or a representative value if spread is small
-    representative_scaled_val = max(abs(scaled_p10), abs(scaled_p90))
-
     # Consider the 'effective' spread of the numbers after scaling
     effective_spread = abs(scaled_p90 - scaled_p10)
 
     precision = 0  # Default to no decimal places
 
-    # Heuristics for decimal places:
-    # 1. If the numbers are very small (e.g., between -1 and 1 before scaling)
-    if max_abs_val_in_percentile_range < 1.0:
-        if effective_spread < 0.01:  # E.g., 0.001 to 0.005
+    # --- REFINED HEURISTICS FOR DECIMAL PLACES ---
+    # This section is updated to favor more precision for small ranges.
+
+    higher_precision_cutoff = 5.0
+    if max_abs_val_in_percentile_range <= higher_precision_cutoff:
+        # For numbers between -1 and 1 (like correlations)
+        if effective_spread < 0.001:  # E.g., 0.0001 to 0.0005
             precision = 4
-        elif effective_spread < 0.1:  # E.g., 0.01 to 0.05
+        elif effective_spread < 0.01:  # E.g., 0.001 to 0.009
             precision = 3
-        else:  # E.g., -0.5 to 0.9
+        elif effective_spread < 0.1:  # E.g., 0.01 to 0.09
             precision = 2
-    # 2. If the values are large enough to be scaled (i.e., K, M, B), or just large numbers (e.g., 100-999)
+        else:  # E.g., 0.1 to 0.9 or -0.5 to 0.9
+            precision = 2
     else:
-        # If the spread of the scaled values is very small (e.g., values are almost identical)
-        if effective_spread < 0.1:  # e.g., 1.234M and 1.2345M (spread 0.0005M)
+        # If the values are large enough to be scaled (i.e., K, M, B), or just large numbers (e.g., 100-999)
+        if effective_spread < 0.01:  # e.g., 1.23456M and 1.23457M
             precision = 3  # High precision for very tight ranges
-        elif effective_spread < 1.0:  # e.g., 1.2M and 1.9M (spread 0.7M)
+        elif effective_spread < 0.1:  # e.g., 1.23M and 1.29M
             precision = 2
-        elif effective_spread < 10.0:  # e.g., 1.2M and 8.5M (spread 7.3M)
+        elif effective_spread < 1.0:  # e.g., 1.2M and 1.9M
             precision = 1
-        else:  # Spread is 10 or more (e.g., 10M to 90M)
+        else:  # Spread is 1.0 or more (e.g., 1.2M to 8.5M, or 10M to 90M)
             precision = 0
 
-        # Ensure we don't show .0 for whole numbers if the spread is very large and they should be integer-like
-        if effective_spread > 100 and precision == 1:
+        # Add a check to avoid showing .0 for very large whole numbers if not explicitly needed
+        # and precision ended up as 1. For example, 12.0M, when 12M would be fine.
+        # This is a bit subjective but can improve readability for some datasets.
+        if (effective_spread >= 10.0 and precision == 1) or (effective_spread >= 100.0 and precision == 2):
             precision = 0
 
     return f".{precision}f{suffix}"
