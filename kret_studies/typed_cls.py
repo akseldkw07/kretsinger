@@ -4,6 +4,8 @@ import typing as t
 from collections.abc import Sequence
 from typing import Any, Literal
 
+import matplotlib.colors as mcolors
+
 
 class Subplots_TypedDict(t.TypedDict, total=False):
     # nrows: int
@@ -15,3 +17,31 @@ class Subplots_TypedDict(t.TypedDict, total=False):
     height_ratios: Sequence[float] | None
     subplot_kw: dict[str, Any] | None
     gridspec_kw: dict[str, Any] | None
+
+
+class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
+    vmin: float
+    vmax: float
+    cmap: str | mcolors.LinearSegmentedColormap
+    center: t.Any
+    robust: t.Any
+    annot: t.Any
+    fmt: str
+    annot_kws: t.Any
+    linewidths: t.Any
+    linecolor: t.Any
+    cbar: t.Any
+    cbar_kws: t.Any
+    cbar_ax: t.Any
+    square: t.Any
+    xticklabels: t.Any
+    yticklabels: t.Any
+    mask: t.Any
+    ax: t.Any
+
+
+class Heatmap_Params_TD(t.TypedDict, total=False):
+    vmin: float
+    vmax: float
+    cmap: str | mcolors.LinearSegmentedColormap
+    fmt: str
