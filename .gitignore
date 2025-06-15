@@ -1,0 +1,88 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg
+parts/
+sdist/
+var/
+wheels/
+*.whl
+
+# Environments
+.env/
+venv/
+env/
+# virtualenv environments (usually venv, .venv, etc.)
+# but could be custom names
+# Add your specific virtual environment names here if they aren't caught by the above.
+# For example: my_project_venv/
+
+# Editors, IDEs and OS files
+.DS_Store # macOS
+.vscode/  # Visual Studio Code
+.idea/    # IntelliJ IDEA / PyCharm
+*.sublime-project # Sublime Text
+*.sublime-workspace
+.project  # Eclipse
+.pydevproject # Eclipse PyDev
+.vs/      # Visual Studio
+Thumbs.db # Windows
+ehthumbs.db # Windows
+Desktop.ini # Windows
+
+# MyPy / Static analysis
+.mypy_cache/
+.dmypy.json
+mypy_data/
+
+# Notebooks
+.ipynb_checkpoints/
+# Jupyter Lab and Notebook related files
+# Remove these if you want to commit notebooks to version control
+# *.ipynb
+
+# Pytest
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Docs
+docs/_build/
+
+# Sphinx
+.doctrees/
+.buildinfo
+
+# IPython
+ipython_config.py
+
+# Celery
+celerybeat-schedule
+
+# Flask-specific
+instance/
+.flaskenv
+
+# Django-specific
+*.log
+*.sqlite3
+media/
+static_collected/
+
+# Temporary files (often hidden)
+*~
+*.bak
+*.swp # Vim swap files
+.DS_Store # macOS specific
