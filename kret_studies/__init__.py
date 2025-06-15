@@ -9,3 +9,4 @@ import kret_studies.typed_cls as uks_typed_cls
 import kret_studies.types as uks_types
 from .constants import KretConstants as C
 import kret_studies.float_utils as uks_floats
+import kret_studies.statsmodels as uks_stats

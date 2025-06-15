@@ -20,13 +20,13 @@ class Subplots_TypedDict(t.TypedDict, total=False):
 
 
 class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
-    vmin: t.Any
-    vmax: t.Any
-    cmap: t.Any
+    vmin: float
+    vmax: float
+    cmap: str | mcolors.LinearSegmentedColormap
     center: t.Any
     robust: t.Any
     annot: t.Any
-    fmt: t.Any
+    fmt: str
     annot_kws: t.Any
     linewidths: t.Any
     linecolor: t.Any
