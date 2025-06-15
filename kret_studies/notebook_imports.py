@@ -6,13 +6,19 @@ import sys
 import typing as t
 from pathlib import Path
 from IPython.display import display, HTML
-import matplotlib.pyplot as plt
+
 import numpy as np
 import pandas as pd
 import polars as pl
 import seaborn as sns
 import statsmodels.formula.api as smf
 import scipy.stats as stats  # For statistical tests and plots
+
+# region matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+import matplotlib.colors as mcolors
+
 
 # region sklearn
 import sklearn

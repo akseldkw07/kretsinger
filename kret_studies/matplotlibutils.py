@@ -1,13 +1,19 @@
 from __future__ import annotations
+import matplotlib.colors as mcolors
 
 import typing as t
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from .typed_cls import Subplots_TypedDict
+from .typed_cls import *
 from .numpy_utils import SingleReturnArray
+import pandas as pd
+import seaborn as sns
+from IPython.display import display
+from kret_studies.float_utils import get_precision
 
 
 @t.overload
@@ -64,9 +70,68 @@ def subplots(
     return fig, ax
 
 
-def style_axes(axes: Axes):
+def style_axes(fig: Figure, axes: Axes | t.Iterable[Axes]):
     """
     Add grid
     idk what else
     """
-    axes.grid(True, which="both", axis="both")
+    if isinstance(axes, Axes):
+        axes = [axes]
+
+    for axes in axes:
+        axes.grid(True, which="both", axis="both")
+        axes.legend()
+    fig.tight_layout()
+
+
+rwg = ["red", "white", "green"]
+wg = ["white", "green"]
+wr = ["white", "red"]
+
+red_green_centered = mcolors.LinearSegmentedColormap.from_list("RedWhiteGreen", rwg)
+white_green = mcolors.LinearSegmentedColormap.from_list("WhiteGreen", wg)
+white_red = mcolors.LinearSegmentedColormap.from_list("WhiteRed", wr)
+
+try:
+    plt.colormaps.register(cmap=red_green_centered, name="RedWhiteGreen")
+    plt.colormaps.register(cmap=white_green, name="WhiteGreen")
+    plt.colormaps.register(cmap=white_red, name="WhiteRed")
+except ValueError:
+    # Re-registering raises ex
+    pass
+
+
+def _generate_heatmap_colors(df: pd.DataFrame) -> Heatmap_Params_TD:
+    df_min = float(df.min(axis=None))  # type: ignore
+    df_max = float(df.max(axis=None))  # type: ignore
+    abs_max = max(abs(df_min), abs(df_max))
+    display(f"{df_min=} {df_max=}, {abs_max=}")
+
+    if df_min >= 0 and df_max >= 0:
+        return {"vmin": 0, "vmax": abs_max, "cmap": white_green}
+    if df_min < 0 and df_max >= 0:
+        return {"vmin": -abs_max, "vmax": abs_max, "cmap": red_green_centered}
+    if df_min < 0 and df_max < 0:
+        return {"vmin": -abs_max, "vmax": 0, "cmap": white_red}
+    else:
+        raise ValueError(f"{df_min=} {df_max=}, {abs_max=}")
+
+
+def _generate_heatmap_params(df: pd.DataFrame):
+    colors = _generate_heatmap_colors(df)
+
+    fmt = get_precision(df.values.flatten())
+
+    ret = colors | {"fmt": fmt}
+    display(ret)
+    return ret
+
+
+def heatmap_df(df: pd.DataFrame, **kwargs: t.Unpack[Sns_Heatmap_TypedDict]):
+    computed_params = _generate_heatmap_params(df)
+
+    kwargs_default: Sns_Heatmap_TypedDict = {"annot": True, "cmap": red_green_centered, "linewidths": 0.1, "cbar": True}
+    kwargs_compute = kwargs_default | computed_params
+    kwargs = {**kwargs_compute, **kwargs}
+    display(kwargs)
+    return sns.heatmap(df, **kwargs)

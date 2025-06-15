@@ -86,3 +86,5 @@ static_collected/
 *.bak
 *.swp # Vim swap files
 .DS_Store # macOS specific
+
+scratch/
