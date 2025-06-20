@@ -5,6 +5,7 @@ __pycache__/
 *.pyo
 *.egg-info/
 .pytest_cache/
+.DS_Store
 
 # Distribution / packaging
 .Python
