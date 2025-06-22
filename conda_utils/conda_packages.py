@@ -23,23 +23,24 @@ class CondaUtils:
         "black",
         "flake8",
     ]
-    CONDA_PACKAGES_FINANCE = ["yfinance", 
-	# "pandas-datareader"
-	]
+    CONDA_PACKAGES_FINANCE = [
+        "yfinance",
+        "pandas-datareader",
+    ]
     CONDA_PACKAGES_VISUALIZATION = [
         "plotly",
         "bokeh",
         "seaborn",
         "matplotlib",
-        # "dash",
+        "dash",
         "panel",
-        # "dash-bootstrap-components",
-        # "dash-core-components",
-        # "dash-html-components",
+        "dash-bootstrap-components",
+        "dash-core-components",
+        "dash-html-components",
         "pydot",
         "pydotplus",
         "ipywidgets",
-        # "pygraphviz", # draw graphs
+        "pygraphviz",  # draw graphs
         "graphviz",
         "drawdata",  # https://python.plainenglish.io/drawdata-the-python-library-you-didnt-know-you-needed-b8c2f2ff328b
     ]
@@ -49,17 +50,23 @@ class CondaUtils:
         "statsmodels",
         "scipy",
     ]
-    CONDA_PACKAGES_NLP = ["nltk", "gensim", "spacy", "textblob", "transformers"]
+    CONDA_PACKAGES_NLP = [
+        "nltk",
+        #   "gensim",
+        "spacy",
+        "textblob",
+        "transformers",
+    ]
     CONDA_PACKAGES_REDDIT = ["praw", "vaderSentiment"]
     CONDA_PACKAGES_ML = [
         "tensorflow",
         "keras",
         "pytorch",
-        # "fastai",
+        "fastai",
         "xgboost",
         "lightgbm",
         "catboost",
-        "fbprophet",  # timeseries forecasting, facebook
+        # "fbprophet",  # timeseries forecasting, facebook NOTE doesn't exist
     ]
     CONDA_PACKAGES_LINALG_OPTIMIZATION = [
         "pulp",  # optimization
@@ -75,8 +82,8 @@ class CondaUtils:
         + CONDA_PACKAGES_FINANCE
         + CONDA_PACKAGES_VISUALIZATION
         + CONDA_PACKAGES_STATS
-        # + CONDA_PACKAGES_NLP
-        # + CONDA_PACKAGES_REDDIT
+        + CONDA_PACKAGES_NLP
+        + CONDA_PACKAGES_REDDIT
         + CONDA_PACKAGES_ML
         + CONDA_PACKAGES_LINALG_OPTIMIZATION
         + CONDA_PACKAGES_GRAPHS
@@ -93,13 +100,13 @@ class CondaUtils:
         version: str = "3.12",
     ):
         packages = set(packages)
-        with open(pin_loc, "r") as f:
+        with open(pin_loc) as f:
             loaded: dict[str, str] = json.load(f)
         pins = loaded | pins_override
         packages = sorted(packages, key=lambda x: (x not in pins, x))
-        packages_w_pins = [package if package not in pins else f"\'{package}>={pins[package]}\'" for package in packages]
+        packages_w_pins = [package if package not in pins else f"'{package}>={pins[package]}'" for package in packages]
         packages_str = " ".join(packages_w_pins)
-        prepend = f"conda create -n kret_{version.replace('.', '')} python={version} "
+        prepend = f"mm create -n kret_{version.replace('.', '')} python={version} "
         suffix = " --yes"
 
         print(prepend + packages_str + suffix)
@@ -193,7 +200,7 @@ class CondaUtils:
         existing_versions = {}
         if os.path.exists(file_path):
             try:
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     existing_versions = json.load(f)
                 print(f"Successfully loaded existing versions from '{file_path}'.")
             except json.JSONDecodeError:
