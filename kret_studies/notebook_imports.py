@@ -11,11 +11,14 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import seaborn as sns
+import io
+import requests
 
 # statsmodels and scipy
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import scipy.stats as stats  # For statistical tests and plots
+from scipy.stats import f
 
 # region matplotlib
 import matplotlib.pyplot as plt
