@@ -7,6 +7,22 @@ save_and_src_zshrc() {
 
     mkdir -p "$dest_dir"
 
+    # Step 1: Syntax check before continuing
+    if ! zsh -n "$rc_file"; then
+        echo "[save_and_src_zshrc] ❌ .zshrc has syntax errors. Backup aborted."
+        echo "[$timestamp] ❌ .zshrc syntax error detected. No backup made." >>"$log_file"
+
+        # Try to open in default editor or fallback
+        if [[ -n "$EDITOR" ]]; then
+            echo "[save_and_src_zshrc] Opening .zshrc in \$EDITOR ($EDITOR)..."
+            "$EDITOR" "$rc_file"
+        else
+            echo "[save_and_src_zshrc] No \$EDITOR set. Falling back to 'open'..."
+            open "$rc_file"
+        fi
+        return 1
+    fi
+
     echo "[$timestamp] Manual source triggered." >>"$log_file"
     cp -f "$rc_file" "$backup_file"
     echo "[$timestamp] ✅ .zshrc backed up." >>"$log_file"
@@ -14,7 +30,7 @@ save_and_src_zshrc() {
     cd "$dest_dir" || return
 
     if ! git diff --quiet -- .zshrc; then
-        echo "[save_and_src_zshrc] 📋 Diff detected:"
+        echo "[save_and_src_zshrc] 📋 Diff since last backup:"
         git diff --color -- .zshrc
 
         git add .zshrc
