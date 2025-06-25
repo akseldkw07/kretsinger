@@ -11,32 +11,31 @@ gitpush() {
   local modified=()
   local deleted=()
 
-    while IFS=$'\t' read -r change_type file; do
+  while IFS=$'\t' read -r change_type file; do
     filename="${file##*/}"
     case "$change_type" in
-        A) added+=("$filename") ;;
-        M) modified+=("$filename") ;;
-        D) deleted+=("$filename") ;;
+      A) added+=("$filename") ;;
+      M) modified+=("$filename") ;;
+      D) deleted+=("$filename") ;;
     esac
-    done <<< "$diff_output"
-
+  done <<< "$diff_output"
 
   summary=""
-[[ ${#added[@]} -gt 0 ]] && summary+="add: ${(j.|.)added}
+  [[ ${#added[@]} -gt 0 ]] && summary+="add: ${(j: | :)added}
 "
-[[ ${#modified[@]} -gt 0 ]] && summary+="modify: ${(j.|.)modified}
+  [[ ${#modified[@]} -gt 0 ]] && summary+="modify: ${(j: | :)modified}
 "
-[[ ${#deleted[@]} -gt 0 ]] && summary+="delete: ${(j.|.)deleted}
+  [[ ${#deleted[@]} -gt 0 ]] && summary+="delete: ${(j: | :)deleted}
 "
-
-
 
   if [[ -z "$commit_message" ]]; then
     commit_message=$(date +"%Y-%m-%d %H:%M:%S")
   fi
 
   local full_message="${commit_message}"
-  [[ -n "$summary" ]] && full_message+="\n\n${summary}"
+  [[ -n "$summary" ]] && full_message+="
+
+${summary}"
 
   echo
   print -P "%F{cyan}${commit_message}%f"
