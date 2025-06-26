@@ -116,6 +116,7 @@ source "${KRET}/zsh_scripts/activate_and_navigate.zsh"
 source "${KRET}/zsh_scripts/checkout_main.zsh"
 source "${KRET}/zsh_scripts/gitpush_enhanced.zsh"
 source "${KRET}/zsh_scripts/zsh_backup.zsh"
+source "${KRET}/zsh_scripts/save_and_src_zshrc.zsh"
 
 # MICROMAMBA
 export MAMBA_ROOT_PREFIX=~/micromamba
@@ -132,7 +133,7 @@ alias ld="ls -ltd -- */" # List directories only
 alias mm='micromamba'
 alias rgf='rg --files -g'
 alias home='cd /Users/Akseldkw'
-alias src='echo "Reloading .zshrc..." && source ~/.zshrc && echo "✅ Done!"'
+alias src='save_and_src_zshrc'
 
 # CUSTOM ALIAS FUNCTIONS
 col() {
