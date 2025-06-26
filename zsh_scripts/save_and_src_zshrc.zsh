@@ -31,7 +31,7 @@ save_and_src_zshrc() {
         cd "$dest_dir" || return
 
         echo "[save_and_src_zshrc] 📋 Git diff for .zshrc:"
-        git diff --color -- .zshrc || echo "[.zshrc] No visible diff."
+        git --no-pager diff --color -- .zshrc || echo "[.zshrc] No visible diff."
 
         git add .zshrc
         git commit -m "Update .zshrc backup on ${timestamp}" --quiet
