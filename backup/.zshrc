@@ -1,8 +1,11 @@
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+local zsh_user="$USER"
+local p10k_cache="${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${zsh_user}.zsh"
+
+if [[ -r "$p10k_cache" ]]; then
+  source "$p10k_cache"
 fi
 
 # If you come from bash you might have to change your $PATH.
@@ -77,7 +80,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=( git zsh-syntax-highlighting zsh-autosuggestions vscode)
+plugins=(git zsh-syntax-highlighting zsh-autosuggestions vscode)
 
 source $ZSH/oh-my-zsh.sh
 # User configuration
@@ -143,13 +146,13 @@ col() {
 
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!
-export MAMBA_EXE='/usr/local/bin/micromamba';
-export MAMBA_ROOT_PREFIX='/Users/Akseldkw/micromamba';
-__mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+export MAMBA_EXE='/usr/local/bin/micromamba'
+export MAMBA_ROOT_PREFIX='/Users/Akseldkw/micromamba'
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2>/dev/null)"
 if [ $? -eq 0 ]; then
-    eval "$__mamba_setup"
+  eval "$__mamba_setup"
 else
-    alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
+  alias micromamba="$MAMBA_EXE" # Fallback on help from micromamba activate
 fi
 unset __mamba_setup
 # <<< mamba initialize <<<
