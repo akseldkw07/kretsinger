@@ -1,19 +1,6 @@
 Transfer starting: 1 files
 .zshrc
 
-sent 5816 bytes  received 42 bytes  5325454 bytes/sec
-total size is 5687  speedup is 0.97
-[2025-06-25 18:42:41] ✅ Backup complete.
-[2025-06-25 19:00:40] Manual source triggered.
-[2025-06-25 19:00:40] ✅ .zshrc backed up.
-[2025-06-25 19:03:06] Manual source triggered.
-[2025-06-25 19:03:06] ✅ .zshrc backed up.
-[2025-06-25 19:03:38] Manual source triggered.
-[2025-06-25 19:03:38] ✅ .zshrc backed up.
-[2025-06-25 19:08:50] ✅ .zshrc backed up.
-[2025-06-25 19:09:05] ✅ .zshrc backed up.
-[2025-06-25 19:21:27] ✅ .zshrc backed up.
-[2025-06-25 19:21:36] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-25 22:35:45] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-25 22:52:54] ✅ .zshrc updated and backed up.
-[2025-06-25 22:55:45] ℹ️ No changes detected in .zshrc. Early exit.
+sent 5812 bytes  received 42 bytes  5321818 bytes/sec
+total size is 5683  speedup is 0.97
+[2025-06-25 22:57:40] ✅ Backup complete.
