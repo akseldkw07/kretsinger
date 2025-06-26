@@ -7,40 +7,35 @@ save_and_src_zshrc() {
 
     mkdir -p "$dest_dir"
 
-    # Step 1: Syntax check before continuing
-    if ! zsh -n "$rc_file"; then
-        echo "[save_and_src_zshrc] ❌ .zshrc has syntax errors. Backup aborted."
-        echo "[$timestamp] ❌ .zshrc syntax error detected. No backup made." >>"$log_file"
-
-        # Try to open in default editor or fallback
-        if [[ -n "$EDITOR" ]]; then
-            echo "[save_and_src_zshrc] Opening .zshrc in \$EDITOR ($EDITOR)..."
-            "$EDITOR" "$rc_file"
-        else
-            echo "[save_and_src_zshrc] No \$EDITOR set. Falling back to 'open'..."
-            open "$rc_file"
-        fi
+    echo "[save_and_src_zshrc] 🔁 Reloading .zshrc..."
+    if ! source "$rc_file"; then
+        echo "[save_and_src_zshrc] ❌ Failed to source .zshrc. Aborting."
+        echo "[$timestamp] ❌ Error sourcing .zshrc. Backup aborted." >>"$log_file"
         return 1
     fi
+    echo "[save_and_src_zshrc] ✅ .zshrc reloaded."
 
-    echo "[$timestamp] Manual source triggered." >>"$log_file"
-    cp -f "$rc_file" "$backup_file"
-    echo "[$timestamp] ✅ .zshrc backed up." >>"$log_file"
-
-    cd "$dest_dir" || return
-
-    if ! git diff --quiet -- .zshrc; then
-        echo "[save_and_src_zshrc] 📋 Diff since last backup:"
-        git diff --color -- .zshrc
-
-        git add .zshrc
-        git commit -m "Backup .zshrc on ${timestamp}" --quiet
-        echo "[save_and_src_zshrc] ✅ Changes committed."
-    else
-        echo "[save_and_src_zshrc] No changes to commit."
+    # If no changes, just log and exit
+    if cmp -s "$rc_file" "$backup_file"; then
+        echo "[$timestamp] ℹ️ No changes detected in .zshrc. Early exit." >>"$log_file"
+        echo "[save_and_src_zshrc] ℹ️ No changes to back up. Exiting."
+        return 0
     fi
 
-    echo "[save_and_src_zshrc] 🔁 Reloading .zshrc..."
-    source "$rc_file"
-    echo "[save_and_src_zshrc] ✅ Done."
+    # Back up the updated .zshrc
+    cp -f "$rc_file" "$backup_file"
+    echo "[$timestamp] ✅ .zshrc updated and backed up." >>"$log_file"
+
+    # Only do Git actions if current directory is within $KRET
+    if [[ "$PWD" == "$KRET" || "$PWD" == "$KRET"/* ]]; then
+        echo "[save_and_src_zshrc] 📋 Git diff for .zshrc:"
+        git -C "$dest_dir" diff --color -- .zshrc || echo "[.zshrc] No visible diff."
+
+        git -C "$dest_dir" add .zshrc
+        git -C "$dest_dir" commit -m "Update .zshrc backup on ${timestamp}" --quiet
+        git -C "$dest_dir" push --quiet
+        echo "[save_and_src_zshrc] ✅ Backup committed and pushed."
+    else
+        echo "[save_and_src_zshrc] ℹ️ Git actions skipped (outside KRET directory tree)."
+    fi
 }
