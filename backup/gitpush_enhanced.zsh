@@ -11,22 +11,29 @@ gitpush() {
   local modified=()
   local deleted=()
 
-while IFS=$'\t' read -r change_type file; do
-  filename="${file##*/}"
-  case "$change_type" in
+  while IFS=$'\t' read -r change_type file; do
+    filename="${file##*/}"
+    case "$change_type" in
     A) added+=("$filename") ;;
     M) modified+=("$filename") ;;
     D) deleted+=("$filename") ;;
-  esac
-done <<< "$diff_output"
+    esac
+  done <<<"$diff_output"
 
-  summary=""
-  [[ ${#added[@]} -gt 0 ]] && summary+="add: ${(j: | :)added}
-"
-  [[ ${#modified[@]} -gt 0 ]] && summary+="modify: ${(j: | :)modified}
-"
-  [[ ${#deleted[@]} -gt 0 ]] && summary+="delete: ${(j: | :)deleted}
-"
+  local added_str modified_str deleted_str summary=""
+
+  if ((${#added[@]} > 0)); then
+    added_str="add: ${added[*]}"
+    summary+="${added_str}\n"
+  fi
+  if ((${#modified[@]} > 0)); then
+    modified_str="modify: ${modified[*]}"
+    summary+="${modified_str}\n"
+  fi
+  if ((${#deleted[@]} > 0)); then
+    deleted_str="delete: ${deleted[*]}"
+    summary+="${deleted_str}\n"
+  fi
 
   if [[ -z "$commit_message" ]]; then
     commit_message=$(date +"%Y-%m-%d %H:%M:%S")
@@ -39,9 +46,16 @@ ${summary}"
 
   echo
   print -P "%F{cyan}${commit_message}%f"
-  [[ ${#added[@]} -gt 0 ]] && print -P "%F{green}add:%f ${(j: | :)added}"
-  [[ ${#modified[@]} -gt 0 ]] && print -P "%F{yellow}modify:%f ${(j: | :)modified}"
-  [[ ${#deleted[@]} -gt 0 ]] && print -P "%F{red}delete:%f ${(j: | :)deleted}"
+
+  if ((${#added[@]} > 0)); then
+    print -P "%F{green}add:%f ${added[*]}"
+  fi
+  if ((${#modified[@]} > 0)); then
+    print -P "%F{yellow}modify:%f ${modified[*]}"
+  fi
+  if ((${#deleted[@]} > 0)); then
+    print -P "%F{red}delete:%f ${deleted[*]}"
+  fi
   echo
 
   git commit -m "$full_message"
