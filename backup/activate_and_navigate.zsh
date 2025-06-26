@@ -3,12 +3,11 @@
 # Usage: source ~/bin/setup_my_env.zsh [target_directory] [env_name]
 sod() {
     # --- Default Configuration ---
-    DEFAULT_ENV_NAME="kret_312"
     DEFAULT_TARGET_DIR="/Users/Akseldkw/coding/kretsinger"
 
     # --- Parse Optional Arguments ---
     TARGET_DIR="${1:-$DEFAULT_TARGET_DIR}"
-    ENV_NAME="${2:-$DEFAULT_ENV_NAME}"
+    ENV_NAME="${2:-$PY312_ENV}" # PY312_ENV is defined in .zshrc
 
     # --- Optional customizations ---
     # (e.g., project-specific aliases can go here)

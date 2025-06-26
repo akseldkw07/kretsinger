@@ -4,6 +4,7 @@ gitpush() {
   local commit_message="$1"
   git add .
 
+  # 🔍 Collect diff summary
   local diff_output
   diff_output=$(git diff --cached --name-status)
 
@@ -39,25 +40,33 @@ gitpush() {
     commit_message=$(date +"%Y-%m-%d %H:%M:%S")
   fi
 
-  local full_message="${commit_message}"
+  local full_message="$commit_message"
   [[ -n "$summary" ]] && full_message+="
 
 ${summary}"
 
+  # 🖨️ Show summary
   echo
   print -P "%F{cyan}${commit_message}%f"
-
-  if ((${#added[@]} > 0)); then
-    print -P "%F{green}add:%f ${added[*]}"
-  fi
-  if ((${#modified[@]} > 0)); then
-    print -P "%F{yellow}modify:%f ${modified[*]}"
-  fi
-  if ((${#deleted[@]} > 0)); then
-    print -P "%F{red}delete:%f ${deleted[*]}"
-  fi
+  ((${#added[@]} > 0)) && print -P "%F{green}add:%f ${added[*]}"
+  ((${#modified[@]} > 0)) && print -P "%F{yellow}modify:%f ${modified[*]}"
+  ((${#deleted[@]} > 0)) && print -P "%F{red}delete:%f ${deleted[*]}"
   echo
 
+  # ✅ Commit and push
   git commit -m "$full_message"
-  git push --force
+
+  local push_output pr_url
+  push_output=$(git push --force 2>&1 | tee /dev/tty)
+
+  # 🚀 Auto-open PR if it doesn't already exist
+  if echo "$push_output" | grep -q "Create a pull request for"; then
+    pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
+    if [[ -n "$pr_url" ]]; then
+      echo "[gitpush] 🚀 Opening pull request in browser..."
+      open "$pr_url"
+    fi
+  else
+    echo "[gitpush] ✅ Push complete. Pull request already exists."
+  fi
 }
