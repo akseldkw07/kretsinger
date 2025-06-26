@@ -115,11 +115,16 @@ source $ZSH/oh-my-zsh.sh
 
 # VARIABLES
 export KRET='/Users/Akseldkw/coding/kretsinger'
-source "${KRET}/zsh_scripts/activate_and_navigate.zsh"
-source "${KRET}/zsh_scripts/checkout_main.zsh"
-source "${KRET}/zsh_scripts/gitpush_enhanced.zsh"
-source "${KRET}/zsh_scripts/zsh_backup.zsh"
-source "${KRET}/zsh_scripts/save_and_src_zshrc.zsh"
+export PY312_ENV="kret_312"
+export PY311_ENV="kret_311"
+
+# Source all .zsh files in ${KRET}/zsh_scripts
+# Skip files starting with _ or .
+find "${KRET}/zsh_scripts" -type f -name '*.zsh' | while read -r script; do
+  filename="$(basename "$script")"
+  [[ "$filename" == _* || "$filename" == .* ]] && continue
+  source "$script"
+done
 
 # MICROMAMBA
 export MAMBA_ROOT_PREFIX=~/micromamba
