@@ -1,10 +1,13 @@
 #!/bin/zsh
 mpgd() {
+    local PRIMARY_BRANCH
+
+    # Determine primary branch
     PRIMARY_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)
-    if [ -z "$PRIMARY_BRANCH" ]; then
+    if [[ -z "$PRIMARY_BRANCH" ]]; then
         if git rev-parse --verify main &>/dev/null; then
             PRIMARY_BRANCH="main"
-        elif git rev-parse --verify master &>/dev-null; then
+        elif git rev-parse --verify master &>/dev/null; then
             PRIMARY_BRANCH="master"
         else
             echo "Error: Could not determine primary branch."
@@ -13,14 +16,17 @@ mpgd() {
     else
         PRIMARY_BRANCH="${PRIMARY_BRANCH##*/}"
     fi
-    git checkout "${PRIMARY_BRANCH}"
-    git pull origin "${PRIMARY_BRANCH}"
 
-    # Robustly iterate over branches using 'while read' loop to prevent word splitting issues
-    git branch | grep -v "^*" | grep -v "${PRIMARY_BRANCH}" | sed "s/^[[:space:]]*//p" | while IFS= read -r branch; do
-        if [ -n "$branch" ]; then # Ensure the branch name is not empty
-            echo "Deleting branch: $branch"
-            git branch -D "${branch}" # Force delete branch
+    echo "[mpgd] ✅ Primary branch is: $PRIMARY_BRANCH"
+
+    git checkout "$PRIMARY_BRANCH" && git pull origin "$PRIMARY_BRANCH"
+
+    echo "[mpgd] 🔍 Deleting all local branches except '$PRIMARY_BRANCH'..."
+
+    git for-each-ref --format='%(refname:short)' refs/heads/ | while read -r branch; do
+        if [[ "$branch" != "$PRIMARY_BRANCH" ]]; then
+            echo "[mpgd] 🗑️ Deleting branch: $branch"
+            git branch -D "$branch"
         fi
     done
 }
