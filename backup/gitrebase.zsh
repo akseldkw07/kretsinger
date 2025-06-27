@@ -27,31 +27,65 @@ rebase_squash_conflict() {
 }
 
 rebase_nuclear_feature() {
-    local feature_branch
+    local current_branch feature_branch stash_was_created=false
     feature_branch=$(git rev-parse --abbrev-ref HEAD)
 
-    echo "[rebase_nuclear_feature] 💥 WARNING: You are about to rebase '$feature_branch' onto 'main'"
-    echo "[rebase_nuclear_feature] ⚠️  Conflicts will be resolved in favor of the feature branch—main's changes may be discarded."
-    echo "[rebase_nuclear_feature] 🚧 This operation rewrites history and will force-push to remote."
-    read -q "?Do you want to continue with the nuclear rebase? (y/n) " && echo
-    if [[ $REPLY != [Yy] ]]; then
-        echo "[rebase_nuclear_feature] ❌ Rebase aborted by user."
+    if [[ "$feature_branch" == "main" ]]; then
+        echo "[nuke] ❌ You’re on 'main'. This function must be run from a feature branch."
         return 1
     fi
 
-    echo "[rebase_nuclear_feature] 🛠️  Committing current changes on '$feature_branch'..."
+    echo "[nuke] 💥 You’re about to rebase '$feature_branch' onto 'main', prioritizing YOUR changes."
+    echo "[nuke] ⚠️ This overwrites history and will force-push to remote."
+    read -q "?Do you want to proceed with the nuclear rebase? (y/n) " && echo
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "[nuke] 🛑 Rebase aborted by user."
+        return 1
+    fi
+
+    # 🔒 Stash if needed
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+        echo "[nuke] 💾 Stashing uncommitted changes..."
+        git stash push -u -m "pre-nuclear-rebase"
+        stash_was_created=true
+    fi
+
+    # 💾 Save WIP commit
+    echo "[nuke] 🧷 Committing current staged work..."
     git add -A
     git commit -m "WIP (pre-nuclear rebase)"
 
-    echo "[rebase_nuclear_feature] ⬇️  Updating main..."
-    git checkout main && git pull origin main || return 1
+    # 🔄 Update main
+    echo "[nuke] 🔄 Switching to 'main'..."
+    if ! git checkout main || ! git pull origin main; then
+        echo "[nuke] ❌ Failed to update 'main'. Returning to '$feature_branch'..."
+        git checkout "$feature_branch"
+        return 1
+    fi
 
-    echo "[rebase_nuclear_feature] 🔁 Switching back to '$feature_branch'..."
-    git checkout "$feature_branch" || return 1
+    # 🔁 Return to feature branch
+    echo "[nuke] 🔁 Switching back to '$feature_branch'..."
+    if ! git checkout "$feature_branch"; then
+        echo "[nuke] ❌ Failed to return to feature branch."
+        return 1
+    fi
 
-    echo "[rebase_nuclear_feature] 🧨 Rebasing with 'theirs' strategy (feature branch overrides main)..."
-    git rebase -s recursive -X theirs main || return 1
+    # 🧨 Perform nuclear rebase
+    echo "[nuke] 🧨 Rebasing with 'theirs' strategy (your branch wins over main)..."
+    if ! git rebase -s recursive -X theirs main; then
+        echo "[nuke] ⚠️ Rebase failed. Resolve conflicts manually and re-run 'git rebase --continue'."
+        return 1
+    fi
 
-    echo "[rebase_nuclear_feature] 🚀 Force-pushing updated feature branch..."
+    # 🚀 Push
+    echo "[nuke] 🚀 Force-pushing rebased '$feature_branch'..."
     git push --force
+
+    # 🌱 Restore stash if one was created
+    if [[ "$stash_was_created" == true ]]; then
+        echo "[nuke] 🌱 Re-applying stashed changes..."
+        git stash pop
+    fi
+
+    echo "[nuke] ✅ Rebase complete. '$feature_branch' is now aligned (and dominant) over 'main'."
 }
