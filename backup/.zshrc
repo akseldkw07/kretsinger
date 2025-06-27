@@ -143,6 +143,8 @@ alias mm='micromamba'
 alias rgf='rg --files -g'
 alias home='cd /Users/Akseldkw'
 alias src='save_and_src_zshrc'
+alias gitrebase='rebase_squash_conflict'
+alias gitnuke='rebase_nuclear_feature'
 
 # CUSTOM ALIAS FUNCTIONS
 col() {
