@@ -1,3 +1,5 @@
+#!/bin/zsh
+
 save_and_src_zshrc() {
     local dest_dir="${KRET}/backup"
     local rc_file="$HOME/.zshrc"
