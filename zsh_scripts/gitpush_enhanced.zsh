@@ -52,6 +52,7 @@ _commit_and_push() {
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
   local push_output="$1"
+  echo "_handle_pull_request!!!!!!!!!!!"
   echo "$push_output"
 
   if command -v gbw >/dev/null 2>&1; then
