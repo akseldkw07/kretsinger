@@ -49,7 +49,7 @@ _commit_and_push() {
 
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
-  if command -v gw >/dev/null 2>&1; then
+  if command -v gh >/dev/null 2>&1; then
     echo "[gitpush] ✅ GitHub CLI found."
     local current_branch existing_pr pr_url
     current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
