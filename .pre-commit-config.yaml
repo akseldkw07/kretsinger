@@ -9,7 +9,7 @@ repos:
         name: Prevent direct push to main
         entry: zsh_scripts/prevent_main_push.zsh
         language: script
-        stages: [pre-push]
+        stages: [pre-commit]
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:
