@@ -50,6 +50,7 @@ _commit_and_push() {
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
   if command -v gh >/dev/null 2>&1; then
+    echo "[gitpush] ✅ GitHub CLI found."
     local current_branch existing_pr pr_url
     current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
     existing_pr=$(gh pr list --head "$current_branch" --json number --jq '.[0].number' 2>/dev/null)
@@ -58,8 +59,9 @@ _handle_pull_request() {
       echo "[gitpush] 📋 Pull request already exists (#$existing_pr)."
       pr_url=$(gh pr view "$existing_pr" --json url --jq '.url' 2>/dev/null)
       if [[ -n "$pr_url" ]]; then
-        echo "[gitpush] 🚀 Opening existing pull request in browser..."
-        open "$pr_url"
+        echo "[gitpush] � PR URL: $pr_url"
+        # Try to focus existing Chrome tab instead of opening new window
+        _focus_existing_pr_tab "$pr_url"
       fi
     else
       echo "[gitpush] 🆕 Creating new pull request..."
@@ -71,7 +73,7 @@ _handle_pull_request() {
       fi
     fi
   else
-    echo "[gitpush] ⚠️  GitHub CLI not found."
+    echo "[gitpush] ❌ GitHub CLI not found."
     _fallback_pr_creation
   fi
 }
@@ -88,10 +90,40 @@ _fallback_pr_creation() {
     pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
     if [[ -n "$pr_url" ]]; then
       echo "[gitpush] 🚀 Opening pull request creation page in browser..."
-      open "$pr_url"
+      # Use the focus function to try existing tabs first before opening new window
+      if echo "$pr_url" | grep -q "pull"; then
+        _focus_existing_pr_tab "$pr_url"
+      else
+        open "$pr_url"
+      fi
     fi
   else
     echo "[gitpush] ℹ️  No PR creation URL available. You may need to create the PR manually."
+  fi
+}
+
+# Try to focus existing Chrome tab with PR, fallback to not opening if fails
+_focus_existing_pr_tab() {
+  local pr_url="$1"
+
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "
+      tell application \"Google Chrome\"
+        set theURL to \"$pr_url\"
+        repeat with theWindow in windows
+          repeat with theTab in tabs of theWindow
+            if URL of theTab contains \"github.com\" and URL of theTab contains \"pull\" then
+              set active tab index of theWindow to index of theTab
+              set index of theWindow to 1
+              activate
+              return
+            end if
+          end repeat
+        end repeat
+      end tell
+    " 2>/dev/null || echo "[gitpush] ℹ️  PR exists but couldn't focus existing tab."
+  else
+    echo "[gitpush] ℹ️  PR exists. URL logged above."
   fi
 }
 
