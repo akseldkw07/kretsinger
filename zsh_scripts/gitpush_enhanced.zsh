@@ -31,12 +31,14 @@ _commit_and_push() {
 
   # ✅ Commit and only push if commit succeeds
   if git commit -m "$full_message"; then
-    # Push first
-    if git push --force; then
+    # Push first and capture output
+    local push_output
+    push_output=$(git push --force 2>&1)
+    if [[ $? -eq 0 ]]; then
       echo "[gitpush] ✅ Push complete."
 
-      # Handle PR creation/opening
-      _handle_pull_request
+      # Handle PR creation/opening, passing the push output
+      _handle_pull_request "$push_output"
     else
       echo "[gitpush] ❌ Push failed."
       return 1
@@ -49,7 +51,9 @@ _commit_and_push() {
 
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
-  if command -v gw >/dev/null 2>&1; then
+  local push_output="$1"
+
+  if command -v gh >/dev/null 2>&1; then
     echo "[gitpush] ✅ GitHub CLI found."
     local current_branch existing_pr pr_url
     current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
@@ -59,8 +63,7 @@ _handle_pull_request() {
       echo "[gitpush] 📋 Pull request already exists (#$existing_pr)."
       pr_url=$(gh pr view "$existing_pr" --json url --jq '.url' 2>/dev/null)
       if [[ -n "$pr_url" ]]; then
-        echo "[gitpush] � PR URL: $pr_url"
-        # Try to focus existing Chrome tab instead of opening new window
+        echo "[gitpush] 🔗 PR URL: $pr_url"
         _focus_existing_pr_tab "$pr_url"
       fi
     else
@@ -69,22 +72,22 @@ _handle_pull_request() {
         echo "[gitpush] 🚀 Pull request created and opened in browser."
       else
         echo "[gitpush] ❌ Failed to create pull request via gh CLI."
-        _fallback_pr_creation "$current_branch"
+        _fallback_pr_creation "$current_branch" "$push_output"
       fi
     fi
   else
     echo "[gitpush] ❌ GitHub CLI not found."
-    _fallback_pr_creation
+    _fallback_pr_creation "" "$push_output"
   fi
 }
 
 # Fallback PR creation using git push output
 _fallback_pr_creation() {
   local branch="$1"
-  local push_output pr_url
+  local push_output="$2"
+  local pr_url
 
   echo "[gitpush] 🔍 Checking for PR creation URL..."
-  push_output=$(git push --force 2>&1)
 
   # Check for existing PR URL first
   if echo "$push_output" | grep -q "github.com.*pull"; then
