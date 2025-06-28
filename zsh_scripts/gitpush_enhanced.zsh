@@ -21,19 +21,25 @@ gitpush() {
     esac
   done <<<"$diff_output"
 
-  local added_str modified_str deleted_str summary=""
-
+  # Build a nicely formatted summary for GitHub UI
+  summary=""
   if ((${#added[@]} > 0)); then
-    added_str="add: ${added[*]}"
-    summary+="${added_str}\n"
+    summary+=$'\nAdded:'
+    for file in "${added[@]}"; do
+      summary+=$'\n- '"$file"
+    done
   fi
   if ((${#modified[@]} > 0)); then
-    modified_str="modify: ${modified[*]}"
-    summary+="${modified_str}\n"
+    summary+=$'\nModified:'
+    for file in "${modified[@]}"; do
+      summary+=$'\n- '"$file"
+    done
   fi
   if ((${#deleted[@]} > 0)); then
-    deleted_str="delete: ${deleted[*]}"
-    summary+="${deleted_str}\n"
+    summary+=$'\nDeleted:'
+    for file in "${deleted[@]}"; do
+      summary+=$'\n- '"$file"
+    done
   fi
 
   if [[ -z "$commit_message" ]]; then
@@ -41,9 +47,7 @@ gitpush() {
   fi
 
   local full_message="$commit_message"
-  [[ -n "$summary" ]] && full_message+="
-
-${summary}"
+  [[ -n "$summary" ]] && full_message+="$summary"
 
   # 🖨️ Show summary
   echo

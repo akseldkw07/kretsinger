@@ -21,19 +21,25 @@ gitpush() {
     esac
   done <<<"$diff_output"
 
-  local added_str modified_str deleted_str summary=""
-
+  # Build a nicely formatted summary for GitHub UI
+  summary=""
   if ((${#added[@]} > 0)); then
-    added_str="add: ${added[*]}"
-    summary+="${added_str}\n"
+    summary+=$'\nAdded:'
+    for file in "${added[@]}"; do
+      summary+=$'\n- '"$file"
+    done
   fi
   if ((${#modified[@]} > 0)); then
-    modified_str="modify: ${modified[*]}"
-    summary+="${modified_str}\n"
+    summary+=$'\nModified:'
+    for file in "${modified[@]}"; do
+      summary+=$'\n- '"$file"
+    done
   fi
   if ((${#deleted[@]} > 0)); then
-    deleted_str="delete: ${deleted[*]}"
-    summary+="${deleted_str}\n"
+    summary+=$'\nDeleted:'
+    for file in "${deleted[@]}"; do
+      summary+=$'\n- '"$file"
+    done
   fi
 
   if [[ -z "$commit_message" ]]; then
@@ -41,9 +47,7 @@ gitpush() {
   fi
 
   local full_message="$commit_message"
-  [[ -n "$summary" ]] && full_message+="
-
-${summary}"
+  [[ -n "$summary" ]] && full_message+="$summary"
 
   # 🖨️ Show summary
   echo
@@ -56,17 +60,27 @@ ${summary}"
   # ✅ Commit and only push if commit succeeds
   if git commit -m "$full_message"; then
     local push_output pr_url
-    push_output=$(git push --force 2>&1 | tee /dev/tty)
-
-    # 🚀 Auto-open PR if it doesn't already exist
-    if echo "$push_output" | grep -q "Create a pull request for"; then
-      pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
-      if [[ -n "$pr_url" ]]; then
-        echo "[gitpush] 🚀 Opening pull request in browser..."
-        open "$pr_url"
+    # Check if gh CLI is installed
+    if command -v gh >/dev/null 2>&1; then
+      # Use gh to push and open PR if needed
+      push_output=$(git push --force 2>&1 | tee /dev/tty)
+      if echo "$push_output" | grep -q "Create a pull request for"; then
+        pr_url=$(echo "$push_output" | grep -Eo 'https://github\\.com/[^ ]+')
+        if [[ -n "$pr_url" ]]; then
+          echo "[gitpush] 🚀 Opening pull request in browser..."
+          open "$pr_url"
+        fi
+      else
+        echo "[gitpush] ✅ Push complete. Pull request already exists."
       fi
     else
-      echo "[gitpush] ✅ Push complete. Pull request already exists."
+      # Fallback: just push
+      if git push --force; then
+        echo "[gitpush] ✅ Push complete."
+      else
+        echo "[gitpush] ❌ Push failed."
+        return 1
+      fi
     fi
   else
     echo "[gitpush] ❌ Commit failed. Push aborted."
