@@ -86,16 +86,23 @@ _fallback_pr_creation() {
   echo "[gitpush] 🔍 Checking for PR creation URL..."
   push_output=$(git push --force 2>&1)
 
+  # Check for existing PR URL first
+  if echo "$push_output" | grep -q "github.com.*pull"; then
+    pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^/]+/[^/]+/pull/[0-9]+')
+    if [[ -n "$pr_url" ]]; then
+      echo "[gitpush] � Found existing pull request URL: $pr_url"
+      echo "[gitpush] 🔗 PR URL: $pr_url"
+      _focus_existing_pr_tab "$pr_url"
+      return
+    fi
+  fi
+
+  # Check for new PR creation URL
   if echo "$push_output" | grep -q "Create a pull request for"; then
     pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
     if [[ -n "$pr_url" ]]; then
       echo "[gitpush] 🚀 Opening pull request creation page in browser..."
-      # Use the focus function to try existing tabs first before opening new window
-      if echo "$pr_url" | grep -q "pull"; then
-        _focus_existing_pr_tab "$pr_url"
-      else
-        open "$pr_url"
-      fi
+      open "$pr_url"
     fi
   else
     echo "[gitpush] ℹ️  No PR creation URL available. You may need to create the PR manually."
