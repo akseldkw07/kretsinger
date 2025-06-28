@@ -49,7 +49,7 @@ _commit_and_push() {
 
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
-  if command -v gs >/dev/null 2>&1; then
+  if command -v gh >/dev/null 2>&1; then
     local current_branch existing_pr pr_url
     current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
     existing_pr=$(gh pr list --head "$current_branch" --json number --jq '.[0].number' 2>/dev/null)
