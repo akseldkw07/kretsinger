@@ -1,17 +1,28 @@
 #!/bin/zsh
 
-gitpush() {
-  local commit_message="$1"
-  git add .
+# Generate commit message and description, using aicommits if available, else fallback
+_generate_commit_message() {
+  local ai_message=""
+  if command -v aicommits >/dev/null 2>&1; then
+    # Try to get AI-generated commit message (auto-accept feedback)
+    ai_message=$(aicommits --yes 2>/dev/null)
+    if [[ -n "$ai_message" ]]; then
+      echo "[gitpush] Using AI-generated commit message." >&2
+      echo "$ai_message"
+      return 0
+    else
+      echo "[gitpush] AI commit message failed, using fallback." >&2
+    fi
+  else
+    echo "[gitpush] aicommits not found, using fallback." >&2
+  fi
 
-  # 🔍 Collect diff summary
-  local diff_output
-  diff_output=$(git diff --cached --name-status)
-
+  # Fallback: handcrafted logic
   local added=()
   local modified=()
   local deleted=()
-
+  local diff_output
+  diff_output=$(git diff --cached --name-status)
   while IFS=$'\t' read -r change_type file; do
     filename="${file##*/}"
     case "$change_type" in
@@ -20,9 +31,7 @@ gitpush() {
     D) deleted+=("$filename") ;;
     esac
   done <<<"$diff_output"
-
-  # Build a nicely formatted summary for GitHub UI
-  summary=""
+  local summary=""
   if ((${#added[@]} > 0)); then
     summary+=$'\nAdded:'
     for file in "${added[@]}"; do
@@ -41,6 +50,16 @@ gitpush() {
       summary+=$'\n- '"$file"
     done
   fi
+  echo "$summary"
+}
+
+gitpush() {
+  local commit_message="$1"
+  git add .
+
+  # Get commit message/description (AI or fallback)
+  local summary
+  summary=$(_generate_commit_message)
 
   if [[ -z "$commit_message" ]]; then
     commit_message=$(date +"%Y-%m-%d %H:%M:%S")
@@ -52,9 +71,7 @@ gitpush() {
   # 🖨️ Show summary
   echo
   print -P "%F{cyan}${commit_message}%f"
-  ((${#added[@]} > 0)) && print -P "%F{green}add:%f ${added[*]}"
-  ((${#modified[@]} > 0)) && print -P "%F{yellow}modify:%f ${modified[*]}"
-  ((${#deleted[@]} > 0)) && print -P "%F{red}delete:%f ${deleted[*]}"
+  echo "$summary"
   echo
 
   # ✅ Commit and only push if commit succeeds
