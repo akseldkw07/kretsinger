@@ -52,6 +52,7 @@ _commit_and_push() {
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
   local push_output="$1"
+  echo "$push_output"
 
   if command -v gbw >/dev/null 2>&1; then
     echo "[gitpush] ✅ GitHub CLI found."
@@ -106,10 +107,26 @@ _fallback_pr_creation() {
     if [[ -n "$pr_url" ]]; then
       echo "[gitpush] 🚀 Opening pull request creation page in browser..."
       open "$pr_url"
+      return
     fi
-  else
-    echo "[gitpush] ℹ️  No PR creation URL available. You may need to create the PR manually."
   fi
+
+  # If no PR link found, try to find an existing PR for this branch using GitHub web UI
+  if [[ -n "$branch" ]]; then
+    # Get repo info from git remote
+    local remote_url repo_path pr_list_url
+    remote_url=$(git config --get remote.origin.url)
+    # Handle both git@github.com: and https://github.com/ URLs
+    if [[ "$remote_url" =~ github.com[:/](.+)\.git ]]; then
+      repo_path=${BASH_REMATCH[1]}
+      pr_list_url="https://github.com/$repo_path/pulls?q=is%3Apr+is%3Aopen+head%3A$branch"
+      echo "[gitpush] 🔍 Opening PR list for branch in browser: $pr_list_url"
+      open "$pr_list_url"
+      return
+    fi
+  fi
+
+  echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
 }
 
 # Try to focus existing Chrome tab with PR, fallback to not opening if fails
