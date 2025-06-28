@@ -19,4 +19,4 @@ class KretConstants:
     Constants for other uses
     """
 
-    ignore_logs: LoggingLevels = {'INFO': [], 'WARNING': [], 'ERROR': [], 'CRITICAL': []}
+    ignore_logs: LoggingLevels = {"INFO": [], "WARNING": [], "ERROR": [], "CRITICAL": []}

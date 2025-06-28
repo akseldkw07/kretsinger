@@ -27,7 +27,7 @@ def get_precision(data_range: list[float] | np.ndarray):
     p90 = np.percentile(data_range, 90)
 
     # Use max_abs_val of the percentile range to determine the overall scale
-    max_abs_val_in_percentile_range = max(abs(p10), abs(p90))
+    max_abs_val_in_percentile_range = max(abs(p10), abs(p90))  # type: ignore
 
     # Handle the trivial case where the range is essentially zero
     if np.isclose(max_abs_val_in_percentile_range, 0.0):
