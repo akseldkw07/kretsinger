@@ -52,8 +52,6 @@ _commit_and_push() {
 # Handle pull request creation or opening existing PR
 _handle_pull_request() {
   local push_output="$1"
-  echo "_handle_pull_request!!!!!!!!!!!"
-  echo "$push_output"
 
   if command -v gbw >/dev/null 2>&1; then
     echo "[gitpush] ✅ GitHub CLI found."
@@ -88,6 +86,8 @@ _fallback_pr_creation() {
   local branch="$1"
   local push_output="$2"
   local pr_url
+  echo "_fallback_pr_creation!!!!!!!!!!!"
+  echo "$push_output"
 
   echo "[gitpush] 🔍 Checking for PR creation URL..."
 
