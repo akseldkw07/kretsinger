@@ -7,7 +7,7 @@ repos:
     hooks:
       - id: prevent-main-push
         name: Prevent direct push to main
-        entry: zsh_scripts/prevent_main_push.zsh
+        entry: /Users/Akseldkw/coding/kretsinger/zsh_scripts/prevent_main_push.zsh
         language: script
         stages: [pre-commit]
   - repo: https://github.com/python/black
