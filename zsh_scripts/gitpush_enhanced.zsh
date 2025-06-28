@@ -78,6 +78,8 @@ ${summary}"
           echo "[gitpush] 🚀 Opening pull request in browser..."
           open "$pr_url"
         fi
+        echo "[gitpush] 🚀 Opening pull request in browser..."
+        open "$pr_url"
       fi
     else
       echo "[gitpush] ✅ Push complete. Pull request already exists."
