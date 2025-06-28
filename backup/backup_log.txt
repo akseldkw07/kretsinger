@@ -4,3 +4,4 @@ Transfer starting: 1 files
 sent 6142 bytes  received 42 bytes  2944761 bytes/sec
 total size is 6013  speedup is 0.97
 [2025-06-28 15:38:43] ✅ Backup complete.
+[2025-06-28 15:47:49] ℹ️ No changes detected in .zshrc. Early exit.
