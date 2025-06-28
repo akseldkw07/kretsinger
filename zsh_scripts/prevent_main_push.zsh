@@ -3,8 +3,11 @@
 # Get current branch
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
 
-# Block push if on main
-if [[ "$branch" == "main" ]]; then
-    echo "🚫 Push to 'main' is disabled. Use a pull request instead."
+# Get default branch (primary branch)
+default_branch=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
+
+# Block push if on the primary branch
+if [[ "$branch" == "$default_branch" ]]; then
+    echo "🚫 Push to '$default_branch' (primary branch) is disabled. Use a pull request instead."
     exit 1
 fi
