@@ -34,16 +34,33 @@ _commit_and_push() {
     local push_output pr_url
     # Check if gh CLI is installed
     if command -v gh >/dev/null 2>&1; then
-      # Use gh to push and open PR if needed
-      push_output=$(git push --force 2>&1 | tee /dev/tty)
-      if echo "$push_output" | grep -q "Create a pull request for"; then
-        pr_url=$(echo "$push_output" | grep -Eo 'https://github\\.com/[^ ]+')
-        if [[ -n "$pr_url" ]]; then
-          echo "[gitpush] 🚀 Opening pull request in browser..."
-          open "$pr_url"
+      # Push first
+      if git push --force; then
+        echo "[gitpush] ✅ Push complete."
+
+        # Check if PR already exists for this branch
+        current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
+        existing_pr=$(gh pr list --head "$current_branch" --json number --jq '.[0].number' 2>/dev/null)
+
+        if [[ -n "$existing_pr" ]]; then
+          echo "[gitpush] 📋 Pull request already exists (#$existing_pr)."
+          pr_url=$(gh pr view "$existing_pr" --json url --jq '.url' 2>/dev/null)
+          if [[ -n "$pr_url" ]]; then
+            echo "[gitpush] 🚀 Opening existing pull request in browser..."
+            open "$pr_url"
+          fi
+        else
+          echo "[gitpush] 🆕 Creating new pull request..."
+          pr_url=$(gh pr create --fill --web 2>/dev/null)
+          if [[ $? -eq 0 ]]; then
+            echo "[gitpush] 🚀 Pull request created and opened in browser."
+          else
+            echo "[gitpush] ❌ Failed to create pull request."
+          fi
         fi
       else
-        echo "[gitpush] ✅ Push complete. Pull request already exists."
+        echo "[gitpush] ❌ Push failed."
+        return 1
       fi
     else
       # Fallback: just push
