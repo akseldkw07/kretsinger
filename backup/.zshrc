@@ -121,6 +121,7 @@ export PY311_ENV="kret_311"
 export MM_PATH="~/micromamba/bin"
 export PY312_PATH="${MM_PATH}/kret_312/bin"
 export PY311_PATH="${MM_PATH}/kret_311/bin"
+
 # Source all .zsh files in ${KRET}/zsh_scripts
 # Skip files starting with _ or .
 find "${KRET}/zsh_scripts" -type f -name '*.zsh' | while read -r script; do
@@ -128,6 +129,8 @@ find "${KRET}/zsh_scripts" -type f -name '*.zsh' | while read -r script; do
   [[ "$filename" == _* || "$filename" == .* ]] && continue
   source "$script"
 done
+# Source non-git-tracked files in ${KRET}/vault
+source "${KRET}/vault/source_tokens.zsh" 2>/dev/null || echo "[vault] ⚠️ Failed to source source_tokens.zsh. File not found or error."
 
 # MICROMAMBA
 export MAMBA_ROOT_PREFIX=~/micromamba
