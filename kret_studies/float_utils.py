@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 
 def get_precision(data_range: list[float] | np.ndarray):
