@@ -1,10 +1,5 @@
 #!/bin/zsh
 
-# Check if GitHub CLI is installed
-has_gh_cli() {
-  command -v gh >/dev/null 2>&1
-}
-
 gitpush() {
   local commit_message="$1"
   git add .
@@ -61,28 +56,27 @@ ${summary}"
   # ✅ Commit and only push if commit succeeds
   if git commit -m "$full_message"; then
     local push_output pr_url
-    push_output=$(git push --force 2>&1 | tee /dev/tty)
-
-    # 🚀 Auto-open PR if it doesn't already exist
-    if echo "$push_output" | grep -q "Create a pull request for"; then
-      pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
-      if [[ -n "$pr_url" ]]; then
-        if has_gh_cli; then
-          # Try to create or update PR with gh CLI
-          echo "[gitpush] 🛠️  Using GitHub CLI to create or update PR with description..."
-          # Try to update existing PR, else create
-          if ! gh pr edit --body "$full_message" 2>/dev/null; then
-            gh pr create --fill --body "$full_message"
-          fi
-        else
+    # Check if gh CLI is installed
+    if command -v gh >/dev/null 2>&1; then
+      # Use gh to push and open PR if needed
+      push_output=$(git push --force 2>&1 | tee /dev/tty)
+      if echo "$push_output" | grep -q "Create a pull request for"; then
+        pr_url=$(echo "$push_output" | grep -Eo 'https://github\\.com/[^ ]+')
+        if [[ -n "$pr_url" ]]; then
           echo "[gitpush] 🚀 Opening pull request in browser..."
           open "$pr_url"
         fi
-        echo "[gitpush] 🚀 Opening pull request in browser..."
-        open "$pr_url"
+      else
+        echo "[gitpush] ✅ Push complete. Pull request already exists."
       fi
     else
-      echo "[gitpush] ✅ Push complete. Pull request already exists."
+      # Fallback: just push
+      if git push --force; then
+        echo "[gitpush] ✅ Push complete."
+      else
+        echo "[gitpush] ❌ Push failed."
+        return 1
+      fi
     fi
   else
     echo "[gitpush] ❌ Commit failed. Push aborted."
