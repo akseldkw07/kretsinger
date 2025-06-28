@@ -53,20 +53,23 @@ ${summary}"
   ((${#deleted[@]} > 0)) && print -P "%F{red}delete:%f ${deleted[*]}"
   echo
 
-  # ✅ Commit and push
-  git commit -m "$full_message"
+  # ✅ Commit and only push if commit succeeds
+  if git commit -m "$full_message"; then
+    local push_output pr_url
+    push_output=$(git push --force 2>&1 | tee /dev/tty)
 
-  local push_output pr_url
-  push_output=$(git push --force 2>&1 | tee /dev/tty)
-
-  # 🚀 Auto-open PR if it doesn't already exist
-  if echo "$push_output" | grep -q "Create a pull request for"; then
-    pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
-    if [[ -n "$pr_url" ]]; then
-      echo "[gitpush] 🚀 Opening pull request in browser..."
-      open "$pr_url"
+    # 🚀 Auto-open PR if it doesn't already exist
+    if echo "$push_output" | grep -q "Create a pull request for"; then
+      pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
+      if [[ -n "$pr_url" ]]; then
+        echo "[gitpush] 🚀 Opening pull request in browser..."
+        open "$pr_url"
+      fi
+    else
+      echo "[gitpush] ✅ Push complete. Pull request already exists."
     fi
   else
-    echo "[gitpush] ✅ Push complete. Pull request already exists."
+    echo "[gitpush] ❌ Commit failed. Push aborted."
+    return 1
   fi
 }
