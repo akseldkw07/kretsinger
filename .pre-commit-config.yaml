@@ -3,6 +3,13 @@ minimum_pre_commit_version: 3.0.0
 # on pre-commit hooks and configuration.
 exclude: \.(html|svg|ipynb)$
 repos:
+  - repo: local
+    hooks:
+      - id: prevent-main-push
+        name: Prevent direct push to main
+        entry: bash scripts/prevent_main_push.sh
+        language: script
+        stages: [push]
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:
