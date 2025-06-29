@@ -120,28 +120,42 @@ _fallback_pr_creation() {
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
 }
 
-# Try to focus existing Chrome tab with PR, fallback to not opening if fails
+# Try to focus existing Chrome tab with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
 
   if command -v osascript >/dev/null 2>&1; then
-    osascript -e "
+    local found_tab
+    found_tab=$(osascript -e "
       tell application \"Google Chrome\"
-        set theURL to \"$pr_url\"
-        repeat with theWindow in windows
-          repeat with theTab in tabs of theWindow
-            if URL of theTab contains \"github.com\" and URL of theTab contains \"pull\" then
-              set active tab index of theWindow to index of theTab
-              set index of theWindow to 1
-              activate
-              return
-            end if
+        try
+          set targetURL to \"$pr_url\"
+          repeat with theWindow in windows
+            repeat with theTab in tabs of theWindow
+              if URL of theTab is equal to targetURL then
+                set active tab index of theWindow to index of theTab
+                set index of theWindow to 1
+                activate
+                return \"found\"
+              end if
+            end repeat
           end repeat
-        end repeat
+          return \"not_found\"
+        on error
+          return \"error\"
+        end try
       end tell
-    " 2>/dev/null || echo "[gitpush] ℹ️  PR exists but couldn't focus existing tab."
+    " 2>/dev/null)
+
+    if [[ "$found_tab" == "found" ]]; then
+      echo "[gitpush] ✅ Focused existing Chrome tab with PR."
+    elif [[ "$found_tab" == "error" ]]; then
+      echo "[gitpush] ℹ️  Could not access Chrome tabs (permission issue)."
+    else
+      echo "[gitpush] ℹ️  No existing Chrome tab found for this PR."
+    fi
   else
-    echo "[gitpush] ℹ️  PR exists. URL logged above."
+    echo "[gitpush] ℹ️  PR exists. URL: $pr_url"
   fi
 }
 
