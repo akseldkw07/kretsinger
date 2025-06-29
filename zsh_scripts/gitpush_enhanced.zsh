@@ -123,6 +123,7 @@ _fallback_pr_creation() {
 # Try to focus existing Chrome tab with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
+  echo "TEST!!!!!!"
 
   if command -v osascript >/dev/null 2>&1; then
     # First check if we can access Chrome at all
