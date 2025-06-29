@@ -123,7 +123,7 @@ _fallback_pr_creation() {
 # Try to focus existing Chrome tab with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
-  echo "TEST!!!!!!"
+  echo "TEST1234!"
 
   if command -v osascript >/dev/null 2>&1; then
     # First check if we can access Chrome at all
@@ -139,17 +139,19 @@ _focus_existing_pr_tab() {
         try
           if not (exists window 1) then return \"no_windows\"
           set targetURL to \"$pr_url\"
+          set winIdx to 1
           repeat with theWindow in windows
-            set tabIndex to 1
+            set tabIdx to 1
             repeat with theTab in tabs of theWindow
               if URL of theTab is equal to targetURL then
-                set active tab index of theWindow to tabIndex
-                set visible of theWindow to true
-                activate theWindow
+                set active tab index of theWindow to tabIdx
+                set index of theWindow to 1
+                activate
                 return \"found\"
               end if
-              set tabIndex to tabIndex + 1
+              set tabIdx to tabIdx + 1
             end repeat
+            set winIdx to winIdx + 1
           end repeat
           return \"not_found\"
         on error errMsg
