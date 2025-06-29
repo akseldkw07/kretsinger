@@ -86,8 +86,6 @@ _fallback_pr_creation() {
   local branch="$1"
   local push_output="$2"
   local pr_url
-  echo "_fallback_pr_creation!!!!!!!!!!!"
-  echo "$push_output"
 
   echo "[gitpush] 🔍 Checking for PR creation URL..."
 
@@ -95,8 +93,7 @@ _fallback_pr_creation() {
   if echo "$push_output" | grep -q "github.com.*pull"; then
     pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^/]+/[^/]+/pull/[0-9]+')
     if [[ -n "$pr_url" ]]; then
-      echo "[gitpush] � Found existing pull request URL: $pr_url"
-      echo "[gitpush] 🔗 PR URL: $pr_url"
+      echo "[gitpush] 🔗 Found existing pull request URL: $pr_url"
       _focus_existing_pr_tab "$pr_url"
       return
     fi
@@ -112,46 +109,70 @@ _fallback_pr_creation() {
     fi
   fi
 
-  # If no PR link found, try to find an existing PR for this branch using GitHub web UI
-  if [[ -n "$branch" ]]; then
-    # Get repo info from git remote
-    local remote_url repo_path pr_list_url
-    remote_url=$(git config --get remote.origin.url)
-    # Handle both git@github.com: and https://github.com/ URLs
-    if [[ "$remote_url" =~ github.com[:/](.+)\.git ]]; then
-      repo_path=${BASH_REMATCH[1]}
-      pr_list_url="https://github.com/$repo_path/pulls?q=is%3Apr+is%3Aopen+head%3A$branch"
-      echo "[gitpush] 🔍 Opening PR list for branch in browser: $pr_list_url"
-      open "$pr_list_url"
-      return
-    fi
+  # Try to find existing PR using GitHub API
+  echo "[gitpush] 🔍 Checking for existing PR via GitHub API..."
+  if pr_url=$(get_pr_url); then
+    echo "[gitpush] 🔗 Found existing PR via API: $pr_url"
+    _focus_existing_pr_tab "$pr_url"
+    return
   fi
 
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
 }
 
-# Try to focus existing Chrome tab with PR, fallback to not opening if fails
+# Try to focus existing Chrome tab with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
 
   if command -v osascript >/dev/null 2>&1; then
-    osascript -e "
+    # First check if we can access Chrome at all
+    if ! osascript -e 'tell application "Google Chrome" to get name' &>/dev/null; then
+      echo "[gitpush] ℹ️  Chrome access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+      return
+    fi
+
+    local found_tab
+    found_tab=$(osascript -e "
       tell application \"Google Chrome\"
-        set theURL to \"$pr_url\"
-        repeat with theWindow in windows
-          repeat with theTab in tabs of theWindow
-            if URL of theTab contains \"github.com\" and URL of theTab contains \"pull\" then
-              set active tab index of theWindow to index of theTab
-              set index of theWindow to 1
-              activate
-              return
-            end if
+        try
+          if not (exists window 1) then return \"no_windows\"
+          set targetURL to \"$pr_url\"
+          set windowIndex to 1
+          repeat with theWindow in windows
+            set tabIndex to 1
+            repeat with theTab in tabs of theWindow
+              if URL of theTab is equal to targetURL then
+                set active tab index of theWindow to tabIndex
+                set index of theWindow to 1
+                activate
+                return \"found\"
+              end if
+              set tabIndex to tabIndex + 1
+            end repeat
+            set windowIndex to windowIndex + 1
           end repeat
-        end repeat
+          return \"not_found\"
+        on error errMsg
+          return \"error: \" & errMsg
+        end try
       end tell
-    " 2>/dev/null || echo "[gitpush] ℹ️  PR exists but couldn't focus existing tab."
+    " 2>/dev/null)
+
+    if [[ "$found_tab" == "found" ]]; then
+      echo "[gitpush] ✅ Focused existing Chrome tab with PR."
+    elif [[ "$found_tab" == "no_windows" ]]; then
+      echo "[gitpush] ℹ️  Chrome is running but has no windows open."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    elif [[ "$found_tab" =~ ^error: ]]; then
+      echo "[gitpush] ℹ️  Chrome access error: ${found_tab#error: }"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    else
+      echo "[gitpush] ℹ️  No existing Chrome tab found for this PR."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    fi
   else
-    echo "[gitpush] ℹ️  PR exists. URL logged above."
+    echo "[gitpush] ℹ️  AppleScript not available. PR URL: $pr_url"
   fi
 }
 
