@@ -19,7 +19,6 @@ get_pr_url() {
 
     # Fetch all open PRs and filter locally for the current branch using Python for robust JSON handling
     api_url="https://api.github.com/repos/$owner/$repo/pulls?state=open&per_page=100"
-    echo "[DEBUG] API URL: $api_url"
     pr_url=$(
         python3 <<END
 import os
