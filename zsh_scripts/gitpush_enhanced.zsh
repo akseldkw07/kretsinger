@@ -53,7 +53,7 @@ _commit_and_push() {
 _handle_pull_request() {
   local push_output="$1"
 
-  if command -v gbw >/dev/null 2>&1; then
+  if command -v gh >/dev/null 2>&1; then
     echo "[gitpush] ✅ GitHub CLI found."
     local current_branch existing_pr pr_url
     current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
@@ -86,8 +86,6 @@ _fallback_pr_creation() {
   local branch="$1"
   local push_output="$2"
   local pr_url
-  echo "_fallback_pr_creation!!!!!!!!!!!"
-  echo "$push_output"
 
   echo "[gitpush] 🔍 Checking for PR creation URL..."
 
@@ -95,8 +93,7 @@ _fallback_pr_creation() {
   if echo "$push_output" | grep -q "github.com.*pull"; then
     pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^/]+/[^/]+/pull/[0-9]+')
     if [[ -n "$pr_url" ]]; then
-      echo "[gitpush] � Found existing pull request URL: $pr_url"
-      echo "[gitpush] 🔗 PR URL: $pr_url"
+      echo "[gitpush] 🔗 Found existing pull request URL: $pr_url"
       _focus_existing_pr_tab "$pr_url"
       return
     fi
@@ -112,19 +109,12 @@ _fallback_pr_creation() {
     fi
   fi
 
-  # If no PR link found, try to find an existing PR for this branch using GitHub web UI
-  if [[ -n "$branch" ]]; then
-    # Get repo info from git remote
-    local remote_url repo_path pr_list_url
-    remote_url=$(git config --get remote.origin.url)
-    # Handle both git@github.com: and https://github.com/ URLs
-    if [[ "$remote_url" =~ github.com[:/](.+)\.git ]]; then
-      repo_path=${BASH_REMATCH[1]}
-      pr_list_url="https://github.com/$repo_path/pulls?q=is%3Apr+is%3Aopen+head%3A$branch"
-      echo "[gitpush] 🔍 Opening PR list for branch in browser: $pr_list_url"
-      open "$pr_list_url"
-      return
-    fi
+  # Try to find existing PR using GitHub API
+  echo "[gitpush] 🔍 Checking for existing PR via GitHub API..."
+  if pr_url=$(get_pr_url); then
+    echo "[gitpush] 🔗 Found existing PR via API: $pr_url"
+    _focus_existing_pr_tab "$pr_url"
+    return
   fi
 
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
