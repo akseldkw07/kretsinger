@@ -143,8 +143,8 @@ _focus_existing_pr_tab() {
             repeat with theTab in tabs of theWindow
               if URL of theTab is equal to targetURL then
                 set active tab index of theWindow to tabIndex
-                set index of theWindow to 1
-                activate
+                set visible of theWindow to true
+                activate theWindow
                 return \"found\"
               end if
               set tabIndex to tabIndex + 1
