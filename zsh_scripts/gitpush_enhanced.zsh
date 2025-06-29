@@ -138,19 +138,19 @@ _focus_existing_pr_tab() {
         try
           if not (exists window 1) then return \"no_windows\"
           set targetURL to \"$pr_url\"
-          set winIdx to 1
+          set windowIndex to 1
           repeat with theWindow in windows
-            set tabIdx to 1
+            set tabIndex to 1
             repeat with theTab in tabs of theWindow
               if URL of theTab is equal to targetURL then
-                set active tab index of theWindow to tabIdx
+                set active tab index of theWindow to tabIndex
                 set index of theWindow to 1
                 activate
                 return \"found\"
               end if
-              set tabIdx to tabIdx + 1
+              set tabIndex to tabIndex + 1
             end repeat
-            set winIdx to winIdx + 1
+            set windowIndex to windowIndex + 1
           end repeat
           return \"not_found\"
         on error errMsg
