@@ -125,10 +125,18 @@ _focus_existing_pr_tab() {
   local pr_url="$1"
 
   if command -v osascript >/dev/null 2>&1; then
+    # First check if we can access Chrome at all
+    if ! osascript -e 'tell application "Google Chrome" to get name' &>/dev/null; then
+      echo "[gitpush] ℹ️  Chrome access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+      return
+    fi
+
     local found_tab
     found_tab=$(osascript -e "
       tell application \"Google Chrome\"
         try
+          if not (exists window 1) then return \"no_windows\"
           set targetURL to \"$pr_url\"
           repeat with theWindow in windows
             repeat with theTab in tabs of theWindow
@@ -141,21 +149,26 @@ _focus_existing_pr_tab() {
             end repeat
           end repeat
           return \"not_found\"
-        on error
-          return \"error\"
+        on error errMsg
+          return \"error: \" & errMsg
         end try
       end tell
     " 2>/dev/null)
 
     if [[ "$found_tab" == "found" ]]; then
       echo "[gitpush] ✅ Focused existing Chrome tab with PR."
-    elif [[ "$found_tab" == "error" ]]; then
-      echo "[gitpush] ℹ️  Could not access Chrome tabs (permission issue)."
+    elif [[ "$found_tab" == "no_windows" ]]; then
+      echo "[gitpush] ℹ️  Chrome is running but has no windows open."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    elif [[ "$found_tab" =~ ^error: ]]; then
+      echo "[gitpush] ℹ️  Chrome access error: ${found_tab#error: }"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
     else
       echo "[gitpush] ℹ️  No existing Chrome tab found for this PR."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
     fi
   else
-    echo "[gitpush] ℹ️  PR exists. URL: $pr_url"
+    echo "[gitpush] ℹ️  AppleScript not available. PR URL: $pr_url"
   fi
 }
 
