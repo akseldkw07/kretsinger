@@ -53,7 +53,7 @@ _commit_and_push() {
 _handle_pull_request() {
   local push_output="$1"
 
-  if command -v gbw >/dev/null 2>&1; then
+  if command -v gbww >/dev/null 2>&1; then
     echo "[gitpush] ✅ GitHub CLI found."
     local current_branch existing_pr pr_url
     current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
