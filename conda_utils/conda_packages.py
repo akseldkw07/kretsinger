@@ -22,10 +22,12 @@ class CondaUtils:
         "pre-commit",
         "black",
         "flake8",
+        "conda-tree",
     ]
     CONDA_PACKAGES_FINANCE = [
         "yfinance",
         "pandas-datareader",
+        "pmdarima",  # timeseries
     ]
     CONDA_PACKAGES_VISUALIZATION = [
         "plotly",

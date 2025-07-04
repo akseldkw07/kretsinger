@@ -118,9 +118,9 @@ source $ZSH/oh-my-zsh.sh
 export KRET='/Users/Akseldkw/coding/kretsinger'
 export PY312_ENV="kret_312"
 export PY311_ENV="kret_311"
-export MM_PATH="~/micromamba/bin"
-export PY312_PATH="${MM_PATH}/kret_312/bin"
-export PY311_PATH="${MM_PATH}/kret_311/bin"
+export MM_PATH="~/micromamba/envs"
+export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
+export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
 
 # Source all .zsh files in ${KRET}/zsh_scripts
 # Skip files starting with _ or .

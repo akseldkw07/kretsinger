@@ -14,6 +14,9 @@ import seaborn as sns
 import io
 import requests
 
+# region market data
+import yfinance as yf
+
 # statsmodels and scipy
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
