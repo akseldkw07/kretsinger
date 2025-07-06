@@ -1,45 +1,21 @@
 from __future__ import annotations
 
 import json
-import datetime as dt
 import inspect
 import typing as t
-from types import GenericAlias
-import numpy as np
-import pandas as pd
-import pytz
-from IPython.display import display
-from IPython.display import HTML
-from matplotlib.colors import Colormap
-from matplotlib.figure import Figure
-from matplotlib.figure import SubFigure
-from matplotlib.typing import ColorType
-from plotly.basedatatypes import BaseTraceType
 from kret_studies import kret_gpt
-import datetime as dt
 import inspect
 import typing as t
-from types import GenericAlias
 
-import numpy as np
-import pandas as pd
-import pytz
-from IPython.display import display
-from IPython.display import HTML
-from matplotlib.colors import Colormap
-from matplotlib.figure import Figure
-from matplotlib.figure import SubFigure
-from matplotlib.typing import ColorType
-from plotly.basedatatypes import BaseTraceType
+import inspect
+import importlib.util
+import json
 
 
 def func_to_typed_hint_llm(func: t.Callable, include_ret: bool = False) -> t.Any:
     """
     Use an LLM to generate a type-hint dictionary for a function signature, using the logic and examples from func_to_typed_dict.
     """
-    import inspect
-    import importlib.util
-    import json
 
     func_src = inspect.getsource(func)
     # Load prompt examples from Python file
@@ -213,7 +189,7 @@ def func_to_typed_dict(func: t.Callable, include_ret: bool = False):
     import re
 
     sig = inspect.signature(func)
-    name = func.__name__
+    func.__name__
     doc = func.__doc__ or ""
 
     # Parse docstring for :Parameters: section

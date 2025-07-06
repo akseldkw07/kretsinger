@@ -10,6 +10,12 @@ repos:
         entry: bash -c 'source /Users/Akseldkw/coding/kretsinger/zsh_scripts/prevent_main_push.zsh && prevent_main_push'
         language: system
         stages: [pre-commit]
+  - repo: https://github.com/myint/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        name: autoflake (remove unused imports only)
+        args: [--remove-all-unused-imports]
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:
