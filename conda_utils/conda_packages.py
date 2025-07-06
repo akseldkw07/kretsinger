@@ -70,6 +70,13 @@ class CondaUtils:
         "catboost",
         # "fbprophet",  # timeseries forecasting, facebook NOTE doesn't exist
     ]
+    CONDA_PACKAGES_LLM_QUERY = [
+        # REQUIRE GPU
+        "transformers",  # for LLMs
+        "sentencepiece",
+        "accelerate",
+        "optimum",
+    ]
     CONDA_PACKAGES_LINALG_OPTIMIZATION = [
         "pulp",  # optimization
         "sympy",

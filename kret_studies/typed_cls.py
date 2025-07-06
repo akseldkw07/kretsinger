@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing as t
 from collections.abc import Sequence
 from typing import Any, Literal
-
+from requests import Session
 import matplotlib.colors as mcolors
 
 

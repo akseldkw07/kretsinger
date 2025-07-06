@@ -1,4 +1,5 @@
 from __future__ import annotations
+from .source_env_vars import source_zsh_env
 
 import os
 import re
@@ -37,3 +38,7 @@ from sklearn.metrics import mean_squared_error
 
 # endregion
 sns.set_theme()
+
+# source env variables
+
+source_zsh_env()
