@@ -22,10 +22,12 @@ class CondaUtils:
         "pre-commit",
         "black",
         "flake8",
+        "conda-tree",
     ]
     CONDA_PACKAGES_FINANCE = [
         "yfinance",
         "pandas-datareader",
+        "pmdarima",  # timeseries
     ]
     CONDA_PACKAGES_VISUALIZATION = [
         "plotly",
@@ -67,6 +69,13 @@ class CondaUtils:
         "lightgbm",
         "catboost",
         # "fbprophet",  # timeseries forecasting, facebook NOTE doesn't exist
+    ]
+    CONDA_PACKAGES_LLM_QUERY = [
+        # REQUIRE GPU
+        "transformers",  # for LLMs
+        "sentencepiece",
+        "accelerate",
+        "optimum",
     ]
     CONDA_PACKAGES_LINALG_OPTIMIZATION = [
         "pulp",  # optimization

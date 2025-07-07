@@ -24,6 +24,7 @@ wheels/
 .env/
 venv/
 env/
+.env
 # virtualenv environments (usually venv, .venv, etc.)
 # but could be custom names
 # Add your specific virtual environment names here if they aren't caught by the above.
@@ -90,3 +91,4 @@ static_collected/
 
 scratch/
 vault/
+data/

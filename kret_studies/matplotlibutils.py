@@ -4,15 +4,13 @@ import warnings
 import typing as t
 
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from .typed_cls import *
+from .low_prio.typed_cls import *
 from .numpy_utils import SingleReturnArray
 import pandas as pd
 import seaborn as sns
-from IPython.display import display
 from kret_studies.float_utils import get_precision
 
 
@@ -159,4 +157,4 @@ def heatmap_df(df: pd.DataFrame, **kwargs: t.Unpack[Sns_Heatmap_TypedDict]):
     kwargs_compute = kwargs_default | computed_params
     kwargs = {**kwargs_compute, **kwargs}
     print(kwargs)
-    ret = sns.heatmap(df, **kwargs)
+    sns.heatmap(df, **kwargs)

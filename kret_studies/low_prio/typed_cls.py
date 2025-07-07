@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing as t
 from collections.abc import Sequence
 from typing import Any, Literal
-
+from requests import Session
 import matplotlib.colors as mcolors
 
 
@@ -45,3 +45,33 @@ class Heatmap_Params_TD(t.TypedDict, total=False):
     vmax: float
     cmap: str | mcolors.LinearSegmentedColormap
     fmt: str
+
+
+INTERVAL_LITERAL = t.Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
+PERIOD_LITERAL = t.Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+
+
+class Download_TypedDictLite(t.TypedDict, total=False):
+    actions: bool
+    threads: bool | int
+    ignore_tz: bool | None
+    group_by: t.Literal["column", "ticker"]
+    auto_adjust: bool | None
+    back_adjust: t.Any
+    repair: bool
+    keepna: bool
+    progress: t.Any
+    interval: INTERVAL_LITERAL
+    period: PERIOD_LITERAL
+    prepost: bool
+    proxy: t.Any
+    rounding: bool
+    timeout: None | float
+    session: None | Session
+    multi_level_index: bool
+
+
+class Download_TypedDict(Download_TypedDictLite):
+    tickers: str | list[str]
+    start: str | None
+    end: str | None

@@ -138,11 +138,20 @@ _focus_existing_pr_tab() {
         try
           if not (exists window 1) then return \"no_windows\"
           set targetURL to \"$pr_url\"
+          set baseTargetURL to targetURL
+          if baseTargetURL contains \"?\" then
+            set baseTargetURL to text 1 thru ((offset of \"?\" in baseTargetURL) - 1) of baseTargetURL
+          end if
           set winIdx to 1
           repeat with theWindow in windows
             set tabIdx to 1
             repeat with theTab in tabs of theWindow
-              if URL of theTab is equal to targetURL then
+              set tabURL to URL of theTab
+              set baseTabURL to tabURL
+              if baseTabURL contains \"?\" then
+                set baseTabURL to text 1 thru ((offset of \"?\" in baseTabURL) - 1) of baseTabURL
+              end if
+              if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
                 set active tab index of theWindow to tabIdx
                 set index of theWindow to 1
                 activate
@@ -160,7 +169,7 @@ _focus_existing_pr_tab() {
     " 2>/dev/null)
 
     if [[ "$found_tab" == "found" ]]; then
-      echo "[gitpush] ✅ Focused existing Chrome tab with PR."
+      echo "[gitpush] ✅ Focused existing Chrome tab with PR (fuzzy match)."
     elif [[ "$found_tab" == "no_windows" ]]; then
       echo "[gitpush] ℹ️  Chrome is running but has no windows open."
       echo "[gitpush] ℹ️  PR URL: $pr_url"

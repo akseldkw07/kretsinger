@@ -10,6 +10,12 @@ repos:
         entry: bash -c 'source /Users/Akseldkw/coding/kretsinger/zsh_scripts/prevent_main_push.zsh && prevent_main_push'
         language: system
         stages: [pre-commit]
+  - repo: https://github.com/myint/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        name: autoflake (remove unused imports only)
+        args: [--remove-all-unused-imports, --exclude=kret_studies/notebook/notebook_imports.py, --in-place]
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:
@@ -26,7 +32,7 @@ repos:
       - id: name-tests-test
       - id: requirements-txt-fixer
       - id: check-added-large-files
-        args: [--maxkb=100]
+        args: [--maxkb=10000]
       - id: check-ast
       - id: check-json
       - id: check-merge-conflict
@@ -52,10 +58,10 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py311-plus]
-  - repo: https://github.com/hhatto/autopep8
-    rev: v2.3.2
-    hooks:
-      - id: autopep8
+  # - repo: https://github.com/hhatto/autopep8
+  #   rev: v2.3.2
+  #   hooks:
+  #     - id: autopep8
   - repo: https://github.com/WGUNDERWOOD/tex-fmt
     rev: v0.5.4
     hooks:

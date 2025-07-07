@@ -13,7 +13,6 @@ aggressive = 1
 remove-all-unused-imports = true
 remove-unused-variables = true
 ignore-init-module-imports = true
-expand-star-imports = true
 in-place = true
 exclude = ["__init__.py"]
 

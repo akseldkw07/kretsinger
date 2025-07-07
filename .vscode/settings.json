@@ -1,0 +1,8 @@
+{
+  "python-envs.pythonProjects": [
+    {
+      "envManager": "ms-python.python:system",
+      "path": ""
+    }
+  ]
+}
