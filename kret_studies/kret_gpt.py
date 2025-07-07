@@ -1,12 +1,9 @@
-from typing import Optional
 import socket
-from transformers.modeling_utils import PreTrainedModel
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 import os
 import torch
 import requests
-from transformers import AutoTokenizer, AutoModelForCausalLM, tokenization_utils_base
-from kret_studies.type_checking import assert_type
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import AutoModelForCausalLM
 
 # Use the actual class used by transformers for type checking
@@ -28,6 +25,8 @@ LOCAL_MODEL_NAME = "justinthelaw/Hermes-2-Pro-Mistral-7B-4bit-32g-GPTQ" if HAS_C
 REMOTE_MODEL_NAME = "microsoft/mai-ds-r1:free"
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")  # Set this in your environment
 
+GEMINI_MODEL_NAME = "gemini-2.5-flash"  # Default Gemini model for text generation
+GEMINI_KEY = os.getenv("GEMINI_KEY")  # Set this in your environment
 
 # === LOCAL MODEL LOADING (LAZY, TYPE-SAFE) ===
 
@@ -79,7 +78,7 @@ def query_local(prompt: str, max_new_tokens: int = 256) -> str:
 
 
 # === REMOTE QUERY ===
-def query_remote(prompt: str) -> str:
+def query_openrouter(prompt: str) -> str:
     if not OPENROUTER_API_KEY:
         raise ValueError("Missing OpenRouter API key. Set OPENROUTER_API_KEY in your environment.")
     headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
@@ -87,6 +86,40 @@ def query_remote(prompt: str) -> str:
     response = requests.post("https://openrouter.ai/api/v1/chat/completions", json=data, headers=headers)
     response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"]
+
+
+# === REMOTE QUERY (Google AI - Gemini) ===
+def query_gemini(prompt: str) -> str:
+    """
+    Queries the Google AI (Gemini) API.
+    """
+    global GEMINI_KEY  # Ensure we can access the global GEMINI_KEY
+    GEMINI_KEY = os.getenv("GEMINI_KEY")  # Re-fetch just in case it was set after script start
+
+    if not GEMINI_KEY:
+        raise ValueError("Missing GEMINI_KEY. Set GEMINI_KEY in your environment.")
+
+    # Construct the API URL using the model name and API key
+    api_url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL_NAME}:generateContent?key={GEMINI_KEY}"
+    )
+
+    headers = {"Content-Type": "application/json"}
+    payload = {"contents": [{"role": "user", "parts": [{"text": prompt}]}]}
+
+    response = requests.post(api_url, json=payload, headers=headers)
+    response.raise_for_status()  # Raise an exception for HTTP errors (4xx or 5xx)
+
+    # Parse the JSON response and extract the content
+    result = response.json()
+    if result and "candidates" in result and result["candidates"]:
+        first_candidate = result["candidates"][0]
+        if "content" in first_candidate and "parts" in first_candidate["content"]:
+            first_part = first_candidate["content"]["parts"][0]
+            if "text" in first_part:
+                return first_part["text"]
+
+    raise ValueError(f"Unexpected response format from Gemini API: {result}")
 
 
 # === UNIVERSAL INTERFACE ===
@@ -101,11 +134,17 @@ def has_internet(host="8.8.8.8", port=53, timeout=2):
         return False
 
 
-def query_llm(prompt: str, use_local_override: bool | None = None) -> str:
+def query_llm(prompt: str, use_local_override: bool | None = None, use_gemini=True) -> str:
     use_local = use_local_override if use_local_override is not None else not has_internet()
     global OPENROUTER_API_KEY
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
     if use_local:
+        print("Using local model...")
         return query_local(prompt)
     else:
-        return query_remote(prompt)
+        if use_gemini:
+            print("Using Gemini API...")
+            return query_gemini(prompt)
+        else:
+            print("Using OpenRouter API...")
+            return query_openrouter(prompt)

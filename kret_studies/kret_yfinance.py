@@ -6,6 +6,7 @@ import typing as t
 from kret_studies.typed_cls import *
 import yfinance as yf
 import logging
+from .date_utils import get_start_end_dates
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +34,29 @@ def _get_args_hash(args):
     return hashlib.sha256(args_json.encode()).hexdigest()
 
 
-def download(ticker: str, start: str, **kwargs: t.Unpack[Download_TypedDict]):
+def download(
+    ticker: str | list[str],
+    start: str | None = None,
+    end: str | None = None,
+    **kwargs_lite: t.Unpack[Download_TypedDictLite],
+):
     """
     Wrapper for yfinance multi.download with local caching.
     Checks if data for the given arguments exists locally (using a json index),
     loads it if so, otherwise queries remote, saves, and updates the index.
     """
+    start_or_end = "start" is not None or "end" is not None
+    # "start" is not None and "end" is not None
+    if "period" in kwargs_lite and start_or_end:
+        raise ValueError("If 'period' is passed, 'start' and 'end' must not be provided.")
+
+    if "period" in kwargs_lite:
+        period = kwargs_lite.pop("period")
+        start, end = get_start_end_dates(period)
+    kwargs_default: Download_TypedDictLite = {"prepost": True, "repair": True, "keepna": True}
+    # Merge defaults with provided kwargs
+    kwargs: Download_TypedDictLite = {**kwargs_default, **kwargs_lite}
+
     os.makedirs(DATA_DIR, exist_ok=True)
     args = _json_friendly(kwargs)
     args_hash = _get_args_hash(args)

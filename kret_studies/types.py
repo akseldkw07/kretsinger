@@ -1,22 +1,53 @@
 from __future__ import annotations
-
-import json
+import re
 import inspect
 import typing as t
 from kret_studies import kret_gpt
-import inspect
-import typing as t
 
-import inspect
 import importlib.util
-import json
+
+
+def parse_llm_typed_dict_output(result: str | dict) -> dict | None:
+    """
+    Parse LLM output (possibly in a code block, possibly a dict literal or JSON) into a Python dict.
+    Returns None if parsing fails.
+    """
+    import ast
+    import json
+
+    if isinstance(result, dict):
+        return result
+    code = result.strip()
+    # Remove code block markers if present (```python ... ``` or ``` ... ```)
+    if code.startswith("```"):
+        code = code[3:]
+        if code.lstrip().startswith("python"):
+            code = code.lstrip()[6:]
+        code = code.strip()
+        if code.endswith("```"):
+            code = code[:-3].strip()
+    # Try to find the first dict-like structure
+    try:
+        start = code.find("{")
+        end = code.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            code = code[start: end + 1]
+        # Use ast.literal_eval for safety
+        return ast.literal_eval(code)
+    except Exception:
+        # Try to parse as JSON
+        try:
+            return json.loads(code)
+        except Exception:
+            print("[parse_llm_typed_dict_output] Could not parse LLM output as dict. Raw output:")
+            print(result)
+            return None
 
 
 def func_to_typed_hint_llm(func: t.Callable, include_ret: bool = False) -> t.Any:
     """
     Use an LLM to generate a type-hint dictionary for a function signature, using the logic and examples from func_to_typed_dict.
     """
-
     func_src = inspect.getsource(func)
     # Load prompt examples from Python file
     try:
@@ -47,12 +78,7 @@ def func_to_typed_hint_llm(func: t.Callable, include_ret: bool = False) -> t.Any
     )
     # Query the LLM
     result = kret_gpt.query_llm(prompt)
-    # Try to parse as JSON, fallback to string
-    try:
-        result_dict = json.loads(result)
-    except Exception:
-        result_dict = None
-    # Print using shared printer
+    result_dict = parse_llm_typed_dict_output(result)
     print_typed_dict(func, result_dict, include_ret=include_ret)
     return result_dict if result_dict is not None else result
 
@@ -73,8 +99,6 @@ import_replace_dict = {
 
 # --- Shared import collector ---
 def collect_imports(type_str: str, extra_imports: set):
-    import re
-
     known_type_map = {
         "Session": "from requests import Session",
     }
@@ -185,8 +209,6 @@ def print_typed_dict(func: t.Callable, typed_dict: dict | None, include_ret: boo
 
 def func_to_typed_dict(func: t.Callable, include_ret: bool = False):
     """Convert function signature / annotations to a typed dict of accepted types."""
-
-    import re
 
     sig = inspect.signature(func)
     func.__name__
@@ -306,9 +328,12 @@ def func_to_typed_dict(func: t.Callable, include_ret: bool = False):
                     str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
                 for to_replace, replacement in import_replace_dict.items():
                     str_argtype = str_argtype.replace(to_replace, replacement)
+        # Only add None if not already present and param.default is None
         if param.default is None and "None" not in str_argtype:
             str_argtype = f"{str_argtype} | None"
         collect_imports(str_argtype, extra_imports)
+        # Store the resolved type for printing
+        param_types_from_doc[param_name] = str_argtype
     # Return type
     if include_ret and sig.return_annotation is not inspect.Parameter.empty:
         return_type = sig.return_annotation
@@ -321,7 +346,31 @@ def func_to_typed_dict(func: t.Callable, include_ret: bool = False):
 
     # Print import statements if needed
 
-    print_typed_dict(func, None, include_ret=include_ret)
+    # Print using the resolved types (prefer docstring, fallback to annotation)
+    def print_with_resolved_types():
+        name = func.__name__
+        for imp in sorted(extra_imports):
+            print(imp)
+        print(f"class {name.capitalize()}_TypedDict(t.TypedDict, total=False):")
+        for param_name, param in sig.parameters.items():
+            if param.kind in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.VAR_KEYWORD,
+                inspect.Parameter.VAR_POSITIONAL,
+            ):
+                continue
+            str_argtype = param_types_from_doc.get(param_name, "t.Any")
+            print(f"    {param_name}: {str_argtype}")
+        if include_ret and sig.return_annotation is not inspect.Parameter.empty:
+            return_type = sig.return_annotation
+            str_return_type = str(return_type)
+            if "<class" in str_return_type:
+                str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
+            for to_replace, replacement in import_replace_dict.items():
+                str_return_type = str_return_type.replace(to_replace, replacement)
+            print(f"    # return: {str_return_type}")
+
+    print_with_resolved_types()
     return sig.parameters
 
 

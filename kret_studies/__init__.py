@@ -12,3 +12,4 @@ import kret_studies.float_utils as uks_floats
 import kret_studies.statsmodels as uks_stats
 import kret_studies.kret_yfinance as kret_yf
 import kret_studies.kret_gpt as kret_gpt
+import kret_studies.date_utils as uks_date
