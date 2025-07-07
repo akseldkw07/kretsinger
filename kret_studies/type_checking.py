@@ -1,5 +1,5 @@
 import typing as t
-from typing import TypeVar, Type, cast
+from typing import TypeVar, cast
 
 T = TypeVar("T")
 

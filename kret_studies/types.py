@@ -31,7 +31,7 @@ def parse_llm_typed_dict_output(result: str | dict) -> dict | None:
         start = code.find("{")
         end = code.rfind("}")
         if start != -1 and end != -1 and end > start:
-            code = code[start: end + 1]
+            code = code[start : end + 1]
         # Use ast.literal_eval for safety
         return ast.literal_eval(code)
     except Exception:
