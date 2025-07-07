@@ -1,65 +1,7 @@
 Transfer starting: 1 files
 .zshrc
 
-sent 6330 bytes  received 42 bytes  5792727 bytes/sec
-total size is 6201  speedup is 0.97
-[2025-06-28 22:37:02] ✅ Backup complete.
-[2025-06-28 22:39:43] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-28 22:41:47] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-28 22:43:29] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-28 22:47:40] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-28 22:48:50] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-28 23:03:53] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-28 23:05:08] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 00:15:46] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 14:15:56] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 18:05:11] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 18:05:11] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:10:57] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:15:13] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:15:13] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:15:19] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:16:03] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:16:03] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:16:03] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 20:54:39] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-06-30 22:09:22] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-01 09:10:57] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-01 09:10:57] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-01 09:11:11] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-01 09:23:38] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-01 09:44:56] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-01 13:39:39] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-02 12:30:54] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-02 15:27:35] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-02 15:27:35] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-02 20:21:42] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 08:54:22] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 08:54:22] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 08:59:40] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 08:59:40] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 08:59:40] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:00:30] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:04:48] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:08:24] ✅ .zshrc updated and backed up.
-[2025-07-04 09:08:24] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:11:19] ✅ .zshrc updated and backed up.
-[2025-07-04 09:11:19] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:11:24] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:11:28] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:11:53] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:16:03] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:18:21] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:18:36] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:18:36] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:21:42] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:41:06] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:47:37] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 09:47:37] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 10:34:38] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 10:34:38] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 10:36:38] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 10:37:13] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 11:48:47] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-04 10:55:53] ℹ️ No changes detected in .zshrc. Early exit.
-[2025-07-06 23:04:35] ℹ️ No changes detected in .zshrc. Early exit.
+sent 6353 bytes  received 42 bytes  5813636 bytes/sec
+total size is 6224  speedup is 0.97
+[2025-07-06 23:05:20] ✅ Backup complete.
+[2025-07-06 23:05:21] ℹ️ No changes detected in .zshrc. Early exit.
