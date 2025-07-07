@@ -45,8 +45,8 @@ def download(
     Checks if data for the given arguments exists locally (using a json index),
     loads it if so, otherwise queries remote, saves, and updates the index.
     """
-    start_or_end = "start" is not None or "end" is not None
-    # "start" is not None and "end" is not None
+    start_or_end = start is not None or end is not None
+    start is not None and end is not None
     if "period" in kwargs_lite and start_or_end:
         raise ValueError("If 'period' is passed, 'start' and 'end' must not be provided.")
 
