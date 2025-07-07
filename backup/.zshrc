@@ -121,6 +121,7 @@ export PY311_ENV="kret_311"
 export MM_PATH="~/micromamba/envs"
 export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
+export NB_LOGFILE="${KRET}/data/nb_log.log"
 
 # Source all .zsh files in ${KRET}/zsh_scripts
 # Skip files starting with _ or .
@@ -156,7 +157,9 @@ col() {
   sod /Users/Akseldkw/Desktop/Columbia/
   ld
 }
-
+tailkret() {
+  less +F "$NB_LOGFILE"
+}
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!
 export MAMBA_EXE='/usr/local/bin/micromamba'
