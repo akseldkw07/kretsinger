@@ -6,7 +6,7 @@ import sys
 import typing as t
 from pathlib import Path
 from IPython.display import display, HTML
-
+from pprint import pformat
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -22,19 +22,18 @@ import statsmodels.formula.api as smf
 import scipy.stats as stats  # For statistical tests and plots
 from scipy.stats import f
 
-# region matplotlib
+# matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 import matplotlib.colors as mcolors
 
 
-# region sklearn
+# sklearn
 import sklearn
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
-# endregion
 sns.set_theme()
 
 # source env variables

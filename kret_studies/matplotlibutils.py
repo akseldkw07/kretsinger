@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from .typed_cls import *
+from .low_prio.typed_cls import *
 from .numpy_utils import SingleReturnArray
 import pandas as pd
 import seaborn as sns

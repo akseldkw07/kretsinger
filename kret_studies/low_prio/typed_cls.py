@@ -55,7 +55,7 @@ class Download_TypedDictLite(t.TypedDict, total=False):
     actions: bool
     threads: bool | int
     ignore_tz: bool | None
-    group_by: str
+    group_by: t.Literal["column", "ticker"]
     auto_adjust: bool | None
     back_adjust: t.Any
     repair: bool

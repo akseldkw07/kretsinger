@@ -3,10 +3,11 @@ import hashlib
 import json
 import os
 import typing as t
-from kret_studies.typed_cls import *
+from kret_studies.low_prio.typed_cls import *
 import yfinance as yf
 import logging
-from .date_utils import get_start_end_dates
+from ..date_utils import get_start_end_dates
+from pprint import pformat
 
 logger = logging.getLogger(__name__)
 
@@ -46,16 +47,27 @@ def download(
     loads it if so, otherwise queries remote, saves, and updates the index.
     """
     start_or_end = start is not None or end is not None
-    start is not None and end is not None
     if "period" in kwargs_lite and start_or_end:
         raise ValueError("If 'period' is passed, 'start' and 'end' must not be provided.")
 
     if "period" in kwargs_lite:
+        # if user passes period, manually convert that to start end end
+        # makes for better reproducability and consistency if we're checking against cache first
         period = kwargs_lite.pop("period")
         start, end = get_start_end_dates(period)
-    kwargs_default: Download_TypedDictLite = {"prepost": True, "repair": True, "keepna": True}
+    kwargs_default: Download_TypedDictLite = {
+        "prepost": True,
+        "repair": True,
+        "keepna": True,
+        "auto_adjust": True,
+        "multi_level_index": True,
+        "group_by": "ticker",
+    }
     # Merge defaults with provided kwargs
-    kwargs: Download_TypedDictLite = {**kwargs_default, **kwargs_lite}
+    kwargs_lite = {**kwargs_default, **kwargs_lite}
+
+    kwargs: Download_TypedDict = {"tickers": ticker, "start": start, "end": end, **kwargs_lite}
+    logger.warning(pformat(kwargs, indent=4))
 
     os.makedirs(DATA_DIR, exist_ok=True)
     args = _json_friendly(kwargs)
@@ -78,8 +90,11 @@ def download(
     # If not, query remote
     logger.info("Querying remote with yfinance.multi.download...")
 
-    df = t.cast(pd.DataFrame, yf.download(**kwargs))
+    df = t.cast(pd.DataFrame, yf.download(**kwargs))  # pyright: ignore[reportArgumentType]
+    if not df.empty and hasattr(df.index, "tz_convert"):
+        df.index = df.index.tz_convert("US/Eastern")
     # Save data
+
     fname = f"yf_{args_hash}.parquet"
     data_path = os.path.join(DATA_DIR, fname)
     df.to_parquet(data_path)
