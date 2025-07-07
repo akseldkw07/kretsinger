@@ -1,3 +1,4 @@
+from pandas.core.indexes.datetimes import DatetimeIndex
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import logging
@@ -46,3 +47,7 @@ def get_start_end_dates(period: str, end_offset: int = 1) -> tuple[str, str]:
         raise ValueError(f"Unsupported period: {period}")
     logger.info(f"IN: {period=}, {end_offset=}, {today=}. OUT: {start_date=}, {end_date=}")
     return start_date.isoformat(), end_date.isoformat()
+
+
+def pd_to_eastern(col: DatetimeIndex):
+    return col.tz_localize("US/Eastern") if col.tz is None else col.tz_convert("US/Eastern")

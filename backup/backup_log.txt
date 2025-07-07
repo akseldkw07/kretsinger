@@ -1,7 +1,6 @@
 Transfer starting: 1 files
 .zshrc
 
-sent 6435 bytes  received 42 bytes  3084285 bytes/sec
+sent 6435 bytes  received 42 bytes  5888181 bytes/sec
 total size is 6306  speedup is 0.97
-[2025-07-07 00:42:30] ✅ Backup complete.
-[2025-07-07 00:42:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-07-07 02:13:03] ✅ Backup complete.

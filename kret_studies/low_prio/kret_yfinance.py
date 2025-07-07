@@ -1,3 +1,4 @@
+from pandas.core.indexes.datetimes import DatetimeIndex
 import pandas as pd
 import hashlib
 import json
@@ -6,7 +7,9 @@ import typing as t
 from kret_studies.low_prio.typed_cls import *
 import yfinance as yf
 import logging
-from ..date_utils import get_start_end_dates
+
+from kret_studies.type_checking import assert_type
+from ..date_utils import get_start_end_dates, pd_to_eastern
 from pprint import pformat
 
 logger = logging.getLogger(__name__)
@@ -39,6 +42,7 @@ def download(
     ticker: str | list[str],
     start: str | None = None,
     end: str | None = None,
+    force_load: bool = False,
     **kwargs_lite: t.Unpack[Download_TypedDictLite],
 ):
     """
@@ -81,7 +85,7 @@ def download(
         index = {}
 
     # Check if data exists
-    if args_hash in index:
+    if args_hash in index and not force_load:
         data_path = index[args_hash]["path"]
         if os.path.exists(data_path):
             logger.info(f"Loading cached data from {data_path}")
@@ -91,8 +95,8 @@ def download(
     logger.info("Querying remote with yfinance.multi.download...")
 
     df = t.cast(pd.DataFrame, yf.download(**kwargs))  # pyright: ignore[reportArgumentType]
-    if not df.empty and hasattr(df.index, "tz_convert"):
-        df.index = df.index.tz_convert("US/Eastern")
+    df.index = pd_to_eastern(assert_type(DatetimeIndex, df.index))
+
     # Save data
 
     fname = f"yf_{args_hash}.parquet"
