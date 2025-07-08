@@ -23,6 +23,8 @@ class CondaUtils:
         "black",
         "flake8",
         "conda-tree",
+        "numba",
+        # "ipybind",
     ]
     CONDA_PACKAGES_FINANCE = [
         "yfinance",
@@ -92,8 +94,9 @@ class CondaUtils:
         + CONDA_PACKAGES_VISUALIZATION
         + CONDA_PACKAGES_STATS
         + CONDA_PACKAGES_NLP
-        + CONDA_PACKAGES_REDDIT
+        # + CONDA_PACKAGES_REDDIT
         + CONDA_PACKAGES_ML
+        # + CONDA_PACKAGES_LLM_QUERY
         + CONDA_PACKAGES_LINALG_OPTIMIZATION
         + CONDA_PACKAGES_GRAPHS
     )
