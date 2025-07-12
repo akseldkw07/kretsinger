@@ -122,6 +122,7 @@ export MM_PATH="~/micromamba/envs"
 export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
 export NB_LOGFILE="${KRET}/data/nb_log.log"
+export DESKTOP="/Users/Akseldkw/Desktop/"
 
 # Source all .zsh files in ${KRET}/zsh_scripts
 # Skip files starting with _ or .
