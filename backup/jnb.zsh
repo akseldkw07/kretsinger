@@ -1,4 +1,6 @@
 #!/bin/zsh
+# jnb.zsh - Enhanced Jupyter Notebook conversion script
+# Default to HTML and show input cells, then opens in chrome
 
 jnb() {
     # 🧪 1. Ensure Python environment is active

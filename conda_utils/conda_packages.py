@@ -54,6 +54,7 @@ class CondaUtils:
         "statsmodels",
         "scipy",
     ]
+
     CONDA_PACKAGES_R_STATS = ["sympy", "siuba"]
     CONDA_PACKAGES_NLP = [
         "nltk",

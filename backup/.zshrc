@@ -147,7 +147,6 @@ alias lt='ls --tree'
 # CUSTOM ALIAS
 alias ld="ls -ltd -- */" # List directories only
 alias mm='micromamba'
-alias rgf='rg --files -g'
 alias home='cd /Users/Akseldkw'
 alias src='save_and_src_zshrc'
 alias gitrebase='rebase_squash_conflict'
@@ -155,11 +154,15 @@ alias gitnuke='rebase_nuclear_feature'
 
 # CUSTOM ALIAS FUNCTIONS
 col() {
-  sod /Users/Akseldkw/Desktop/Columbia/
+  sod "${DESKTOP}/Columbia/"
   ld
 }
 tailkret() {
   less +F "$NB_LOGFILE"
+}
+
+rgf() {
+  rg --files -g "$@"
 }
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!

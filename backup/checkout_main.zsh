@@ -1,4 +1,5 @@
 #!/bin/zsh
+# checkout main, delete branches, and pull latest changes
 mpgd() {
     local PRIMARY_BRANCH
 
