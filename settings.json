@@ -2,7 +2,7 @@
   "python-envs.pythonProjects": [
     {
       "envManager": "ms-python.python:system",
-      "path": ""
+      "path": "~/micromamba/envs/kret_312/bin/python"
     }
   ]
 }

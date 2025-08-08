@@ -24,6 +24,7 @@ class CondaUtils:
         "flake8",
         "conda-tree",
         "numba",
+        "openai",
         # "ipybind",
     ]
     CONDA_PACKAGES_FINANCE = [
