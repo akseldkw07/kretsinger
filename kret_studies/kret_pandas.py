@@ -144,6 +144,11 @@ def move_columns(df: pd.DataFrame, start: list[str] | None = None, end: list[str
 # endregion
 
 
+# region ML
+def one_hot_encode(df: pd.DataFrame):
+    return pd.get_dummies(df, drop_first=True)
+
+
 def split_x_y(df: pd.DataFrame, y_col: str | None = None) -> tuple[pd.DataFrame, pd.Series]:
     if y_col is not None and y_col in df.columns:
         X = df.drop(columns=[y_col])
@@ -153,3 +158,6 @@ def split_x_y(df: pd.DataFrame, y_col: str | None = None) -> tuple[pd.DataFrame,
         y = df[-1]
 
     return X, y
+
+
+# endregion

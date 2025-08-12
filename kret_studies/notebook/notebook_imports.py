@@ -36,7 +36,7 @@ import matplotlib.colors as mcolors
 # sklearn
 import sklearn
 from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import mean_squared_error, accuracy_score, r2_score
