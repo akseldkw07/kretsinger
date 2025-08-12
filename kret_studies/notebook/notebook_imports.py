@@ -35,12 +35,14 @@ import matplotlib.colors as mcolors
 
 # sklearn
 import sklearn
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, ElasticNet, Lasso, Ridge, HuberRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.pipeline import Pipeline
+
+# lightgbm
+import lightgbm as lgbm
+from lightgbm import LGBMRegressor, LGBMClassifier
 
 sns.set_theme()
-
-# source env variables
-load_dotenv_file()
-source_zsh_env()
