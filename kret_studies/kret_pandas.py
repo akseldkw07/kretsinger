@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 STR_TO_BOOL = {"yes": True, "no": False, "y": True, "n": False, "0": False, "1": True}
 
 # region DTYPE
@@ -42,10 +43,16 @@ def _is_str_bool_candidate(ser: pd.Series | np.ndarray):
 # endregion
 
 
-# region CLEANUP
+# region CLEANING
 
 
-def cols_to_bool(df: pd.DataFrame):
+def data_cleanup(df: pd.DataFrame):
+    _cols_to_bool(df)
+    _cols_to_categorical(df)
+    _cols_to_datetime(df)
+
+
+def _cols_to_bool(df: pd.DataFrame):
     """
     Convert columns in the DataFrame to boolean in-place if:
     - The column contains only 'yes'/'no' (case-insensitive, ignoring NaN)
@@ -65,4 +72,84 @@ def cols_to_bool(df: pd.DataFrame):
             continue
 
 
+# region CATEGORICAL
+
+
+def _cols_to_categorical(df: pd.DataFrame, k: int = 10) -> None:
+    """
+    Convert string columns in the DataFrame to categorical in-place if the column has under k unique values (excluding NaN).
+    Modifies the DataFrame in-place. Returns None.
+    """
+    for col in df.columns:
+        if "id" in col.lower()[2:]:
+            df[col] = df[col].astype("category")
+            continue
+
+        ser = df[col]
+        if is_str_dtype(ser):
+            nunique = ser.nunique(dropna=True)
+            if nunique <= k:
+                df[col] = ser.astype("category")
+
+
 # endregion
+# region DATETIME
+
+
+def _cols_to_datetime(df: pd.DataFrame, thresh: float = 0.95) -> None:
+    """
+    Attempt to convert string columns to datetime in-place if they appear to be datetime candidates.
+    A column is considered a candidate if at least `thresh` fraction of non-null values can be parsed as datetime.
+    Modifies the DataFrame in-place. Returns None.
+    """
+    for col in df.columns:
+        if "datetime" in col.lower():
+            df[col] = pd.to_datetime(df[col], errors="coerce")
+            continue
+
+        ser = df[col]
+        if is_str_dtype(ser):
+            non_null = ser.dropna()
+            if non_null.empty:
+                continue
+            parsed = pd.to_datetime(non_null, errors="coerce")
+            success_frac = parsed.notna().mean()
+            if success_frac >= thresh:
+                df[col] = pd.to_datetime(ser, errors="coerce")
+
+
+# endregion
+# endregion
+
+
+# region COLUMN ORDER
+def move_columns(df: pd.DataFrame, start: list[str] | None = None, end: list[str] | None = None):
+    """
+    Return a DataFrame with the specified columns moved to the start and/or end.
+    Args:
+        df: The DataFrame.
+        start: List of column names to move to the beginning.
+        end: List of column names to move to the end.
+    Returns:
+        A new DataFrame with columns reordered.
+    """
+    start = [col for col in (start or []) if col in df.columns]
+    end = [col for col in (end or []) if col in df.columns and col not in start]
+
+    middle = [col for col in df.columns if col not in start and col not in end]
+    new_order = start + middle + end
+    return df[new_order]
+
+
+# endregion
+
+
+def split_x_y(df: pd.DataFrame, y_col: str | None = None) -> tuple[pd.DataFrame, pd.Series]:
+    if y_col is not None and y_col in df.columns:
+        X = df.drop(columns=[y_col])
+        y = df[y_col]
+    else:
+        X = df
+        y = df[-1]
+
+    return X, y
