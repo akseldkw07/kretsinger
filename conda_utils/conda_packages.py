@@ -24,7 +24,6 @@ class CondaUtils:
         "flake8",
         "conda-tree",
         "numba",
-        "openai",
         # "ipybind",
     ]
     CONDA_PACKAGES_FINANCE = [
@@ -87,8 +86,11 @@ class CondaUtils:
         "sympy",
         "cvxpy",  # optimization
     ]
-    CONDA_PACKAGES_GRAPHS = [
+    CONDA_PACKAGES_MISC = [
+        "kaggle",
+        "kagglehub",
         "networkx",
+        "openai",
     ]
 
     CONDA_PACKAGES_ALL = (
@@ -101,7 +103,7 @@ class CondaUtils:
         + CONDA_PACKAGES_ML
         # + CONDA_PACKAGES_LLM_QUERY
         + CONDA_PACKAGES_LINALG_OPTIMIZATION
-        + CONDA_PACKAGES_GRAPHS
+        + CONDA_PACKAGES_MISC
     )
 
     PINS_OVERRIDE = {}

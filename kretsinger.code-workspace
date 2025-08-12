@@ -1,0 +1,20 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../../Desktop/Columbia/Latex-Examples"
+        },
+        {
+            "path": "../ONLINE-REPOS"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "/Users/Akseldkw/.zshrc": false,
+            ".zshrc": false
+        },
+        "python.defaultInterpreterPath": "/Users/Akseldkw/micromamba/envs/kret_312/bin/python"
+    }
+}
