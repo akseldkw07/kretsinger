@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+# git_return_pr_link.zsh - Fetch the pull request URL for the current branch
+
 get_pr_url() {
     local token="$GITHUB_TOKEN" # Set this in your environment
     local repo_url branch owner repo api_url pr_url

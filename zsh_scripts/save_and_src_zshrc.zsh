@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+# save_and_src_zshrc.zsh - Save and source .zshrc with backup and git commit
+
 save_and_src_zshrc() {
     local dest_dir="${KRET}/backup"
     local rc_file="$HOME/.zshrc"

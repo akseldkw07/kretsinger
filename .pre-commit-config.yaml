@@ -49,10 +49,10 @@ repos:
     rev: v2.8.0
     hooks:
       - id: setup-cfg-fmt
-  - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.1.0
-    hooks:
-      - id: add-trailing-comma
+  # - repo: https://github.com/asottile/add-trailing-comma NOTE: this was annoying for function signatures
+  #   rev: v3.1.0
+  #   hooks:
+  #     - id: add-trailing-comma
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.19.1
     hooks:

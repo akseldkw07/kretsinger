@@ -1,4 +1,7 @@
 #!/bin/zsh
+# gitrebase.zsh - Enhanced Git rebase functions
+# This script provides functions for squashing commits and performing a "nuclear" rebase.
+
 
 rebase_squash_conflict() {
     local feature_branch

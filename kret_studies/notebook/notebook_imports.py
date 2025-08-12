@@ -16,6 +16,11 @@ import requests
 from .source_env_vars import source_zsh_env
 from .nb_setup import load_dotenv_file
 
+# kaggle
+import kagglehub
+from kagglehub import KaggleDatasetAdapter
+
+
 # statsmodels and scipy
 import statsmodels.api as sm
 import statsmodels.formula.api as smf

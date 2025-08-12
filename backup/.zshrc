@@ -122,6 +122,7 @@ export MM_PATH="~/micromamba/envs"
 export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
 export NB_LOGFILE="${KRET}/data/nb_log.log"
+export DESKTOP="/Users/Akseldkw/Desktop/"
 
 # Source all .zsh files in ${KRET}/zsh_scripts
 # Skip files starting with _ or .
@@ -146,7 +147,6 @@ alias lt='ls --tree'
 # CUSTOM ALIAS
 alias ld="ls -ltd -- */" # List directories only
 alias mm='micromamba'
-alias rgf='rg --files -g'
 alias home='cd /Users/Akseldkw'
 alias src='save_and_src_zshrc'
 alias gitrebase='rebase_squash_conflict'
@@ -154,11 +154,23 @@ alias gitnuke='rebase_nuclear_feature'
 
 # CUSTOM ALIAS FUNCTIONS
 col() {
-  sod /Users/Akseldkw/Desktop/Columbia/
+  sod "${DESKTOP}/Columbia/"
   ld
 }
 tailkret() {
   less +F "$NB_LOGFILE"
+}
+
+rgf() {
+  # This function searches for files and folders by name using ripgrep.
+  # It defaults to suppressing 'Permission denied' errors.
+  #
+  # -g '**/$@': The glob pattern is updated to search for folders and files.
+  #              '**/' matches any number of subdirectories, and '$@' passes
+  #              your search term(s).
+  # 2>/dev/null: This redirects stderr (where the errors are printed) to /dev/null,
+  #              which is a "black hole" for output, effectively suppressing it.
+  rg --files -g "**/$@" 2>/dev/null
 }
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!

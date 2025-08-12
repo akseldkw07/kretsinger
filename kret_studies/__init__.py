@@ -13,3 +13,4 @@ import kret_studies.low_prio.statsmodels as uks_stats
 import kret_studies.low_prio.kret_yfinance as kret_yf
 import kret_studies.kret_gpt as kret_gpt
 import kret_studies.date_utils as uks_date
+import kret_studies.kret_pandas as uks_pd

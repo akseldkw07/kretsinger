@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+# activate_and_navigate.zsh - Activate micromamba environment and navigate to a directory
+
 # Usage: source ~/bin/setup_my_env.zsh [target_directory] [env_name]
 sod() {
     # --- Default Configuration ---

@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+# pre-commit hook to prevent pushing to the main branch directly
+
 prevent_main_push() {
     branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
     echo "[gitpush] Current branch: $branch"

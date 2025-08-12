@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+# Automate everything about git push, including commit message generation, push, and pull request handling.
+# Opens pull request in browser if it doesn't exist, or focuses existing tab if it does.
+# Works on systems with `gh` CLI installed, otherwise falls back to manual PR creation.
+
 gitpush() {
   local commit_message="$1"
   git add .
