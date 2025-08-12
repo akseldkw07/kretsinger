@@ -13,14 +13,27 @@ class SingleReturnArray(np.ndarray, t.Generic[NPT]):
     A subclass of np.ndarray that returns a single value when indexed with a single index.
     """
 
-    def __getitem__(self, key: int) -> NPT:  # type: ignore
+    @t.overload
+    def __getitem__(self: SingleReturnArray[T], key: int) -> T:  # type: ignore
         return super().__getitem__(key)
 
+    @t.overload
     def __getitem__(self: SingleReturnArray[SingleReturnArray[T]], key: tuple[int, int]) -> T:  # type: ignore
         return super().__getitem__(key)
 
-    # def __getitem__(self: SingleReturnArray[SingleReturnArray[SingleReturnArray[T]]], key: tuple[int, int]) -> SingleReturnArray[T]:  # type: ignore
-    #     return super().__getitem__(key)
+    def __getitem__(self, key):  # type: ignore
+        return super().__getitem__(key)
+
+    @t.overload
+    def __iter__(self: SingleReturnArray[T]) -> t.Iterator[T]:
+        return super().__iter__()
+
+    @t.overload
+    def __iter__(self: SingleReturnArray[SingleReturnArray[T]]) -> t.Iterator[SingleReturnArray[T]]:  # type: ignore
+        return super().__iter__()
+
+    def __iter__(self):  # type: ignore
+        return super().__iter__()
 
     @t.overload
     def ravel(self: SingleReturnArray[SingleReturnArray[SingleReturnArray[T]]]) -> SingleReturnArray[T]: ...

@@ -122,7 +122,9 @@ def df_in_ax(ax: Axes, df: pd.DataFrame, round_: int | None = None, fontsize=10,
 # region STYLE
 
 
-def style_axes(fig: Figure, axes: Axes | t.Iterable[Axes]):
+def style_axes(
+    fig: Figure, axes: Axes | list[Axes] | SingleReturnArray[Axes] | SingleReturnArray[SingleReturnArray[Axes]]
+):
     """
     Add grid
     idk what else
@@ -130,11 +132,14 @@ def style_axes(fig: Figure, axes: Axes | t.Iterable[Axes]):
     if isinstance(axes, Axes):
         axes = [axes]
 
-    for axes in axes:
-        axes.grid(True, which="both", axis="both")
+    if isinstance(axes, list):
+        axes = t.cast(SingleReturnArray, np.array(axes))
+
+    for ax in axes.ravel():
+        ax.grid(True, which="both", axis="both")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            axes.legend()
+            ax.legend()
     fig.tight_layout()
 
 
