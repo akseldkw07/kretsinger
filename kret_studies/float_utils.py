@@ -1,4 +1,6 @@
+from collections.abc import Iterable
 import numpy as np
+import pandas as pd
 
 
 def get_precision(data_range: list[float] | np.ndarray):
@@ -89,3 +91,40 @@ def get_precision(data_range: list[float] | np.ndarray):
             precision = 0
 
     return f".{precision}f{suffix}"
+
+
+def smart_round(values: pd.DataFrame | Iterable[float | int], max_decimals: int = 2):
+    """
+    Given a DataFrame or iterable of numbers & and a max_decimals value, return an int recommending
+    the number of decimal places to use for rounding.
+    """
+    if isinstance(values, pd.DataFrame):
+        values = values.select_dtypes(include=[np.number]).values.flatten()
+    values = np.asarray(values)
+
+    if values.size == 0:
+        return 0
+
+    # Compute the 10th and 90th percentiles
+    p10 = float(np.percentile(values, 10))
+    p90 = float(np.percentile(values, 90))
+
+    # Determine the effective spread
+    effective_spread = abs(p90 - p10)
+
+    # Heuristic: more precision for smaller ranges
+    calc_dec: int
+    if effective_spread < 0.001:
+        calc_dec = 4
+    elif effective_spread < 0.01:
+        calc_dec = 3
+    elif effective_spread < 0.1:
+        calc_dec = 2
+    elif effective_spread < 1.0:
+        calc_dec = 1
+    else:
+        calc_dec = 0
+    # Ensure we do not exceed the max_decimals limit
+    calc_dec = min(calc_dec, max_decimals)
+
+    return calc_dec
