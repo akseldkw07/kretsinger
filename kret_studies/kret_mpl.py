@@ -15,15 +15,25 @@ import numpy as np
 
 
 # region EDA
-def plot_pairwise_relationships(df: pd.DataFrame, target: str):
-    """Plot pairwise relationships in the dataset."""
-    sns.pairplot(df, x_vars=df.columns.difference([target]), y_vars=[target], height=2.5)
-    plt.show()
+def plot_pairwise_sns(df: pd.DataFrame, **kwargs: t.Unpack[Pairplot_TypedDict]):
+    """
+    Plot pairwise relationships in the dataset.
+
+    >>> uks_mpl.plot_pairwise_sns(df, vars=["area", "bedrooms", "stories", "price"], hue="bedrooms")
+
+    """
+    kwargs_default: Pairplot_TypedDict = {"kind": "reg", "diag_kind": "kde", "palette": "coolwarm"}
+    kwargs_effective = kwargs_default | kwargs
+    pair = sns.pairplot(df, **kwargs_effective)
+    return pair
 
 
 # endregion
 # region PLOT UTILS
 def plot_scatter_and_ols(ax: Axes, x: pd.Series | np.ndarray, y: pd.Series | np.ndarray, is_y_pred: bool = False):
+    """
+    TODO scatter + ols for categoricals (ie implement hue)
+    """
     sns.scatterplot(x=x, y=y, ax=ax, alpha=0.5)
     sns.regplot(x=x, y=y, ax=ax, scatter=False, color="red", line_kws={"linestyle": "--", "linewidth": 1.5})
     if is_y_pred:
@@ -36,7 +46,7 @@ def plot_scatter_and_ols(ax: Axes, x: pd.Series | np.ndarray, y: pd.Series | np.
 def plot_residual_hist(ax: Axes, y_true: pd.Series | np.ndarray, y_pred: pd.Series | np.ndarray):
     residuals = np.array(y_true - y_pred)
     sns.histplot(residuals, ax=ax, kde=True, color="blue", bins=30)
-    ax.axhline(0, color="red", linestyle="--")
+    ax.axvline(x=0, color="red", linestyle="--", linewidth=1.5, label="x = 0")
 
 
 def df_in_ax(ax: Axes, df: pd.DataFrame, round_: int | None = None, fontsize=10, scale=(1.0, 1.2)):

@@ -108,3 +108,24 @@ class LBGMRegressor__init___TypedDict(t.TypedDict, total=False):
     n_jobs: int | None | None
     importance_type: str
     verbose: int
+
+
+class Pairplot_TypedDict(t.TypedDict, total=False):
+    # data: pd.DataFrame
+    hue: str | None
+    hue_order: t.Iterable[str] | None
+    palette: t.Any | None
+    vars: t.Iterable[str] | None
+    x_vars: t.Iterable[str] | str | None
+    y_vars: t.Iterable[str] | str | None
+    kind: t.Literal["scatter", "kde", "hist", "reg"]
+    diag_kind: t.Literal["auto", "hist", "kde"] | None
+    markers: t.Any | None
+    height: float
+    aspect: float
+    corner: bool
+    dropna: bool
+    plot_kws: dict[str, t.Any] | None
+    diag_kws: dict[str, t.Any] | None
+    grid_kws: dict[str, t.Any] | None
+    size: float | None
