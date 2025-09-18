@@ -1,4 +1,5 @@
 from __future__ import annotations
+import torch
 
 import typing as t
 from collections.abc import Sequence
@@ -129,3 +130,18 @@ class Pairplot_TypedDict(t.TypedDict, total=False):
     diag_kws: dict[str, t.Any] | None
     grid_kws: dict[str, t.Any] | None
     size: float | None
+
+
+class TorchTrainResult(t.NamedTuple):
+    best_loss: float
+    epochs_run: int
+    history: list[float]
+    stopped_reason: str
+    y_hat: np.ndarray | torch.Tensor
+
+    # Optional: __repr__ for pretty printing
+    def __repr__(self):
+        return (
+            f"TrainResult(best_loss={self.best_loss}, epochs_run={self.epochs_run}, "
+            f"history=[{len(self.history)} values], stopped_reason='{self.stopped_reason}')"
+        )

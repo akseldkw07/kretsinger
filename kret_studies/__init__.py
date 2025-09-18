@@ -17,3 +17,4 @@ import kret_studies.helpers.float_utils as uks_floats
 import kret_studies.date_utils as uks_date
 import kret_studies.kret_pandas as uks_pd
 import kret_studies.kret_sklearn as uks_sklearn
+import kret_studies.kret_torch as uks_torch

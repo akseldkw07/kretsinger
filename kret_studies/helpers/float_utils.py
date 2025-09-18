@@ -93,6 +93,30 @@ def get_precision(data_range: list[float] | np.ndarray):
     return f".{precision}f{suffix}"
 
 
+def notable_number(num: float) -> bool:
+    """
+    Returns True if the number is 'notable' (e.g., round, simple, or a power of ten),
+    scaling up to very large numbers (up to 1e12).
+    Notable numbers include:
+      - Powers of ten (10, 100, 1000, ...)
+      - Multiples of powers of ten (e.g., 1_000_000, 10_000_000)
+      - Numbers less than 10 (simple small numbers)
+    """
+    if num < 10:
+        return True
+    if num == 0:
+        return True
+    # Check if num is a power of ten
+    if num == 10 ** int(np.log10(num)):
+        return True
+    # Check if num is a multiple of a power of ten (e.g., 100_000_000, 500_000_000)
+    exponent = int(np.log10(num))
+    power_of_ten = 10**exponent
+    if num % power_of_ten == 0:
+        return True
+    return False
+
+
 def smart_round(values: pd.DataFrame | Iterable[float | int], max_decimals: int = 2):
     """
     Given a DataFrame or iterable of numbers & and a max_decimals value, return an int recommending
