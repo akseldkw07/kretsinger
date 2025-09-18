@@ -1,10 +1,10 @@
 import torch
 import math
 from copy import deepcopy
-from typing import Union
 from collections.abc import Callable
 
-LossSpec = Union[str, Callable[[torch.Tensor, torch.Tensor], torch.Tensor]]
+LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+from kret_studies.low_prio.typed_cls import TorchTrainResult
 
 
 def train_until(
@@ -16,11 +16,11 @@ def train_until(
     target_loss: float = 1e-2,
     max_epochs: int = 10_000,  # -1 for no cap
     patience: int = 500,  # 0 disables early stopping
-    scheduler: object | None = None,  # e.g. torch.optim.lr_scheduler.*
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,  # e.g. torch.optim.lr_scheduler.*
     clip_grad_norm: float | None = None,
-    improvement_tol: float = 1e-12,  # how much lower to count as "improved"
+    improvement_tol: float = 1e-6,  # how much lower to count as "improved"
     verbose: bool = True,
-) -> dict[str, object]:
+) -> TorchTrainResult:
     """
     Trains until one of: loss <= target_loss, no improvement for `patience` epochs,
     or `max_epochs` reached. Restores the best weights before returning.
@@ -29,7 +29,7 @@ def train_until(
         {
           "best_loss": float,
           "epochs_run": int,
-          "history": List[float],
+          "history": list[float],
           "stopped_reason": str
         }
     """
@@ -94,9 +94,9 @@ def train_until(
     # Restore best model weights
     model.load_state_dict(best_state)
 
-    return {
-        "best_loss": best_loss,
-        "epochs_run": epoch + 1 if len(history) > 0 else 0,
-        "history": history,
-        "stopped_reason": stopped_reason,
-    }
+    return TorchTrainResult(
+        best_loss=best_loss,
+        epochs_run=epoch + 1 if len(history) > 0 else 0,
+        history=history,
+        stopped_reason=stopped_reason,
+    )
