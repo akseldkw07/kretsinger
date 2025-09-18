@@ -91,6 +91,7 @@ class CondaUtils:
         "kagglehub",
         "networkx",
         "openai",
+        "openpyxl",
     ]
 
     CONDA_PACKAGES_ALL = (

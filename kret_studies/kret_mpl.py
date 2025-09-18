@@ -28,14 +28,38 @@ def plot_pairwise_sns(df: pd.DataFrame, **kwargs: t.Unpack[Pairplot_TypedDict]):
     return pair
 
 
+def plot_pairwise_sns_cat_bool(df: pd.DataFrame, **kwargs: t.Unpack[Pairplot_TypedDict]):
+    """
+    Automatically select categorical and boolean variables for pairwise plotting.
+    """
+    cat_vars = df.select_dtypes(include=["category"]).columns.tolist()
+    bool_vars = df.select_dtypes(include=["bool"]).columns.tolist()
+    kwargs_default: Pairplot_TypedDict = {"vars": cat_vars + bool_vars}
+    kwargs_effective = kwargs_default | kwargs
+    return plot_pairwise_sns(df, **kwargs_effective)
+
+
 # endregion
 # region PLOT UTILS
-def plot_scatter_and_ols(ax: Axes, x: pd.Series | np.ndarray, y: pd.Series | np.ndarray, is_y_pred: bool = False):
+def plot_scatter_and_ols(
+    ax: Axes,
+    x: pd.Series | np.ndarray,
+    y: pd.Series | np.ndarray,
+    cat: pd.Series | None = None,
+    is_y_pred: bool = False,
+):
     """
-    TODO scatter + ols for categoricals (ie implement hue)
+    If `cat` is provided, plot scatter and OLS for each category (hue).
     """
-    sns.scatterplot(x=x, y=y, ax=ax, alpha=0.5)
-    sns.regplot(x=x, y=y, ax=ax, scatter=False, color="red", line_kws={"linestyle": "--", "linewidth": 1.5})
+    if cat is not None:
+        categories = cat.unique()
+        for category in categories:
+            mask = cat == category
+            sns.scatterplot(x=x[mask], y=y[mask], ax=ax, alpha=0.5, label=str(category))
+            sns.regplot(x=x[mask], y=y[mask], ax=ax, scatter=False, label=f"OLS {category}")
+    else:
+        sns.scatterplot(x=x, y=y, ax=ax, alpha=0.5)
+        sns.regplot(x=x, y=y, ax=ax, scatter=False, color="red", line_kws={"linestyle": "--", "linewidth": 1.5})
     if is_y_pred:
         # identity line (y = x)
         xy_min = float(min(x.min(), y.min()))
