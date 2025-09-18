@@ -1,4 +1,5 @@
 from __future__ import annotations
+import torch
 
 import typing as t
 from collections.abc import Sequence
@@ -136,6 +137,7 @@ class TorchTrainResult(t.NamedTuple):
     epochs_run: int
     history: list[float]
     stopped_reason: str
+    y_hat: np.ndarray | torch.Tensor
 
     # Optional: __repr__ for pretty printing
     def __repr__(self):
