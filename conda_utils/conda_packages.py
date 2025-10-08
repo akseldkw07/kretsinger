@@ -24,7 +24,7 @@ class CondaUtils:
         "flake8",
         "conda-tree",
         "numba",
-        # "ipybind",
+        "ipykernel",
     ]
     CONDA_PACKAGES_FINANCE = [
         "yfinance",
@@ -47,6 +47,7 @@ class CondaUtils:
         "pygraphviz",  # draw graphs
         "graphviz",
         "drawdata",  # https://python.plainenglish.io/drawdata-the-python-library-you-didnt-know-you-needed-b8c2f2ff328b
+        "pydeps",
     ]
     CONDA_PACKAGES_STATS = [
         # "abess",  # don't add, pin to numpy 1.26
@@ -72,6 +73,7 @@ class CondaUtils:
         "xgboost",
         "lightgbm",
         "catboost",
+        "autograd",
         # "fbprophet",  # timeseries forecasting, facebook NOTE doesn't exist
     ]
     CONDA_PACKAGES_LLM_QUERY = [
@@ -92,6 +94,8 @@ class CondaUtils:
         "networkx",
         "openai",
         "openpyxl",
+        "wandb",  # weights and biases
+        "gymnasium",  # openai gym
     ]
 
     CONDA_PACKAGES_ALL = (

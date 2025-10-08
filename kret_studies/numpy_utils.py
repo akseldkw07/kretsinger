@@ -44,38 +44,3 @@ class SingleReturnArray(np.ndarray, t.Generic[NPT]):
 
     def ravel(self) -> SingleReturnArray[T]:  # type: ignore
         return super().ravel()  # type: ignore
-
-
-def solve_linear_system(X: np.ndarray, y: np.ndarray):
-    """
-    Solve the linear system Ax = b using NumPy's linear algebra solver.
-
-    Parameters:
-        A (np.ndarray): Coefficient matrix.
-        b (np.ndarray): Right-hand side vector.
-
-    Returns:
-        SingleReturnArray[np.ndarray]: Solution vector x.
-    """
-
-    x = np.linalg.lstsq(X, y, rcond=None)
-    return x
-
-
-def solve_linear_system_by_hand(X: np.ndarray, y: np.ndarray):
-    """
-    Solve the linear system Ax = b by hand using NumPy's matrix operations.
-
-    Parameters:
-        A (np.ndarray): Coefficient matrix.
-        b (np.ndarray): Right-hand side vector.
-    Returns:
-
-        SingleReturnArray[np.ndarray]: Solution vector x.
-    """
-    w_hat = np.linalg.inv(X.T @ X) @ X.T @ y
-    return w_hat.view(SingleReturnArray)
-
-
-def solve_psuedo_inverse(X: np.ndarray):
-    return np.linalg.pinv(X)
