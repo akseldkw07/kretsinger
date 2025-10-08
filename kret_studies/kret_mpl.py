@@ -132,7 +132,7 @@ def heatmap_df(df: pd.DataFrame, **kwargs: t.Unpack[Sns_Heatmap_TypedDict]):
     kwargs_default: Sns_Heatmap_TypedDict = {"annot": True, "cmap": red_green_centered, "linewidths": 0.1, "cbar": True}
     kwargs_compute = kwargs_default | computed_params
     kwargs = {**kwargs_compute, **kwargs}
-    print(kwargs)
+    # print(kwargs)
     sns.heatmap(df, **kwargs)
 
 

@@ -7,6 +7,8 @@ from typing import Any, Literal
 from requests import Session
 import matplotlib.colors as mcolors
 import numpy as np
+from matplotlib.axes import Axes
+
 
 INTERVAL_LITERAL = t.Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
 PERIOD_LITERAL = t.Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
@@ -41,8 +43,8 @@ class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
     square: t.Any
     xticklabels: t.Any
     yticklabels: t.Any
-    mask: t.Any
-    ax: t.Any
+    mask: np.ndarray
+    ax: Axes
 
 
 class Heatmap_Params_TD(t.TypedDict, total=False):

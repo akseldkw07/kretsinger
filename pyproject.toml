@@ -31,3 +31,12 @@ combine_as_imports = true
 
 [tool.pyright]
 include = ["/Users/Akseldkw/coding/kretsinger/"]
+
+[tool.pydeps]
+only = ["kret_studies"]
+no_show = true
+pylib = false
+max_bacon = 4
+exclude = [
+  "numpy","pandas","seaborn","matplotlib","pydantic","aiohttp","sklearn","torch","PIL","typing","requests","scipy","plotly","statsmodels","xarray","netCDF4","h5py","tqdm","rich","loguru","fastapi","uvicorn","sqlalchemy","databases","alembic","pytest","pytest_asyncio","pytest_mock","httpx","faker","faker_async"
+]
