@@ -1,11 +1,13 @@
 from __future__ import annotations
-import typing as t
-import subprocess
+
 import json
-import sys
-from packaging.version import parse  # Used for robust version comparison
-from subprocess import CompletedProcess
 import os
+import subprocess
+import sys
+import typing as t
+from subprocess import CompletedProcess
+
+from packaging.version import parse  # Used for robust version comparison
 
 
 class CondaUtils:

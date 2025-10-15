@@ -1,12 +1,13 @@
 from __future__ import annotations
-import re
-import inspect
-import typing as t
-from kret_studies.low_prio import kret_gpt
 
-import importlib.util
 import ast
+import importlib.util
+import inspect
 import json
+import re
+import typing as t
+
+from kret_studies.low_prio import kret_gpt
 
 
 # --- Shared printer ---

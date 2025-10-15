@@ -1,11 +1,10 @@
-from statsmodels.stats.diagnostic import het_breuschpagan
-from statsmodels.stats.stattools import durbin_watson
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.stats.stattools import jarque_bera
-import statsmodels.api as sm
-import pandas as pd
 import numpy as np
+import pandas as pd
+import statsmodels.api as sm
 from sklearn.metrics import r2_score
+from statsmodels.stats.diagnostic import het_breuschpagan
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.stats.stattools import durbin_watson, jarque_bera
 
 
 def model_diagnostics(y_true, y_pred, X):

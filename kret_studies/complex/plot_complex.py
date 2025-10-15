@@ -1,13 +1,14 @@
 from __future__ import annotations
-import statsmodels.api as sm
 
-from matplotlib.axes import Axes
-
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import numpy as np
+import statsmodels.api as sm
+from matplotlib.axes import Axes
+
+from kret_studies.kret_mpl import df_in_ax, subplots
+
 from .model_diagnostics import model_diagnostics
-from kret_studies.kret_mpl import subplots, df_in_ax
 
 
 def format_residual_plot(ax: Axes):

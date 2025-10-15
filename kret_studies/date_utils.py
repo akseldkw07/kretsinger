@@ -1,7 +1,8 @@
-from pandas.core.indexes.datetimes import DatetimeIndex
 import datetime as dt
-from dateutil.relativedelta import relativedelta
 import logging
+
+from dateutil.relativedelta import relativedelta
+from pandas.core.indexes.datetimes import DatetimeIndex
 
 logger = logging.getLogger(__name__)
 

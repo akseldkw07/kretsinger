@@ -1,27 +1,81 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from IPython.display import display_html
+import seaborn as sns
+from matplotlib import patches
 
 
-def dataset_to_table(*dfs: pd.DataFrame | np.ndarray, names: list[str] | None = None, spacing: int = 10):
+def expanded_heatmap_with_state_borders(
+    df: pd.DataFrame | pd.io.formats.style.Styler,
+    ax=None,
+    fmt: str = ".3f",
+    cmap: str = "WhiteGreen",
+    annotate: bool = True,
+    line_width: float = 2.0,
+    line_color: str = "black",
+    cbar: bool = True,
+):
     """
-    Display a list of pandas DataFrames side-by-side in Jupyter.
+    Plot a heatmap for the expanded grid DataFrame and overlay thick borders between
+    each state (3x3) block. Accepts either the DataFrame produced by `q_to_expanded_grid`
+    or a pandas Styler (in which case the underlying .data is used).
 
-    Args:
-        dfs (t.Iterable[pd.DataFrame]): The DataFrames to display.
-        names (list[str], optional): Titles for each DataFrame.
-        spacing (int, optional): Horizontal spacing in pixels.
+    Parameters:
+      df: expanded DataFrame (MultiIndex rows/cols) or Styler
+      ax: matplotlib Axes (optional)
+      fmt: annotation format
+      cmap: colormap
+      annotate: whether to write numbers in cells
+      line_width: width (in points) of separators between states
+      line_color: color of separators
+      cbar: whether to show colorbar
     """
-    html_str = ""
-    for i, df in enumerate(dfs):
-        title = f"<h3>{names[i]}</h3>" if names and i < len(names) else ""
-        if isinstance(df, np.ndarray):
-            df = pd.DataFrame(df)
-        html_table = df.to_html()
-        html_str += (
-            f'<div style="display:inline-block; vertical-align:top; margin-right:{spacing}px">{title}{html_table}</div>'
+
+    # accept a Styler too
+    # Styler stores the underlying DataFrame in the .data attribute; handle gracefully
+    df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
+
+    # ensure numeric matrix
+    mat = df_data.astype(float)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(8, 8))
+
+    # plot heatmap
+    sns.heatmap(mat, ax=ax, cmap=cmap, annot=annotate, fmt=fmt, cbar=cbar, linewidths=0.3, linecolor="lightgrey")
+
+    # compute block boundaries (top-level MultiIndex values)
+    try:
+        n_block_rows = len(df_data.index.get_level_values(0).unique())
+        n_block_cols = len(df_data.columns.get_level_values(0).unique())
+    except Exception:
+        # fallback: assume 3x3 blocks with shape divisible by 3
+        n_block_rows = df_data.shape[0] // 3
+        n_block_cols = df_data.shape[1] // 3
+    total_rows = df_data.shape[0]
+    total_cols = df_data.shape[1]
+
+    # draw horizontal lines between blocks
+    for i in range(1, n_block_rows):
+        y = i * 3
+        ax.hlines(y, xmin=0, xmax=total_cols, colors=line_color, linewidth=line_width, zorder=5)
+
+    # draw vertical lines between blocks
+    for j in range(1, n_block_cols):
+        x = j * 3
+        ax.vlines(x, ymin=0, ymax=total_rows, colors=line_color, linewidth=line_width, zorder=5)
+
+    # draw outer border
+    ax.add_patch(
+        patches.Rectangle(
+            (0, 0), total_cols, total_rows, fill=False, edgecolor=line_color, linewidth=line_width, zorder=6
         )
-    display_html(html_str, raw=True)
+    )
+
+    # tweak ticks/labels for readability
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+
+    return ax
 
 
 def q_to_expanded_grid(Q: pd.DataFrame | np.ndarray, nrows: int = 4, ncols: int = 4) -> pd.DataFrame:
@@ -141,79 +195,3 @@ def style_expanded_grid(df: pd.DataFrame, line_width: str = "2px", color: str = 
 
     styler = styler.apply(_apply_row_style, axis=1)
     return styler
-
-
-def expanded_heatmap_with_state_borders(
-    df: pd.DataFrame | pd.io.formats.style.Styler,
-    ax=None,
-    fmt: str = ".3f",
-    cmap: str = "WhiteGreen",
-    annotate: bool = True,
-    line_width: float = 2.0,
-    line_color: str = "black",
-    cbar: bool = True,
-):
-    """
-    Plot a heatmap for the expanded grid DataFrame and overlay thick borders between
-    each state (3x3) block. Accepts either the DataFrame produced by `q_to_expanded_grid`
-    or a pandas Styler (in which case the underlying .data is used).
-
-    Parameters:
-      df: expanded DataFrame (MultiIndex rows/cols) or Styler
-      ax: matplotlib Axes (optional)
-      fmt: annotation format
-      cmap: colormap
-      annotate: whether to write numbers in cells
-      line_width: width (in points) of separators between states
-      line_color: color of separators
-      cbar: whether to show colorbar
-    """
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    from matplotlib import patches
-
-    # accept a Styler too
-    # Styler stores the underlying DataFrame in the .data attribute; handle gracefully
-    df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
-
-    # ensure numeric matrix
-    mat = df_data.astype(float)
-    if ax is None:
-        fig, ax = plt.subplots(figsize=(8, 8))
-
-    # plot heatmap
-    sns.heatmap(mat, ax=ax, cmap=cmap, annot=annotate, fmt=fmt, cbar=cbar, linewidths=0.3, linecolor="lightgrey")
-
-    # compute block boundaries (top-level MultiIndex values)
-    try:
-        n_block_rows = len(df_data.index.get_level_values(0).unique())
-        n_block_cols = len(df_data.columns.get_level_values(0).unique())
-    except Exception:
-        # fallback: assume 3x3 blocks with shape divisible by 3
-        n_block_rows = df_data.shape[0] // 3
-        n_block_cols = df_data.shape[1] // 3
-    total_rows = df_data.shape[0]
-    total_cols = df_data.shape[1]
-
-    # draw horizontal lines between blocks
-    for i in range(1, n_block_rows):
-        y = i * 3
-        ax.hlines(y, xmin=0, xmax=total_cols, colors=line_color, linewidth=line_width, zorder=5)
-
-    # draw vertical lines between blocks
-    for j in range(1, n_block_cols):
-        x = j * 3
-        ax.vlines(x, ymin=0, ymax=total_rows, colors=line_color, linewidth=line_width, zorder=5)
-
-    # draw outer border
-    ax.add_patch(
-        patches.Rectangle(
-            (0, 0), total_cols, total_rows, fill=False, edgecolor=line_color, linewidth=line_width, zorder=6
-        )
-    )
-
-    # tweak ticks/labels for readability
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
-
-    return ax
