@@ -24,28 +24,18 @@ def dataset_to_table(*dfs: pd.DataFrame | np.ndarray, names: list[str] | None = 
     display_html(html_str, raw=True)
 
 
-def q_df_to_spatial(Q: pd.DataFrame | np.ndarray, nrows: int = 4, ncols: int = 4) -> dict:
+def q_to_expanded_grid(Q: pd.DataFrame | np.ndarray, nrows: int = 4, ncols: int = 4) -> pd.DataFrame:
     """
-    Convert a Q-table (shape: n_states x n_actions) where states are numbered row-major
-    from 0..(nrows*ncols-1) into a dict of 4 DataFrames (left, down, right, up), each of
-    shape (nrows, ncols). For each state s and action a, place the Q[s,a] value into the
-    neighbor cell that would be reached by taking action a from state s.
+    Expand a Q-table for a nrows x ncols grid into a (3*nrows) x (3*ncols) DataFrame
+    where each original state is represented by a 3x3 block with positions:
 
-    Rules / assumptions:
-    - Actions are interpreted as: 0=left, 1=down, 2=right, 3=up (matching the FrozenLake/env convention)
-    - The returned DataFrames use np.nan for:
-        * cells that are not a target of any (s,a) pair (i.e., unused cells), and
-        * the original state cells themselves (so the heatmap does not color the state's own cell).
-    - Q can be a numpy array or pandas DataFrame. If DataFrame, columns correspond to actions.
+        [  ,  up,   ]
+        [ left, NaN, right]
+        [  , down,  ]
 
-    Returns:
-        dict with keys ['left','down','right','up'] and pandas.DataFrame values of shape (nrows,ncols)
-
-    Example usage:
-        spatial = q_df_to_spatial(Q)
-        left_df = spatial['left']
+    - Q shape expected: (nrows*ncols, >=4) (FrozenLake action order: 0=left,1=down,2=right,3=up)
+    - Returned DataFrame is filled with np.nan except the placed action values.
     """
-    # Normalize input to numpy array
     if isinstance(Q, pd.DataFrame):
         Q_arr = Q.values
     else:
@@ -54,40 +44,30 @@ def q_df_to_spatial(Q: pd.DataFrame | np.ndarray, nrows: int = 4, ncols: int = 4
     n_states = nrows * ncols
     if Q_arr.shape[0] != n_states:
         raise ValueError(f"Expected Q to have {n_states} rows (states), got {Q_arr.shape[0]}")
+    if Q_arr.shape[1] < 4:
+        raise ValueError(f"Expected Q to have at least 4 action columns, got {Q_arr.shape[1]}")
 
-    # Ensure there are 4 actions (left,down,right,up) or at least up to 4
-    n_actions = Q_arr.shape[1]
-    if n_actions < 4:
-        raise ValueError(f"Expected Q to have at least 4 action columns, got {n_actions}")
+    out_rows = 3 * nrows
+    out_cols = 3 * ncols
+    out = np.full((out_rows, out_cols), np.nan, dtype=float)
 
-    # Initialize output DataFrames with NaNs
-    templates = {
-        k: pd.DataFrame(np.full((nrows, ncols), np.nan), columns=[*range(ncols)], index=[*range(nrows)])
-        for k in ("left", "down", "right", "up")
-    }
-
-    # helper: convert state index to (r,c)
     def to_rc(s: int) -> tuple[int, int]:
         return divmod(s, ncols)
 
-    # mapping action -> target offset (dr, dc) and key
-    action_map = {
-        0: (0, -1, "left"),
-        1: (1, 0, "down"),
-        2: (0, 1, "right"),
-        3: (-1, 0, "up"),
-    }
-
     for s in range(n_states):
         r, c = to_rc(s)
-        # Set the state's own cell to NaN explicitly (already NaN in templates)
-        for a in range(min(4, n_actions)):
-            dr, dc, key = action_map[a]
-            tr, tc = r + dr, c + dc
-            # check in bounds
-            if 0 <= tr < nrows and 0 <= tc < ncols:
-                # place Q[s,a] into the target cell position
-                templates[key].iat[tr, tc] = Q_arr[s, a]
+        br = 3 * r
+        bc = 3 * c
+        # mapping inside 3x3 block
+        # up (action 3) -> (0,1)
+        out[br + 0, bc + 1] = float(Q_arr[s, 3])
+        # left (action 0) -> (1,0)
+        out[br + 1, bc + 0] = float(Q_arr[s, 0])
+        # center state left as NaN -> out[br+1, bc+1]
+        # right (action 2) -> (1,2)
+        out[br + 1, bc + 2] = float(Q_arr[s, 2])
+        # down (action 1) -> (2,1)
+        out[br + 2, bc + 1] = float(Q_arr[s, 1])
 
-    # Optionally convert column/index labels to something prettier (like left, down, ... keep numeric indices now)
-    return templates
+    df = pd.DataFrame(out)
+    return df
