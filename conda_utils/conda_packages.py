@@ -94,10 +94,12 @@ class CondaUtils:
         "networkx",
         "openai",
         "openpyxl",
-        "wandb",  # weights and biases
-        "gymnasium",  # openai gym
     ]
-
+    CONDA_PACKAGES_RL = [
+        "wandb",  # weights and biases
+        "gymnasium",  # openai gym]
+        "pygame",  # for rendering environments
+    ]
     CONDA_PACKAGES_ALL = (
         CONDA_PACKAGES_CORE
         + CONDA_PACKAGES_FINANCE
@@ -112,7 +114,7 @@ class CondaUtils:
     )
 
     PINS_OVERRIDE = {}
-    PINNED_PACKAGES = ["numpy", "pandas", "polars", "scikit-learn"]
+    PINNED_PACKAGES = ["numpy", "pandas", "polars", "scikit-learn", "datasets"]
 
     @staticmethod
     def conda_packages_to_str(

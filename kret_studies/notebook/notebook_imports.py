@@ -17,6 +17,9 @@ import requests
 from .source_env_vars import source_zsh_env
 from .nb_setup import load_dotenv_file
 
+# misc
+import tqdm
+
 # kaggle
 import kagglehub
 from kagglehub import KaggleDatasetAdapter
@@ -45,5 +48,13 @@ from sklearn.pipeline import Pipeline
 # lightgbm
 import lightgbm as lgbm
 from lightgbm import LGBMRegressor, LGBMClassifier
+
+# pytorch
+import torch.nn as nn
+
+# huggingface
+import datasets
+from datasets import load_dataset, DatasetDict, Dataset, IterableDatasetDict, IterableDataset
+from huggingface_hub import hf_hub_download, snapshot_download
 
 sns.set_theme()
