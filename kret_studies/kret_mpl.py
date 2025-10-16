@@ -1,17 +1,21 @@
 from __future__ import annotations
-import warnings
+
 import typing as t
-from kret_studies.helpers.matplot_helper import _generate_heatmap_params, red_green_centered
+import warnings
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from pandas.io.formats.style import Styler
+
+from kret_studies.helpers.float_utils import smart_round
+from kret_studies.helpers.matplot_helper import _generate_heatmap_params, red_green_centered
 
 from .low_prio.typed_cls import *
 from .numpy_utils import SingleReturnArray
-import pandas as pd
-import seaborn as sns
-from kret_studies.helpers.float_utils import smart_round
-import numpy as np
 
 
 # region EDA
@@ -126,14 +130,18 @@ def set_title_label(ax: Axes, title: str | None = None, xlabel: str | None = Non
 # region HEATMAP
 
 
-def heatmap_df(df: pd.DataFrame, **kwargs: t.Unpack[Sns_Heatmap_TypedDict]):
-    computed_params = _generate_heatmap_params(df)
+def heatmap_df(df: pd.DataFrame | Styler, **kwargs: t.Unpack[Sns_Heatmap_TypedDict]):
+    # Accept a pandas Styler (presentation wrapper) and unwrap to the underlying DataFrame
+    # If a Styler is passed, extract the underlying DataFrame; otherwise leave as-is
+    df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
+
+    computed_params = _generate_heatmap_params(df_data)
 
     kwargs_default: Sns_Heatmap_TypedDict = {"annot": True, "cmap": red_green_centered, "linewidths": 0.1, "cbar": True}
     kwargs_compute = kwargs_default | computed_params
     kwargs = {**kwargs_compute, **kwargs}
     # print(kwargs)
-    sns.heatmap(df, **kwargs)
+    sns.heatmap(df_data, **kwargs)
 
 
 # endregion

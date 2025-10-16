@@ -1,17 +1,15 @@
-import socket
-from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 import os
-import torch
+import socket
+
 import requests
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from transformers import AutoModelForCausalLM
+import torch
+
+# === CONFIGURATION ===
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Use the actual class used by transformers for type checking
 from transformers.models.auto.modeling_auto import AutoModelForCausalLM as HF_AutoModelForCausalLM
-
-
-# === CONFIGURATION ===
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 
 # Enable Hugging Face offline mode if requested
 TRANSFORMERS_OFFLINE = os.getenv("TRANSFORMERS_OFFLINE", "0")

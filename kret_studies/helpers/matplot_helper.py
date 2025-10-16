@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 import matplotlib.colors as mcolors
-
 import matplotlib.pyplot as plt
-
 import pandas as pd
+
 from kret_studies.low_prio.typed_cls import *
+
 from .float_utils import get_precision
 
 rwg = ["red", "white", "green"]

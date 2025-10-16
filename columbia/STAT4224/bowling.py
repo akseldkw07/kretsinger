@@ -1,6 +1,7 @@
 from sympy import log
 from sympy.core.mul import Mul
 from sympy.core.numbers import Float
+
 from kret_studies.type_checking import assert_type
 
 Omega = list(range(11))  # 0, 1, ..., 10 but EXCLUDES 11

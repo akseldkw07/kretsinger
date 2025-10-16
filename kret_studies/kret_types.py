@@ -1,6 +1,7 @@
 from __future__ import annotations
-import re
+
 import inspect
+import re
 import typing as t
 
 from kret_studies.helpers.func_sig_typed import collect_imports, import_replace_dict

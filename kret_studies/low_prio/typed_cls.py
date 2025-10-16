@@ -1,14 +1,14 @@
 from __future__ import annotations
-import torch
 
 import typing as t
 from collections.abc import Sequence
 from typing import Any, Literal
-from requests import Session
+
 import matplotlib.colors as mcolors
 import numpy as np
+import torch
 from matplotlib.axes import Axes
-
+from requests import Session
 
 INTERVAL_LITERAL = t.Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
 PERIOD_LITERAL = t.Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]

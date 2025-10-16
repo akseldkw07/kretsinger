@@ -1,11 +1,13 @@
 from __future__ import annotations
-import typing as t
-import subprocess
+
 import json
-import sys
-from packaging.version import parse  # Used for robust version comparison
-from subprocess import CompletedProcess
 import os
+import subprocess
+import sys
+import typing as t
+from subprocess import CompletedProcess
+
+from packaging.version import parse  # Used for robust version comparison
 
 
 class CondaUtils:
@@ -94,10 +96,12 @@ class CondaUtils:
         "networkx",
         "openai",
         "openpyxl",
-        "wandb",  # weights and biases
-        "gymnasium",  # openai gym
     ]
-
+    CONDA_PACKAGES_RL = [
+        "wandb",  # weights and biases
+        "gymnasium",  # openai gym]
+        "pygame",  # for rendering environments
+    ]
     CONDA_PACKAGES_ALL = (
         CONDA_PACKAGES_CORE
         + CONDA_PACKAGES_FINANCE
@@ -112,7 +116,7 @@ class CondaUtils:
     )
 
     PINS_OVERRIDE = {}
-    PINNED_PACKAGES = ["numpy", "pandas", "polars", "scikit-learn"]
+    PINNED_PACKAGES = ["numpy", "pandas", "polars", "scikit-learn", "datasets"]
 
     @staticmethod
     def conda_packages_to_str(

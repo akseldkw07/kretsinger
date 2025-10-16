@@ -1,12 +1,13 @@
-import torch
 import math
-from copy import deepcopy
 from collections.abc import Callable
+from copy import deepcopy
+
+import torch
 import torch.nn as nn
 
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
-from kret_studies.low_prio.typed_cls import TorchTrainResult
 from kret_studies.helpers.float_utils import notable_number
+from kret_studies.low_prio.typed_cls import TorchTrainResult
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
