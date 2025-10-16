@@ -19,5 +19,7 @@ import kret_studies.kret_pandas as uks_pd
 import kret_studies.kret_sklearn as uks_sklearn
 import kret_studies.kret_torch as uks_torch
 
+import kret_studies.openai_gym as uks_gym
+
 """Commonly used functions"""
 from kret_studies.display_utils import dataset_to_table as dtt

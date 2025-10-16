@@ -33,7 +33,7 @@ def expanded_heatmap_with_state_borders(
 
     # accept a Styler too
     # Styler stores the underlying DataFrame in the .data attribute; handle gracefully
-    df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
+    df_data: pd.DataFrame = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
 
     # ensure numeric matrix
     mat = df_data.astype(float)
@@ -41,7 +41,19 @@ def expanded_heatmap_with_state_borders(
         fig, ax = plt.subplots(figsize=(8, 8))
 
     # plot heatmap
-    sns.heatmap(mat, ax=ax, cmap=cmap, annot=annotate, fmt=fmt, cbar=cbar, linewidths=0.3, linecolor="lightgrey")
+    sns.heatmap(
+        mat,
+        ax=ax,
+        cmap=cmap,
+        annot=annotate,
+        fmt=fmt,
+        cbar=cbar,
+        linewidths=0.3,
+        linecolor="lightgrey",
+        annot_kws={"fontsize": 8},
+    )
+    # also reduce tick label size
+    ax.tick_params(axis="both", which="major", labelsize=8)
 
     # compute block boundaries (top-level MultiIndex values)
     try:

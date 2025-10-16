@@ -1,1 +1,1 @@
-from .q_value_tables import *
+import kret_studies.openai_gym.q_value_tables as q_val_viz
