@@ -1,7 +1,8 @@
+from collections.abc import Sequence
+
 import numpy as np
 import pandas as pd
 from IPython.display import display_html
-from collections.abc import Sequence
 
 
 def _coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object):
