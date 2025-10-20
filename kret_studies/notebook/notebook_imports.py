@@ -45,7 +45,14 @@ import statsmodels.formula.api as smf
 import scipy.stats as stats  # For statistical tests and plots
 import seaborn as sns
 from scipy.stats import f
+
+# pymc
 import pymc as pm
+from pymc import math as pmmath
+import arviz as az
+import xarray
+import pytensor
+import pytensor.tensor as pt
 
 # pytorch
 import torch.nn as nn
