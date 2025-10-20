@@ -26,7 +26,8 @@ use_parentheses = true
 atomic= true
 verbose = true
 skip_gitignore = true
-skip = ["__init__.py", "*/notebook_imports.py"]
+skip = ["__init__.py"]
+skip_glob = ["**/notebook_imports.py"]
 combine_as_imports = true
 
 [tool.pyright]
