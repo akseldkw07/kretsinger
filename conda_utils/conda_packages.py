@@ -57,6 +57,7 @@ class CondaUtils:
         "statsmodels",
         "scipy",
         "pymc",  # bayesian modeling, MCMC, VAI
+        "jax",
     ]
 
     CONDA_PACKAGES_R_STATS = ["sympy", "siuba"]

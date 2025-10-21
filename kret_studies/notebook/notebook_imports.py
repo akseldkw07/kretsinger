@@ -45,6 +45,7 @@ import statsmodels.formula.api as smf
 import scipy.stats as stats  # For statistical tests and plots
 import seaborn as sns
 from scipy.stats import f
+from scipy.stats import t as student_t, gamma as gamma_dist
 
 # pymc
 import pymc as pm
@@ -64,6 +65,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import requests
+from dataclasses import dataclass
 
 # local imports
 from .nb_setup import load_dotenv_file
