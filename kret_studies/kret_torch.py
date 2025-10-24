@@ -1,11 +1,12 @@
-from functools import cache
 import math
 from collections.abc import Callable
 from copy import deepcopy
+from functools import cache
+from math import ceil, log
+
 import numpy as np
 import torch
 import torch.nn as nn
-from math import ceil, log
 from numpy.typing import NDArray
 
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
