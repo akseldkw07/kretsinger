@@ -3,9 +3,10 @@ from collections.abc import Sequence
 import numpy as np
 import pandas as pd
 from IPython.display import display_html
+import torch
 
 
-def _coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object):
+def _coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor) -> pd.DataFrame:
     if isinstance(obj, pd.DataFrame):
         return obj
     elif isinstance(obj, pd.Series):
@@ -14,12 +15,14 @@ def _coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | ob
         return pd.DataFrame(obj)
     elif isinstance(obj, (list, tuple)):
         return pd.DataFrame(obj)
+    elif isinstance(obj, torch.Tensor):
+        return pd.DataFrame(obj.detach().cpu().numpy())
     else:
         return pd.DataFrame([obj])
 
 
 def display_side_by_side(
-    dfs: Sequence[pd.DataFrame | pd.Series | np.ndarray | list | tuple],
+    dfs: Sequence[pd.DataFrame | pd.Series | np.ndarray | list | tuple | torch.Tensor],
     names: list[str] | None = None,
     spacing: int = 12,
     font_size: str = "0.9em",
@@ -42,7 +45,9 @@ def display_side_by_side(
     display_html(html_str, raw=True)
 
 
-def dataset_to_table(*dfs: pd.DataFrame | np.ndarray, names: list[str] | None = None, spacing: int = 10) -> None:
+def dataset_to_table(
+    *dfs: pd.DataFrame | np.ndarray | torch.Tensor, names: list[str] | None = None, spacing: int = 10
+) -> None:
     """
     Display a list of pandas DataFrames side-by-side in Jupyter or VS Code.
     """

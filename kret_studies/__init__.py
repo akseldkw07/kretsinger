@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import kret_studies.low_prio.logging_utils as uks_logging
 import kret_studies.kret_mpl as uks_mpl
-import kret_studies.numpy_utils as uks_np
 import kret_studies.display_utils as uks_display
 
 import kret_studies.kret_types as uks_types
