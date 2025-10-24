@@ -7,6 +7,7 @@ from math import ceil, log
 import numpy as np
 import torch
 import torch.nn as nn
+from numpy.typing import NDArray
 
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 from kret_studies.helpers.float_utils import notable_number
