@@ -1,15 +1,40 @@
 import math
 from collections.abc import Callable
 from copy import deepcopy
+from functools import cache
+from math import ceil, log
 
+import numpy as np
 import torch
 import torch.nn as nn
+from numpy.typing import NDArray
 
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 from kret_studies.helpers.float_utils import notable_number
 from kret_studies.low_prio.typed_cls import TorchTrainResult
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    _DEVICE = "cuda"
+elif torch.backends.mps.is_available():
+    _DEVICE = "mps"
+else:
+    _DEVICE = "cpu"
+DEVICE = torch.device(_DEVICE)
+
+
+@cache
+def _exp_decay(required_len: int, initial_epsilon: float = 0.95, half_life: float = 1000, min_value: float = 0.01):
+    t = np.arange(required_len)
+    decay = np.exp(-np.log(2.0) * t / half_life)  # exp with half-life semantics
+    arr: NDArray[np.float32] = np.maximum(min_value, initial_epsilon * decay).astype(np.float32)
+    return arr
+
+
+def exp_decay(episode: int, initial_epsilon: float = 0.95, half_life: float = 1000.0, min_value: float = 0.01):
+    eff_episode = 2 ** (ceil(log(episode + 1, 2)))
+    arr = _exp_decay(eff_episode, initial_epsilon, half_life, min_value)
+
+    return float(arr[episode])
 
 
 def train_regression(
