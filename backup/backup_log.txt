@@ -261,3 +261,22 @@ total size is 6343  speedup is 0.97
 [2025-10-20 14:09:38] ℹ️ No changes detected in .zshrc. Early exit.
 [2025-10-20 16:20:39] ℹ️ No changes detected in .zshrc. Early exit.
 [2025-10-20 19:26:17] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 00:05:53] ❌ .zshrc source error. Backup canceled.
+[2025-10-21 17:00:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 17:03:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 17:03:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 17:03:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 19:07:58] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 20:09:29] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-21 20:09:29] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-22 23:16:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 00:47:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 00:52:58] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 00:59:44] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 18:00:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 19:12:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 19:12:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 19:12:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-10-23 23:31:49] ❌ .zshrc source error. Backup canceled.
+[2025-10-23 23:31:49] ❌ .zshrc source error. Backup canceled.
+[2025-10-23 23:35:45] ℹ️ No changes detected in .zshrc. Early exit.

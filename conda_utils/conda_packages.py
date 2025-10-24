@@ -58,6 +58,10 @@ class CondaUtils:
         "scipy",
         "pymc",  # bayesian modeling, MCMC, VAI
         "jax",
+        "arviz",
+        # "arviz_plots",
+        # "arviz_base",
+        # "arviz_stats",
     ]
 
     CONDA_PACKAGES_R_STATS = ["sympy", "siuba"]
