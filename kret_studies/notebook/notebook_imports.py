@@ -12,8 +12,9 @@ from pprint import pformat
 
 # huggingface
 import datasets
-from datasets import Dataset, DatasetDict, IterableDataset, IterableDatasetDict, load_dataset
-from huggingface_hub import hf_hub_download, snapshot_download
+from datasets import Dataset, DatasetDict, IterableDataset, IterableDatasetDict, load_dataset, load_from_disk
+from huggingface_hub import hf_hub_download, snapshot_download, list_datasets
+import huggingface_hub
 
 # kaggle
 import kagglehub
@@ -33,6 +34,10 @@ from matplotlib.figure import Figure
 # openai gym
 import gymnasium as gym
 
+# Language
+from sentence_transformers import SentenceTransformer, models, losses, InputExample, evaluation
+from sentence_transformers.readers import STSBenchmarkDataReader
+
 # sklearn
 import sklearn
 from sklearn.linear_model import ElasticNet, HuberRegressor, Lasso, LinearRegression, Ridge
@@ -40,6 +45,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.decomposition import PCA
 
 # statsmodels, scipy, pymc
 import statsmodels.api as sm
@@ -78,5 +84,8 @@ from math import sqrt, log10
 # local imports
 from .nb_setup import load_dotenv_file
 from .source_env_vars import source_zsh_env
+from kret_studies.helpers.torch_helper import DEVICE, DEVICE_TORCH_STR
+
+DEVICE_TORCH = DEVICE
 
 sns.set_theme()

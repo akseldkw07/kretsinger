@@ -71,6 +71,8 @@ class CondaUtils:
         "spacy",
         "textblob",
         "transformers",
+        "sentence-transformers",
+        "evaluate",
     ]
     CONDA_PACKAGES_REDDIT = ["praw", "vaderSentiment"]
     CONDA_PACKAGES_ML = [
