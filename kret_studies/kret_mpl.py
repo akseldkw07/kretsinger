@@ -13,9 +13,9 @@ from pandas.io.formats.style import Styler
 
 from kret_studies.helpers.float_utils import smart_round
 from kret_studies.helpers.matplot_helper import _generate_heatmap_params, red_green_centered
+from kret_studies.helpers.numpy_utils import SingleReturnArray
 
 from .low_prio.typed_cls import *
-from kret_studies.helpers.numpy_utils import SingleReturnArray
 
 
 # region EDA

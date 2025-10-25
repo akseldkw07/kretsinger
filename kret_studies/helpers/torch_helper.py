@@ -1,22 +1,24 @@
-import torch
-from collections.abc import Callable
 import math
+import typing as t
 from collections.abc import Callable
 from copy import deepcopy
-from kret_studies.helpers.float_utils import notable_number
-from kret_studies.low_prio.typed_cls import TorchTrainResult
+
 import torch
 import torch.nn as nn
 
+from kret_studies.helpers.float_utils import notable_number
+from kret_studies.low_prio.typed_cls import TorchTrainResult
+
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 
+DEVICE_TORCH_STR: t.Literal["cuda", "mps", "cpu"]
 if torch.cuda.is_available():
-    _DEVICE = "cuda"
+    DEVICE_TORCH_STR = "cuda"
 elif torch.backends.mps.is_available():
-    _DEVICE = "mps"
+    DEVICE_TORCH_STR = "mps"
 else:
-    _DEVICE = "cpu"
-DEVICE = torch.device(_DEVICE)
+    DEVICE_TORCH_STR = "cpu"
+DEVICE = torch.device(DEVICE_TORCH_STR)
 
 
 def train_regression(

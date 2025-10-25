@@ -84,7 +84,7 @@ from math import sqrt, log10
 # local imports
 from .nb_setup import load_dotenv_file
 from .source_env_vars import source_zsh_env
-from kret_studies.helpers.torch_helper import DEVICE
+from kret_studies.helpers.torch_helper import DEVICE, DEVICE_TORCH_STR
 
 DEVICE_TORCH = DEVICE
 

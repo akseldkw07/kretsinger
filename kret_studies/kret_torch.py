@@ -23,3 +23,13 @@ def exp_decay(episode: int, initial_epsilon: float = 0.95, half_life: float = 10
     arr = _exp_decay(eff_episode, initial_epsilon, half_life, min_value)
 
     return arr[episode]
+
+
+def freeze_model_weights(model: torch.nn.Module):
+    for param in model.parameters():
+        param.requires_grad = False
+
+
+def unfreeze_model_weights(model: torch.nn.Module):
+    for param in model.parameters():
+        param.requires_grad = True
