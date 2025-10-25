@@ -7,20 +7,11 @@ from math import ceil, log
 import numpy as np
 import torch
 import torch.nn as nn
-from numpy.typing import NDArray
 
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 from kret_studies.helpers.float_utils import notable_number
 from kret_studies.low_prio.typed_cls import TorchTrainResult
 from kret_studies.helpers.numpy_utils import SingleReturnArray
-
-if torch.cuda.is_available():
-    _DEVICE = "cuda"
-elif torch.backends.mps.is_available():
-    _DEVICE = "mps"
-else:
-    _DEVICE = "cpu"
-DEVICE = torch.device(_DEVICE)
 
 
 @cache
