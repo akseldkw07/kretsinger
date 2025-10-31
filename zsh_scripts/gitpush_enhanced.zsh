@@ -16,13 +16,9 @@ _run_applescript() {
   script="${script//%APP_ID%/$app_id}"
   script="${script//%PR_URL%/$pr_url}"
   if [[ -n "$GITPUSH_DEBUG" ]]; then
-    osascript <<'OSA_END'
-${script}
-OSA_END
+    printf '%s' "$script" | osascript
   else
-    osascript 2>/dev/null <<'OSA_END'
-${script}
-OSA_END
+    printf '%s' "$script" | osascript 2>/dev/null
   fi
 }
 
@@ -37,13 +33,9 @@ _run_applescript_repo() {
   script="${script//%BASE_REPO%/$baseRepo}"
   script="${script//%BRANCH_COMPARE%/$branchComparePath}"
   if [[ -n "$GITPUSH_DEBUG" ]]; then
-    osascript <<'OSA_END'
-${script}
-OSA_END
+    printf '%s' "$script" | osascript
   else
-    osascript 2>/dev/null <<'OSA_END'
-${script}
-OSA_END
+    printf '%s' "$script" | osascript 2>/dev/null
   fi
 }
 
