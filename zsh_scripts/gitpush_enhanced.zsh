@@ -332,6 +332,17 @@ _log_repo_tabs() {
   done
 }
 
+# Optionally append a browser by human-readable app name (e.g., "ChatGPT Atlas")
+_maybe_add_bundle_by_name() {
+  local name="$1"
+  local id
+  id=$(osascript -e 'try id of application "'"$name"'" on error "" end try' 2>/dev/null)
+  if [[ -n "$id" ]]; then
+    _dbg "Detected $name bundle id: $id"
+    _browsers+=("$id")
+  fi
+}
+
 gitpush() {
   local commit_message="$1"
   git add .
@@ -498,6 +509,8 @@ _focus_existing_repo_pr_or_compare_tab() {
     com.brave.Browser
     com.microsoft.edgemac
   )
+  # Try to include ChatGPT Atlas if installed
+  _maybe_add_bundle_by_name "ChatGPT Atlas"
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
@@ -541,6 +554,8 @@ _focus_existing_pr_tab() {
     com.brave.Browser
     com.microsoft.edgemac
   )
+  # Try to include ChatGPT Atlas if installed
+  _maybe_add_bundle_by_name "ChatGPT Atlas"
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
