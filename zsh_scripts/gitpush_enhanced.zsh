@@ -15,7 +15,15 @@ _run_applescript() {
   local pr_url="$1"; shift || true
   script="${script//%APP_ID%/$app_id}"
   script="${script//%PR_URL%/$pr_url}"
-  osascript -e "$script" 2>/dev/null
+  if [[ -n "$GITPUSH_DEBUG" ]]; then
+    osascript <<'OSA_END'
+${script}
+OSA_END
+  else
+    osascript 2>/dev/null <<'OSA_END'
+${script}
+OSA_END
+  fi
 }
 
 
@@ -28,7 +36,15 @@ _run_applescript_repo() {
   script="${script//%APP_ID%/$app_id}"
   script="${script//%BASE_REPO%/$baseRepo}"
   script="${script//%BRANCH_COMPARE%/$branchComparePath}"
-  osascript -e "$script" 2>/dev/null
+  if [[ -n "$GITPUSH_DEBUG" ]]; then
+    osascript <<'OSA_END'
+${script}
+OSA_END
+  else
+    osascript 2>/dev/null <<'OSA_END'
+${script}
+OSA_END
+  fi
 }
 
 chromium_as=$(cat <<'APPLESCRIPT'
@@ -513,6 +529,9 @@ _focus_existing_repo_pr_or_compare_tab() {
   )
   # Try to include ChatGPT Atlas if installed
   _maybe_add_bundle_by_name "ChatGPT Atlas"
+  if [[ -n "$GITPUSH_DEBUG" ]]; then
+    echo "[gitpush][debug] sweep candidates: ${_browsers[*]}"
+  fi
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
@@ -522,6 +541,9 @@ _focus_existing_repo_pr_or_compare_tab() {
       *)
         result=$(_run_applescript_repo "$bid" "$chromium_repo_as" "$baseRepo" "$branchComparePath") ;;
     esac
+    if [[ -n "$GITPUSH_DEBUG" ]]; then
+      echo "[gitpush][debug] $bid -> ${result:-<no result>}"
+    fi
     if [[ "$result" == "found" ]]; then
       _dbg "Match in $bid"
       appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
@@ -557,6 +579,9 @@ _focus_existing_pr_tab() {
     com.brave.Browser
     com.microsoft.edgemac
   )
+  if [[ -n "$GITPUSH_DEBUG" ]]; then
+    echo "[gitpush][debug] sweep candidates: ${_browsers[*]}"
+  fi
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
@@ -566,6 +591,9 @@ _focus_existing_pr_tab() {
       *)
         result=$(_run_applescript "$bid" "$chromium_as" "$pr_url") ;;
     esac
+    if [[ -n "$GITPUSH_DEBUG" ]]; then
+      echo "[gitpush][debug] $bid -> ${result:-<no result>}"
+    fi
     if [[ "$result" == "found" ]]; then
       _dbg "Match in $bid"
       appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
