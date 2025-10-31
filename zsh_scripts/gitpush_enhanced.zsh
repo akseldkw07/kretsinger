@@ -2,7 +2,149 @@
 
 # Automate everything about git push, including commit message generation, push, and pull request handling.
 # Opens pull request in browser if it doesn't exist, or focuses existing tab if it does.
+
 # Works on systems with `gh` CLI installed, otherwise falls back to manual PR creation.
+
+# --- AppleScript helpers & snippets (global) ---
+# Run an AppleScript snippet substituting %APP_ID% and %PR_URL%
+_run_applescript() {
+  local app_id="$1"; shift
+  local script="$1"; shift
+  local pr_url="$1"; shift || true
+  script="${script//%APP_ID%/$app_id}"
+  script="${script//%PR_URL%/$pr_url}"
+  osascript -e "$script" 2>/dev/null
+}
+
+# Run an AppleScript snippet substituting %APP_ID%, %BASE_REPO%, %BRANCH_COMPARE%
+_run_applescript_repo() {
+  local app_id="$1"; shift
+  local script="$1"; shift
+  local baseRepo="$1"; shift
+  local branchComparePath="$1"; shift
+  script="${script//%APP_ID%/$app_id}"
+  script="${script//%BASE_REPO%/$baseRepo}"
+  script="${script//%BRANCH_COMPARE%/$branchComparePath}"
+  osascript -e "$script" 2>/dev/null
+}
+
+# AppleScript for Chromium-family browsers (Chrome/Brave/Edge/Chromium/Arc) — focus PR tab
+chromium_as='
+  tell application id "%APP_ID%"
+    try
+      if not (exists window 1) then return "no_windows"
+      set targetURL to "%PR_URL%"
+      set baseTargetURL to targetURL
+      if baseTargetURL contains "?" then
+        set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
+      end if
+      repeat with theWindow in windows
+        set tabIdx to 1
+        repeat with theTab in tabs of theWindow
+          set tabURL to URL of theTab
+          set baseTabURL to tabURL
+          if baseTabURL contains "?" then
+            set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
+          end if
+          if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
+            set active tab index of theWindow to tabIdx
+            set index of theWindow to 1
+            activate
+            return "found"
+          end if
+          set tabIdx to tabIdx + 1
+        end repeat
+      end repeat
+      return "not_found"
+    on error errMsg
+      return "error: " & errMsg
+    end try
+  end tell'
+
+# AppleScript for Safari — focus PR tab
+safari_as='
+  tell application id "%APP_ID%"
+    try
+      if not (exists window 1) then return "no_windows"
+      set targetURL to "%PR_URL%"
+      set baseTargetURL to targetURL
+      if baseTargetURL contains "?" then
+        set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
+      end if
+      repeat with theWindow in windows
+        repeat with theTab in tabs of theWindow
+          set tabURL to URL of theTab
+          set baseTabURL to tabURL
+          if baseTabURL contains "?" then
+            set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
+          end if
+          if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
+            set current tab of theWindow to theTab
+            set index of theWindow to 1
+            activate
+            return "found"
+          end if
+        end repeat
+      end repeat
+      return "not_found"
+    on error errMsg
+      return "error: " & errMsg
+    end try
+  end tell'
+
+# AppleScript for Chromium-family — fuzzy match repo PR/pulls/compare tabs
+chromium_repo_as='
+  tell application id "%APP_ID%"
+    try
+      if not (exists window 1) then return "no_windows"
+      set baseRepo to "%BASE_REPO%"
+      set branchComparePath to "%BRANCH_COMPARE%"
+      repeat with theWindow in windows
+        set tabIdx to 1
+        repeat with theTab in tabs of theWindow
+          set tabURL to URL of theTab
+          if tabURL starts with baseRepo then
+            if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
+              set active tab index of theWindow to tabIdx
+              set index of theWindow to 1
+              activate
+              return "found"
+            end if
+          end if
+          set tabIdx to tabIdx + 1
+        end repeat
+      end repeat
+      return "not_found"
+    on error errMsg
+      return "error: " & errMsg
+    end try
+  end tell'
+
+# AppleScript for Safari — fuzzy match repo PR/pulls/compare tabs
+safari_repo_as='
+  tell application id "%APP_ID%"
+    try
+      if not (exists window 1) then return "no_windows"
+      set baseRepo to "%BASE_REPO%"
+      set branchComparePath to "%BRANCH_COMPARE%"
+      repeat with theWindow in windows
+        repeat with theTab in tabs of theWindow
+          set tabURL to URL of theTab
+          if tabURL starts with baseRepo then
+            if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
+              set current tab of theWindow to theTab
+              set index of theWindow to 1
+              activate
+              return "found"
+            end if
+          end if
+        end repeat
+      end repeat
+      return "not_found"
+    on error errMsg
+      return "error: " & errMsg
+    end try
+  end tell'
 
 gitpush() {
   local commit_message="$1"
@@ -175,9 +317,9 @@ _focus_existing_repo_pr_or_compare_tab() {
   for bid in "${_browsers[@]}"; do
     case "$bid" in
       com.apple.Safari)
-        result=$(_run_applescript_repo "$bid" "$safari_repo_as") ;;
+        result=$(_run_applescript_repo "$bid" "$safari_repo_as" "$baseRepo" "$branchComparePath") ;;
       *)
-        result=$(_run_applescript_repo "$bid" "$chromium_repo_as") ;;
+        result=$(_run_applescript_repo "$bid" "$chromium_repo_as" "$baseRepo" "$branchComparePath") ;;
     esac
     if [[ "$result" == "found" ]]; then
       appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
@@ -216,9 +358,9 @@ _focus_existing_pr_tab() {
   for bid in "${_browsers[@]}"; do
     case "$bid" in
       com.apple.Safari)
-        result=$(_run_applescript "$bid" "$safari_as") ;;
+        result=$(_run_applescript "$bid" "$safari_as" "$pr_url") ;;
       *)
-        result=$(_run_applescript "$bid" "$chromium_as") ;;
+        result=$(_run_applescript "$bid" "$chromium_as" "$pr_url") ;;
     esac
     if [[ "$result" == "found" ]]; then
       appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
