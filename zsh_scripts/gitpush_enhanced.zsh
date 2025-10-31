@@ -311,6 +311,7 @@ _log_repo_tabs() {
   local -a _browsers=(
     com.apple.Safari
     company.thebrowser.Browser
+    com.openai.atlas
     com.google.Chrome
     com.google.Chrome.canary
     org.chromium.Chromium
@@ -503,6 +504,7 @@ _focus_existing_repo_pr_or_compare_tab() {
   local -a _browsers=(
     com.apple.Safari
     company.thebrowser.Browser
+    com.openai.atlas
     com.google.Chrome
     com.google.Chrome.canary
     org.chromium.Chromium
@@ -548,6 +550,7 @@ _focus_existing_pr_tab() {
   local -a _browsers=(
     com.apple.Safari
     company.thebrowser.Browser
+    com.openai.atlas
     com.google.Chrome
     com.google.Chrome.canary
     org.chromium.Chromium
