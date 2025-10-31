@@ -8,17 +8,23 @@
 # --- AppleScript helpers & snippets (global) ---
 # Debug logger (enable by: export GITPUSH_DEBUG=1)
 _dbg() { [[ -n "$GITPUSH_DEBUG" ]] && print -P "%F{244}[gitpush][debug]%f $*"; }
+# Escape text for use inside a sed replacement
+_escape_sed() {
+  printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
+}
+
 # Run an AppleScript snippet substituting %APP_ID% and %PR_URL%
 _run_applescript() {
   local app_id="$1"; shift
   local script="$1"; shift
   local pr_url="$1"; shift || true
-  script="${script//%APP_ID%/$app_id}"
-  script="${script//%PR_URL%/$pr_url}"
+  local aid url
+  aid=$(_escape_sed "$app_id")
+  url=$(_escape_sed "$pr_url")
   if [[ -n "$GITPUSH_DEBUG" ]]; then
-    printf '%s' "$script" | osascript
+    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%PR_URL%/$url/g" | osascript
   else
-    printf '%s' "$script" | osascript 2>/dev/null
+    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%PR_URL%/$url/g" | osascript 2>/dev/null
   fi
 }
 
@@ -29,13 +35,14 @@ _run_applescript_repo() {
   local script="$1"; shift
   local baseRepo="$1"; shift
   local branchComparePath="$1"; shift
-  script="${script//%APP_ID%/$app_id}"
-  script="${script//%BASE_REPO%/$baseRepo}"
-  script="${script//%BRANCH_COMPARE%/$branchComparePath}"
+  local aid base compare
+  aid=$(_escape_sed "$app_id")
+  base=$(_escape_sed "$baseRepo")
+  compare=$(_escape_sed "$branchComparePath")
   if [[ -n "$GITPUSH_DEBUG" ]]; then
-    printf '%s' "$script" | osascript
+    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%BASE_REPO%/$base/g" -e "s/%BRANCH_COMPARE%/$compare/g" | osascript
   else
-    printf '%s' "$script" | osascript 2>/dev/null
+    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%BASE_REPO%/$base/g" -e "s/%BRANCH_COMPARE%/$compare/g" | osascript 2>/dev/null
   fi
 }
 
