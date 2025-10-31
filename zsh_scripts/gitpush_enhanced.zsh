@@ -159,89 +159,33 @@ _focus_existing_repo_pr_or_compare_tab() {
     return 1
   fi
 
-  # Determine default browser
-  local default_id default_name
-  default_id=$(osascript -e 'id of (path to default web browser)' 2>/dev/null)
-  default_name=$(osascript -e 'name of application id (id of (path to default web browser))' 2>/dev/null)
+  # Try known browsers regardless of default (Safari + Chromium family)
+  local -a _browsers=(
+    com.apple.Safari
+    company.thebrowser.Browser
+    com.google.Chrome
+    com.google.Chrome.canary
+    org.chromium.Chromium
+    com.brave.Browser
+    com.microsoft.edgemac
+  )
 
-  # Helper runner
-  _run_applescript_repo() {
-    local app_id="$1"; shift
-    local script="$*"
-    script="${script//%APP_ID%/$app_id}"
-    script="${script//%BASE_REPO%/$baseRepo}"
-    script="${script//%BRANCH_COMPARE%/$branchComparePath}"
-    osascript -e "$script" 2>/dev/null
-  }
+  local bid result appname
+  for bid in "${_browsers[@]}"; do
+    case "$bid" in
+      com.apple.Safari)
+        result=$(_run_applescript_repo "$bid" "$safari_repo_as") ;;
+      *)
+        result=$(_run_applescript_repo "$bid" "$chromium_repo_as") ;;
+    esac
+    if [[ "$result" == "found" ]]; then
+      appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
+      [[ -z "$appname" ]] && appname="$bid"
+      echo "[gitpush] 🔎 Focused existing GitHub tab for this repo/branch in $appname."
+      return 0
+    fi
+  done
 
-  # Chromium script: fuzzy match repo tabs (PRs, PR list, or compare for branch)
-  local chromium_repo_as='
-    tell application id "%APP_ID%"
-      try
-        if not (exists window 1) then return "no_windows"
-        set baseRepo to "%BASE_REPO%"
-        set branchComparePath to "%BRANCH_COMPARE%"
-        repeat with theWindow in windows
-          set tabIdx to 1
-          repeat with theTab in tabs of theWindow
-            set tabURL to URL of theTab
-            if tabURL starts with baseRepo then
-              if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
-                set active tab index of theWindow to tabIdx
-                set index of theWindow to 1
-                activate
-                return "found"
-              end if
-            end if
-            set tabIdx to tabIdx + 1
-          end repeat
-        end repeat
-        return "not_found"
-      on error errMsg
-        return "error: " & errMsg
-      end try
-    end tell'
-
-  # Safari script
-  local safari_repo_as='
-    tell application id "%APP_ID%"
-      try
-        if not (exists window 1) then return "no_windows"
-        set baseRepo to "%BASE_REPO%"
-        set branchComparePath to "%BRANCH_COMPARE%"
-        repeat with theWindow in windows
-          repeat with theTab in tabs of theWindow
-            set tabURL to URL of theTab
-            if tabURL starts with baseRepo then
-              if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
-                set current tab of theWindow to theTab
-                set index of theWindow to 1
-                activate
-                return "found"
-              end if
-            end if
-          end repeat
-        end repeat
-        return "not_found"
-      on error errMsg
-        return "error: " & errMsg
-      end try
-    end tell'
-
-  local result="unsupported"
-  echo "AKSEL"
-  case "$default_id" in
-    com.apple.Safari)
-      result=$(_run_applescript_repo "$default_id" "$safari_repo_as") ;;
-    com.google.Chrome|com.google.Chrome.canary|org.chromium.Chromium|com.brave.Browser|com.microsoft.edgemac|company.thebrowser.Browser)
-      result=$(_run_applescript_repo "$default_id" "$chromium_repo_as") ;;
-    *) result="unsupported" ;;
-  esac
-
-  if [[ "$result" == "found" ]]; then
-    echo "[gitpush] 🔎 Focused existing GitHub tab for this repo/branch in $default_name."
-    return 0
-  fi
   return 1
 }
 
@@ -256,120 +200,34 @@ _focus_existing_pr_tab() {
     return
   fi
 
-  # Determine the default browser (bundle id and name)
-  local default_id default_name
-  default_id=$(osascript -e 'id of (path to default web browser)' 2>/dev/null)
-  default_name=$(osascript -e 'name of application id (id of (path to default web browser))' 2>/dev/null)
+  # Try known browsers regardless of default (Safari + Chromium family)
+  local -a _browsers=(
+    com.apple.Safari
+    company.thebrowser.Browser
+    com.google.Chrome
+    com.google.Chrome.canary
+    org.chromium.Chromium
+    com.brave.Browser
+    com.microsoft.edgemac
+  )
 
-  if [[ -z "$default_id" || -z "$default_name" ]]; then
-    echo "[gitpush] ℹ️  Could not determine default browser. Opening in system default."
-    open "$pr_url"
-    return
-  fi
+  local bid result appname
+  for bid in "${_browsers[@]}"; do
+    case "$bid" in
+      com.apple.Safari)
+        result=$(_run_applescript "$bid" "$safari_as") ;;
+      *)
+        result=$(_run_applescript "$bid" "$chromium_as") ;;
+    esac
+    if [[ "$result" == "found" ]]; then
+      appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
+      [[ -z "$appname" ]] && appname="$bid"
+      echo "[gitpush] ✅ Focused existing tab in $appname."
+      return
+    fi
+  done
 
-  # Helper to run an AppleScript snippet with placeholders replaced
-  _run_applescript() {
-    local app_id="$1"; shift
-    local script="$*"
-    script="${script//%APP_ID%/$app_id}"
-    script="${script//%PR_URL%/$pr_url}"
-    osascript -e "$script" 2>/dev/null
-  }
-
-  # AppleScript for Chromium-family browsers (Chrome/Brave/Edge/Chromium/Arc)
-  local chromium_as='
-    tell application id "%APP_ID%"
-      try
-        if not (exists window 1) then return "no_windows"
-        set targetURL to "%PR_URL%"
-        set baseTargetURL to targetURL
-        if baseTargetURL contains "?" then
-          set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
-        end if
-        repeat with theWindow in windows
-          set tabIdx to 1
-          repeat with theTab in tabs of theWindow
-            set tabURL to URL of theTab
-            set baseTabURL to tabURL
-            if baseTabURL contains "?" then
-              set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-            end if
-            if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
-              set active tab index of theWindow to tabIdx
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-            set tabIdx to tabIdx + 1
-          end repeat
-        end repeat
-        return "not_found"
-      on error errMsg
-        return "error: " & errMsg
-      end try
-    end tell'
-
-  # AppleScript for Safari
-  local safari_as='
-    tell application id "%APP_ID%"
-      try
-        if not (exists window 1) then return "no_windows"
-        set targetURL to "%PR_URL%"
-        set baseTargetURL to targetURL
-        if baseTargetURL contains "?" then
-          set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
-        end if
-        repeat with theWindow in windows
-          set tabIdx to 1
-          repeat with theTab in tabs of theWindow
-            set tabURL to URL of theTab
-            set baseTabURL to tabURL
-            if baseTabURL contains "?" then
-              set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-            end if
-            if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
-              set current tab of theWindow to theTab
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-            set tabIdx to tabIdx + 1
-          end repeat
-        end repeat
-        return "not_found"
-      on error errMsg
-        return "error: " & errMsg
-      end try
-    end tell'
-
-  # Try to focus an existing tab in the default browser (Safari or Chromium-family)
-  local result=""
-  case "$default_id" in
-    com.apple.Safari)
-      result=$(_run_applescript "$default_id" "$safari_as")
-      ;;
-    com.google.Chrome|com.google.Chrome.canary|org.chromium.Chromium|com.brave.Browser|com.microsoft.edgemac|company.thebrowser.Browser)
-      result=$(_run_applescript "$default_id" "$chromium_as")
-      ;;
-    *)
-      result="unsupported"
-      ;;
-  esac
-
-  if [[ "$result" == "found" ]]; then
-    echo "[gitpush] ✅ Focused existing tab in default browser ($default_name)."
-    return
-  elif [[ "$result" == "no_windows" ]]; then
-    echo "[gitpush] ℹ️  $default_name is running but has no windows open."
-  elif [[ "$result" == unsupported ]]; then
-    echo "[gitpush] ℹ️  Default browser ($default_name) not directly scriptable here."
-  elif [[ "$result" =~ ^error: ]]; then
-    echo "[gitpush] ℹ️  Browser automation error: ${result#error: }"
-  else
-    echo "[gitpush] ℹ️  No existing tab found for this PR in $default_name."
-  fi
-
-  # Whatever happened above, ensure the PR opens in the default browser
+  echo "[gitpush] ℹ️  No existing tab found in known browsers."
   echo "[gitpush] 🔗 Opening PR URL in default browser..."
   open "$pr_url"
 }
