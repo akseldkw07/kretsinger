@@ -130,7 +130,7 @@ _focus_existing_pr_tab() {
 
   if command -v osascript >/dev/null 2>&1; then
     # First check if we can access Chrome at all
-    browser_app="Google Chrome"
+    browser_app="ChatGPT Atlas"
     if ! osascript -e "tell application \"$browser_app\" to get name" &>/dev/null; then
       echo "[gitpush] ℹ️  ${browser_app} access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
       echo "[gitpush] ℹ️  PR URL: $pr_url"
