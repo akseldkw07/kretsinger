@@ -229,7 +229,7 @@ _focus_existing_repo_pr_or_compare_tab() {
     end tell'
 
   local result="unsupported"
-  echo "test"
+  echo "AKSEL"
   case "$default_id" in
     com.apple.Safari)
       result=$(_run_applescript_repo "$default_id" "$safari_repo_as") ;;
