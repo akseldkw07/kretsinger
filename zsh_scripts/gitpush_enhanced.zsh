@@ -130,16 +130,16 @@ _focus_existing_pr_tab() {
 
   if command -v osascript >/dev/null 2>&1; then
     # First check if we can access Chrome at all
-    chrome_app="Google Chrome"
-    if ! osascript -e "tell application \"$chrome_app\" to get name" &>/dev/null; then
-      echo "[gitpush] ℹ️  ${chrome_app} access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
+    browser_app="Google Chrome"
+    if ! osascript -e "tell application \"$browser_app\" to get name" &>/dev/null; then
+      echo "[gitpush] ℹ️  ${browser_app} access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
       echo "[gitpush] ℹ️  PR URL: $pr_url"
       return
     fi
 
     local found_tab
     found_tab=$(osascript -e "
-      tell application \"$chrome_app\"
+      tell application \"$browser_app\"
         try
           if not (exists window 1) then return \"no_windows\"
           set targetURL to \"$pr_url\"
