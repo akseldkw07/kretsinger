@@ -71,6 +71,11 @@ _handle_pull_request() {
         _focus_existing_pr_tab "$pr_url"
       fi
     else
+      # Before creating a fresh PR, try to focus an already-open PR/compare tab in the default browser
+      if _focus_existing_repo_pr_or_compare_tab; then
+        echo "[gitpush] ℹ️  Found existing browser tab for this repo/branch; not creating a new PR tab."
+        return
+      fi
       echo "[gitpush] 🆕 Creating new pull request..."
       if gh pr create --fill --web >/dev/null 2>&1; then
         echo "[gitpush] 🚀 Pull request created and opened in browser."
@@ -122,6 +127,121 @@ _fallback_pr_creation() {
   fi
 
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
+}
+
+_focus_existing_repo_pr_or_compare_tab() {
+  # Derive owner/repo and branch
+  local remote url owner repo branch baseRepo branchComparePath
+  remote=$(git remote get-url --push origin 2>/dev/null)
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [[ -z "$remote" || -z "$branch" ]]; then
+    return 1
+  fi
+  # Normalize GitHub URL
+  # Supports: git@github.com:owner/repo.git or https://github.com/owner/repo(.git)
+  if [[ "$remote" == git@github.com:* ]]; then
+    url="https://github.com/${remote#git@github.com:}"
+  else
+    url="$remote"
+  fi
+  url=${url%.git}
+  # Extract owner and repo
+  owner=$(echo "$url" | sed -n 's#https://github\.com/\([^/]*\)/\([^/]*\).*#\1#p')
+  repo=$(echo "$url" | sed -n 's#https://github\.com/\([^/]*\)/\([^/]*\).*#\2#p')
+  if [[ -z "$owner" || -z "$repo" ]]; then
+    return 1
+  fi
+  baseRepo="https://github.com/${owner}/${repo}/"
+  branchComparePath="compare/${branch}"
+
+  # If AppleScript isn't available, give up
+  if ! command -v osascript >/dev/null 2>&1; then
+    return 1
+  fi
+
+  # Determine default browser
+  local default_id default_name
+  default_id=$(osascript -e 'id of (path to default web browser)' 2>/dev/null)
+  default_name=$(osascript -e 'name of application id (id of (path to default web browser))' 2>/dev/null)
+
+  # Helper runner
+  _run_applescript_repo() {
+    local app_id="$1"; shift
+    local script="$*"
+    script="${script//%APP_ID%/$app_id}"
+    script="${script//%BASE_REPO%/$baseRepo}"
+    script="${script//%BRANCH_COMPARE%/$branchComparePath}"
+    osascript -e "$script" 2>/dev/null
+  }
+
+  # Chromium script: fuzzy match repo tabs (PRs, PR list, or compare for branch)
+  local chromium_repo_as='
+    tell application id "%APP_ID%"
+      try
+        if not (exists window 1) then return "no_windows"
+        set baseRepo to "%BASE_REPO%"
+        set branchComparePath to "%BRANCH_COMPARE%"
+        repeat with theWindow in windows
+          set tabIdx to 1
+          repeat with theTab in tabs of theWindow
+            set tabURL to URL of theTab
+            if tabURL starts with baseRepo then
+              if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
+                set active tab index of theWindow to tabIdx
+                set index of theWindow to 1
+                activate
+                return "found"
+              end if
+            end if
+            set tabIdx to tabIdx + 1
+          end repeat
+        end repeat
+        return "not_found"
+      on error errMsg
+        return "error: " & errMsg
+      end try
+    end tell'
+
+  # Safari script
+  local safari_repo_as='
+    tell application id "%APP_ID%"
+      try
+        if not (exists window 1) then return "no_windows"
+        set baseRepo to "%BASE_REPO%"
+        set branchComparePath to "%BRANCH_COMPARE%"
+        repeat with theWindow in windows
+          repeat with theTab in tabs of theWindow
+            set tabURL to URL of theTab
+            if tabURL starts with baseRepo then
+              if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
+                set current tab of theWindow to theTab
+                set index of theWindow to 1
+                activate
+                return "found"
+              end if
+            end if
+          end repeat
+        end repeat
+        return "not_found"
+      on error errMsg
+        return "error: " & errMsg
+      end try
+    end tell'
+
+  local result="unsupported"
+  case "$default_id" in
+    com.apple.Safari)
+      result=$(_run_applescript_repo "$default_id" "$safari_repo_as") ;;
+    com.google.Chrome|com.google.Chrome.canary|org.chromium.Chromium|com.brave.Browser|com.microsoft.edgemac|company.thebrowser.Browser)
+      result=$(_run_applescript_repo "$default_id" "$chromium_repo_as") ;;
+    *) result="unsupported" ;;
+  esac
+
+  if [[ "$result" == "found" ]]; then
+    echo "[gitpush] 🔎 Focused existing GitHub tab for this repo/branch in $default_name."
+    return 0
+  fi
+  return 1
 }
 
 _focus_existing_pr_tab() {

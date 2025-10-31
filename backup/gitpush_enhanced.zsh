@@ -124,134 +124,70 @@ _fallback_pr_creation() {
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
 }
 
+# Try to focus existing Chrome tab with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
 
-  # If AppleScript isn't available, just open in default browser
-  if ! command -v osascript >/dev/null 2>&1; then
-    echo "[gitpush] ℹ️  AppleScript not available. PR URL: $pr_url"
-    open "$pr_url"
-    return
-  fi
+  if command -v osascript >/dev/null 2>&1; then
+    # First check if we can access Chrome at all
+    if ! osascript -e 'tell application "Google Chrome" to get name' &>/dev/null; then
+      echo "[gitpush] ℹ️  Chrome access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+      return
+    fi
 
-  # Determine the default browser (bundle id and name)
-  local default_id default_name
-  default_id=$(osascript -e 'id of (path to default web browser)' 2>/dev/null)
-  default_name=$(osascript -e 'name of application id (id of (path to default web browser))' 2>/dev/null)
-
-  if [[ -z "$default_id" || -z "$default_name" ]]; then
-    echo "[gitpush] ℹ️  Could not determine default browser. Opening in system default."
-    open "$pr_url"
-    return
-  fi
-
-  # Helper to run an AppleScript snippet with placeholders replaced
-  _run_applescript() {
-    local app_id="$1"; shift
-    local script="$*"
-    script="${script//%APP_ID%/$app_id}"
-    script="${script//%PR_URL%/$pr_url}"
-    osascript -e "$script" 2>/dev/null
-  }
-
-  # AppleScript for Chromium-family browsers (Chrome/Brave/Edge/Chromium/Arc)
-  local chromium_as='
-    tell application id "%APP_ID%"
-      try
-        if not (exists window 1) then return "no_windows"
-        set targetURL to "%PR_URL%"
-        set baseTargetURL to targetURL
-        if baseTargetURL contains "?" then
-          set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
-        end if
-        repeat with theWindow in windows
-          set tabIdx to 1
-          repeat with theTab in tabs of theWindow
-            set tabURL to URL of theTab
-            set baseTabURL to tabURL
-            if baseTabURL contains "?" then
-              set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-            end if
-            if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
-              set active tab index of theWindow to tabIdx
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-            set tabIdx to tabIdx + 1
+    local found_tab
+    found_tab=$(osascript -e "
+      tell application \"Google Chrome\"
+        try
+          if not (exists window 1) then return \"no_windows\"
+          set targetURL to \"$pr_url\"
+          set baseTargetURL to targetURL
+          if baseTargetURL contains \"?\" then
+            set baseTargetURL to text 1 thru ((offset of \"?\" in baseTargetURL) - 1) of baseTargetURL
+          end if
+          set winIdx to 1
+          repeat with theWindow in windows
+            set tabIdx to 1
+            repeat with theTab in tabs of theWindow
+              set tabURL to URL of theTab
+              set baseTabURL to tabURL
+              if baseTabURL contains \"?\" then
+                set baseTabURL to text 1 thru ((offset of \"?\" in baseTabURL) - 1) of baseTabURL
+              end if
+              if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
+                set active tab index of theWindow to tabIdx
+                set index of theWindow to 1
+                activate
+                return \"found\"
+              end if
+              set tabIdx to tabIdx + 1
+            end repeat
+            set winIdx to winIdx + 1
           end repeat
-        end repeat
-        return "not_found"
-      on error errMsg
-        return "error: " & errMsg
-      end try
-    end tell'
+          return \"not_found\"
+        on error errMsg
+          return \"error: \" & errMsg
+        end try
+      end tell
+    " 2>/dev/null)
 
-  # AppleScript for Safari
-  local safari_as='
-    tell application id "%APP_ID%"
-      try
-        if not (exists window 1) then return "no_windows"
-        set targetURL to "%PR_URL%"
-        set baseTargetURL to targetURL
-        if baseTargetURL contains "?" then
-          set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
-        end if
-        repeat with theWindow in windows
-          set tabIdx to 1
-          repeat with theTab in tabs of theWindow
-            set tabURL to URL of theTab
-            set baseTabURL to tabURL
-            if baseTabURL contains "?" then
-              set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-            end if
-            if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
-              set current tab of theWindow to theTab
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-            set tabIdx to tabIdx + 1
-          end repeat
-        end repeat
-        return "not_found"
-      on error errMsg
-        return "error: " & errMsg
-      end try
-    end tell'
-
-  # Try to focus an existing tab in the default browser (Safari or Chromium-family)
-  local result=""
-  case "$default_id" in
-    com.apple.Safari)
-      result=$(_run_applescript "$default_id" "$safari_as")
-      ;;
-    com.google.Chrome|com.google.Chrome.canary|org.chromium.Chromium|com.brave.Browser|com.microsoft.edgemac|company.thebrowser.Browser)
-      result=$(_run_applescript "$default_id" "$chromium_as")
-      ;;
-    *)
-      result="unsupported"
-      ;;
-  esac
-
-  if [[ "$result" == "found" ]]; then
-    echo "[gitpush] ✅ Focused existing tab in default browser ($default_name)."
-    return
-  elif [[ "$result" == "no_windows" ]]; then
-    echo "[gitpush] ℹ️  $default_name is running but has no windows open."
-  elif [[ "$result" == unsupported ]]; then
-    echo "[gitpush] ℹ️  Default browser ($default_name) not directly scriptable here."
-  elif [[ "$result" =~ ^error: ]]; then
-    echo "[gitpush] ℹ️  Browser automation error: ${result#error: }"
+    if [[ "$found_tab" == "found" ]]; then
+      echo "[gitpush] ✅ Focused existing Chrome tab with PR (fuzzy match)."
+    elif [[ "$found_tab" == "no_windows" ]]; then
+      echo "[gitpush] ℹ️  Chrome is running but has no windows open."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    elif [[ "$found_tab" =~ ^error: ]]; then
+      echo "[gitpush] ℹ️  Chrome access error: ${found_tab#error: }"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    else
+      echo "[gitpush] ℹ️  No existing Chrome tab found for this PR."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    fi
   else
-    echo "[gitpush] ℹ️  No existing tab found for this PR in $default_name."
+    echo "[gitpush] ℹ️  AppleScript not available. PR URL: $pr_url"
   fi
-
-  # Whatever happened above, ensure the PR opens in the default browser
-  echo "[gitpush] 🔗 Opening PR URL in default browser..."
-  open "$pr_url"
 }
-
 
 # Generate commit message and description, using aicommits if available, else fallback
 _generate_commit_message() {
