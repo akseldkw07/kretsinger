@@ -592,7 +592,6 @@ _focus_existing_repo_pr_or_compare_tab() {
   return 1
 }
 
-
 _focus_existing_pr_tab() {
   local pr_url="$1"
 
