@@ -7,8 +7,6 @@ import json
 import re
 import typing as t
 
-from kret_studies.low_prio import kret_gpt
-
 
 # --- Shared printer ---
 def print_typed_dict(func: t.Callable, typed_dict: dict | None, include_ret: bool = False):
@@ -157,6 +155,8 @@ def func_to_typed_hint_llm(func: t.Callable, include_ret: bool = False) -> t.Any
         + f"\nNow, for this function (include_ret={include_ret}):\n{func_src}\nOutput:\n"
     )
     # Query the LLM
+    from kret_studies.low_prio import kret_gpt
+
     result = kret_gpt.query_llm(prompt)
     result_dict = parse_llm_typed_dict_output(result)
     print_typed_dict(func, result_dict, include_ret=include_ret)

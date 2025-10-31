@@ -10,6 +10,10 @@ import typing as t
 from pathlib import Path
 from pprint import pformat
 
+# networkx
+import networkx as nx
+import graphviz
+
 # huggingface
 import datasets
 from datasets import Dataset, DatasetDict, IterableDataset, IterableDatasetDict, load_dataset, load_from_disk
@@ -55,13 +59,13 @@ import seaborn as sns
 from scipy.stats import f
 from scipy.stats import t as student_t, gamma as gamma_dist
 
-# pymc
+"""# pymc
 import pymc as pm
 from pymc import math as pmmath
 import arviz as az
 import xarray
 import pytensor
-import pytensor.tensor as pt
+import pytensor.tensor as pt"""
 
 # pytorch
 import torch
