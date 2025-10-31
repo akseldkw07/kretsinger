@@ -2,425 +2,11 @@
 
 # Automate everything about git push, including commit message generation, push, and pull request handling.
 # Opens pull request in browser if it doesn't exist, or focuses existing tab if it does.
-
 # Works on systems with `gh` CLI installed, otherwise falls back to manual PR creation.
-
-# --- AppleScript helpers & snippets (global) ---
-# Debug logger (enable by: export GITPUSH_DEBUG=1)
-_dbg() { [[ -n "$GITPUSH_DEBUG" ]] && print -P "%F{244}[gitpush][debug]%f $*"; }
-# Escape text for use inside a sed replacement
-_escape_sed() {
-  printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
-}
-
-# Run an AppleScript snippet substituting %APP_ID% and %PR_URL%
-_run_applescript() {
-  local app_id="$1"; shift
-  local script="$1"; shift
-  local pr_url="$1"; shift || true
-  local aid url
-  aid=$(_escape_sed "$app_id")
-  url=$(_escape_sed "$pr_url")
-  if [[ -n "$GITPUSH_DEBUG" ]]; then
-    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%PR_URL%/$url/g" | osascript
-  else
-    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%PR_URL%/$url/g" | osascript 2>/dev/null
-  fi
-}
-
-
-# Run an AppleScript snippet substituting %APP_ID%, %BASE_REPO%, %BRANCH_COMPARE%
-_run_applescript_repo() {
-  local app_id="$1"; shift
-  local script="$1"; shift
-  local baseRepo="$1"; shift
-  local branchComparePath="$1"; shift
-  local aid base compare
-  aid=$(_escape_sed "$app_id")
-  base=$(_escape_sed "$baseRepo")
-  compare=$(_escape_sed "$branchComparePath")
-  if [[ -n "$GITPUSH_DEBUG" ]]; then
-    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%BASE_REPO%/$base/g" -e "s/%BRANCH_COMPARE%/$compare/g" | osascript
-  else
-    printf '%s' "$script" | sed -e "s/%APP_ID%/$aid/g" -e "s/%BASE_REPO%/$base/g" -e "s/%BRANCH_COMPARE%/$compare/g" | osascript 2>/dev/null
-  fi
-}
-
-chromium_as=$(cat <<'APPLESCRIPT'
-  using terms from application "Google Chrome"
-    tell application id "%APP_ID%"
-      try
-      set wcount to 0
-      try
-        set wcount to count of windows
-      on error
-        return "no_windows"
-      end try
-      if wcount < 1 then return "no_windows"
-      set targetURL to "%PR_URL%"
-
-      -- Extract PR number from targetURL
-      set prNum to ""
-      set TID to AppleScript's text item delimiters
-      set AppleScript's text item delimiters to "/pull/"
-      set parts to text items of targetURL
-      if (count of parts) > 1 then
-        set afterPull to item 2 of parts
-        set AppleScript's text item delimiters to {"/", "?", "#"}
-        set prNum to item 1 of afterPull
-      end if
-      set AppleScript's text item delimiters to TID
-
-      repeat with theWindow in windows
-        set tabIdx to 1
-        repeat with theTab in tabs of theWindow
-          set tabURL to URL of theTab
-
-          -- Quick exact/startswith match fallback
-          if tabURL is equal to targetURL or tabURL starts with targetURL then
-            set active tab index of theWindow to tabIdx
-            set index of theWindow to 1
-            activate
-            return "found"
-          end if
-
-          -- If we have a PR number, match by /pull/<prNum> regardless of suffix
-          if prNum is not "" then
-            if tabURL contains ("/pull/" & prNum) then
-              set active tab index of theWindow to tabIdx
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-          end if
-
-          -- Base URL match ignoring query/fragment
-          set baseTabURL to tabURL
-          if baseTabURL contains "?" then
-            set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-          end if
-          if baseTabURL contains "#" then
-            set baseTabURL to text 1 thru ((offset of "#" in baseTabURL) - 1) of baseTabURL
-          end if
-
-          set baseTargetURL to targetURL
-          if baseTargetURL contains "?" then
-            set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
-          end if
-          if baseTargetURL contains "#" then
-            set baseTargetURL to text 1 thru ((offset of "#" in baseTargetURL) - 1) of baseTargetURL
-          end if
-
-          if baseTabURL is equal to baseTargetURL then
-            set active tab index of theWindow to tabIdx
-            set index of theWindow to 1
-            activate
-            return "found"
-          end if
-
-          set tabIdx to tabIdx + 1
-        end repeat
-      end repeat
-      return "not_found"
-    on error errMsg
-      return "error: " & errMsg
-      end try
-    end tell
-  end using terms from
-APPLESCRIPT
-)
-
-safari_as=$(cat <<'APPLESCRIPT'
-  tell application id "%APP_ID%"
-    try
-      set wcount to 0
-      try
-        set wcount to count of windows
-      on error
-        return "no_windows"
-      end try
-      if wcount < 1 then return "no_windows"
-      set targetURL to "%PR_URL%"
-
-      -- Extract PR number from targetURL
-      set prNum to ""
-      set TID to AppleScript's text item delimiters
-      set AppleScript's text item delimiters to "/pull/"
-      set parts to text items of targetURL
-      if (count of parts) > 1 then
-        set afterPull to item 2 of parts
-        set AppleScript's text item delimiters to {"/", "?", "#"}
-        set prNum to item 1 of afterPull
-      end if
-      set AppleScript's text item delimiters to TID
-
-      repeat with theWindow in windows
-        repeat with theTab in tabs of theWindow
-          set tabURL to URL of theTab
-
-          -- Quick exact/startswith match fallback
-          if tabURL is equal to targetURL or tabURL starts with targetURL then
-            set current tab of theWindow to theTab
-            set index of theWindow to 1
-            activate
-            return "found"
-          end if
-
-          -- If we have a PR number, match by /pull/<prNum> regardless of suffix
-          if prNum is not "" then
-            if tabURL contains ("/pull/" & prNum) then
-              set current tab of theWindow to theTab
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-          end if
-
-          -- Base URL match ignoring query/fragment
-          set baseTabURL to tabURL
-          if baseTabURL contains "?" then
-            set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-          end if
-          if baseTabURL contains "#" then
-            set baseTabURL to text 1 thru ((offset of "#" in baseTabURL) - 1) of baseTabURL
-          end if
-
-          set baseTargetURL to targetURL
-          if baseTargetURL contains "?" then
-            set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
-          end if
-          if baseTargetURL contains "#" then
-            set baseTargetURL to text 1 thru ((offset of "#" in baseTargetURL) - 1) of baseTargetURL
-          end if
-
-          if baseTabURL is equal to baseTargetURL then
-            set current tab of theWindow to theTab
-            set index of theWindow to 1
-            activate
-            return "found"
-          end if
-        end repeat
-      end repeat
-      return "not_found"
-    on error errMsg
-      return "error: " & errMsg
-    end try
-  end tell
-APPLESCRIPT
-)
-
-chromium_repo_as=$(cat <<'APPLESCRIPT'
-  using terms from application "Google Chrome"
-    tell application id "%APP_ID%"
-      try
-      set wcount to 0
-      try
-        set wcount to count of windows
-      on error
-        return "no_windows"
-      end try
-      if wcount < 1 then return "no_windows"
-      set baseRepo to "%BASE_REPO%"
-      set branchComparePath to "%BRANCH_COMPARE%"
-      repeat with theWindow in windows
-        set tabIdx to 1
-        repeat with theTab in tabs of theWindow
-          set tabURL to URL of theTab
-          if tabURL starts with baseRepo then
-            if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
-              set active tab index of theWindow to tabIdx
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-          end if
-          set tabIdx to tabIdx + 1
-        end repeat
-      end repeat
-      return "not_found"
-    on error errMsg
-      return "error: " & errMsg
-      end try
-    end tell
-  end using terms from
-APPLESCRIPT
-)
-
-## Existing Safari repo AppleScript
-safari_repo_as=$(cat <<'APPLESCRIPT'
-  tell application id "%APP_ID%"
-    try
-      set wcount to 0
-      try
-        set wcount to count of windows
-      on error
-        return "no_windows"
-      end try
-      if wcount < 1 then return "no_windows"
-      set baseRepo to "%BASE_REPO%"
-      set branchComparePath to "%BRANCH_COMPARE%"
-      repeat with theWindow in windows
-        repeat with theTab in tabs of theWindow
-          set tabURL to URL of theTab
-          if tabURL starts with baseRepo then
-            if tabURL contains "/pull/" or tabURL ends with "/pulls" or tabURL contains "/pulls?" or tabURL contains branchComparePath then
-              set current tab of theWindow to theTab
-              set index of theWindow to 1
-              activate
-              return "found"
-            end if
-          end if
-        end repeat
-      end repeat
-      return "not_found"
-    on error errMsg
-      return "error: " & errMsg
-    end try
-  end tell
-APPLESCRIPT
-)
-
-# List all visible GitHub repo tabs for a given base repo URL (Chromium family)
-list_chromium_repo_as=$(cat <<'APPLESCRIPT'
-  using terms from application "Google Chrome"
-    tell application id "%APP_ID%"
-      try
-      set wcount to 0
-      try
-        set wcount to count of windows
-      on error
-        return ""
-      end try
-      if wcount < 1 then return ""
-      set baseRepo to "%BASE_REPO%"
-      set out to {}
-      set winIdx to 0
-      repeat with theWindow in windows
-        set winIdx to winIdx + 1
-        set tabIdx to 0
-        repeat with theTab in tabs of theWindow
-          set tabIdx to tabIdx + 1
-          try
-            set u to URL of theTab
-            if u starts with baseRepo then
-              set end of out to ("W" & winIdx & " T" & tabIdx & "\t" & u)
-            end if
-          end try
-        end repeat
-      end repeat
-      if (count of out) = 0 then return ""
-      set {TID, AppleScript's text item delimiters} to {AppleScript's text item delimiters, linefeed}
-      set s to out as text
-      set AppleScript's text item delimiters to TID
-      return s
-    on error errMsg
-      return "error: " & errMsg
-      end try
-    end tell
-  end using terms from
-APPLESCRIPT
-)
-
-# List all visible GitHub repo tabs for a given base repo URL (Safari)
-list_safari_repo_as=$(cat <<'APPLESCRIPT'
-  tell application id "%APP_ID%"
-    try
-      set wcount to 0
-      try
-        set wcount to count of windows
-      on error
-        return ""
-      end try
-      if wcount < 1 then return ""
-      set baseRepo to "%BASE_REPO%"
-      set out to {}
-      set winIdx to 0
-      repeat with theWindow in windows
-        set winIdx to winIdx + 1
-        set tabIdx to 0
-        repeat with theTab in tabs of theWindow
-          set tabIdx to tabIdx + 1
-          try
-            set u to URL of theTab
-            if u starts with baseRepo then
-              set end of out to ("W" & winIdx & " T" & tabIdx & "\t" & u)
-            end if
-          end try
-        end repeat
-      end repeat
-      if (count of out) = 0 then return ""
-      set {TID, AppleScript's text item delimiters} to {AppleScript's text item delimiters, linefeed}
-      set s to out as text
-      set AppleScript's text item delimiters to TID
-      return s
-    on error errMsg
-      return "error: " & errMsg
-    end try
-  end tell
-APPLESCRIPT
-)
-
-# Helper to run listing scripts over known browsers and print results
-_log_repo_tabs() {
-  local baseRepo="$1"
-  [[ -z "$baseRepo" ]] && return 0
-  _dbg "Scanning open tabs for base repo: $baseRepo"
-  local -a _browsers=(
-    com.apple.Safari
-    company.thebrowser.Browser
-    com.openai.atlas
-    com.google.Chrome
-    com.google.Chrome.canary
-    org.chromium.Chromium
-    com.brave.Browser
-    com.microsoft.edgemac
-  )
-  local bid appname out
-  for bid in "${_browsers[@]}"; do
-    # Skip bundle ids that are not installed
-    if ! _app_exists "$bid"; then
-      if [[ -n "$GITPUSH_DEBUG" ]]; then
-        echo "[gitpush][debug] $bid -> not installed"
-      fi
-      continue
-    fi
-    case "$bid" in
-  com.apple.Safari)
-    out=$(_run_applescript_repo "$bid" "$list_safari_repo_as" "$baseRepo" "") ;;
-  com.openai.atlas)
-    _dbg "ChatGPT Atlas -> skipped listing (no tab scripting)"; out="" ;;
-  *)
-    out=$(_run_applescript_repo "$bid" "$list_chromium_repo_as" "$baseRepo" "") ;;
-esac
-    [[ -z "$out" ]] && continue
-    appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
-    [[ -z "$appname" ]] && appname="$bid"
-    _dbg "Visible GitHub tabs in $appname:"$'\n'"$out"
-  done
-}
-
-# Optionally append a browser by human-readable app name (e.g., "ChatGPT Atlas")
-_maybe_add_bundle_by_name() {
-  local name="$1"
-  local id
-  id=$(osascript -e 'try id of application "'"$name"'" on error "" end try' 2>/dev/null)
-  if [[ -n "$id" ]]; then
-    _dbg "Detected $name bundle id: $id"
-    _browsers+=("$id")
-  fi
-}
-# Return 0 if an app with this bundle id is installed (resolves), else 1
-_app_exists() {
-  local bid="$1"
-  local name
-  name=$(osascript -e 'try name of application id "'"$bid"'" on error "" end try' 2>/dev/null)
-  [[ -n "$name" ]]
-}
 
 gitpush() {
   local commit_message="$1"
   git add .
-  echo 'TESTING GIT PUSH2'
 
   # Get commit message/description (AI or fallback)
   local summary
@@ -485,11 +71,6 @@ _handle_pull_request() {
         _focus_existing_pr_tab "$pr_url"
       fi
     else
-      # Before creating a fresh PR, try to focus an already-open PR/compare tab in the default browser
-      if _focus_existing_repo_pr_or_compare_tab; then
-        echo "[gitpush] ℹ️  Found existing browser tab for this repo/branch; not creating a new PR tab."
-        return
-      fi
       echo "[gitpush] 🆕 Creating new pull request..."
       if gh pr create --fill --web >/dev/null 2>&1; then
         echo "[gitpush] 🚀 Pull request created and opened in browser."
@@ -543,155 +124,70 @@ _fallback_pr_creation() {
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
 }
 
-_focus_existing_repo_pr_or_compare_tab() {
-  # Derive owner/repo and branch
-  local remote url owner repo branch baseRepo branchComparePath
-  remote=$(git remote get-url --push origin 2>/dev/null)
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  if [[ -z "$remote" || -z "$branch" ]]; then
-    return 1
-  fi
-  # Normalize GitHub URL
-  # Supports: git@github.com:owner/repo.git or https://github.com/owner/repo(.git)
-  if [[ "$remote" == git@github.com:* ]]; then
-    url="https://github.com/${remote#git@github.com:}"
-  else
-    url="$remote"
-  fi
-  url=${url%.git}
-  # Extract owner and repo
-  owner=$(echo "$url" | sed -n 's#https://github\.com/\([^/]*\)/\([^/]*\).*#\1#p')
-  repo=$(echo "$url" | sed -n 's#https://github\.com/\([^/]*\)/\([^/]*\).*#\2#p')
-  if [[ -z "$owner" || -z "$repo" ]]; then
-    return 1
-  fi
-  baseRepo="https://github.com/${owner}/${repo}/"
-  branchComparePath="compare/${branch}"
-
-  # If AppleScript isn't available, give up
-  if ! command -v osascript >/dev/null 2>&1; then
-    return 1
-  fi
-
-  # Try known browsers regardless of default (Safari + Chromium family)
-  local -a _browsers=(
-    com.apple.Safari
-    company.thebrowser.Browser
-    com.openai.atlas
-    com.google.Chrome
-    com.google.Chrome.canary
-    org.chromium.Chromium
-    com.brave.Browser
-    com.microsoft.edgemac
-  )
-  # Try to include ChatGPT Atlas if installed
-  _maybe_add_bundle_by_name "ChatGPT Atlas"
-  if [[ -n "$GITPUSH_DEBUG" ]]; then
-    echo "[gitpush][debug] sweep candidates: ${_browsers[*]}"
-  fi
-
-  local bid result appname
-  for bid in "${_browsers[@]}"; do
-    # Skip bundle ids that are not installed
-    if ! _app_exists "$bid"; then
-      if [[ -n "$GITPUSH_DEBUG" ]]; then
-        echo "[gitpush][debug] $bid -> not installed"
-      fi
-      continue
-    fi
-    case "$bid" in
-      com.apple.Safari)
-        result=$(_run_applescript_repo "$bid" "$safari_repo_as" "$baseRepo" "$branchComparePath") ;;
-      *)
-        result=$(_run_applescript_repo "$bid" "$chromium_repo_as" "$baseRepo" "$branchComparePath") ;;
-    esac
-    if [[ -n "$GITPUSH_DEBUG" ]]; then
-      echo "[gitpush][debug] $bid -> ${result:-<no result>}"
-    fi
-    if [[ "$result" == "found" ]]; then
-      _dbg "Match in $bid"
-      appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
-      [[ -z "$appname" ]] && appname="$bid"
-      echo "[gitpush] 🔎 Focused existing GitHub tab for this repo/branch in $appname."
-      return 0
-    fi
-  done
-
-  _log_repo_tabs "$baseRepo"
-  return 1
-}
-
+# Try to focus existing Chrome tab with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
 
-  # If AppleScript isn't available, just open in default browser
-  if ! command -v osascript >/dev/null 2>&1; then
-    echo "[gitpush] ℹ️  AppleScript not available. PR URL: $pr_url"
-    open "$pr_url"
-    return
-  fi
-
-  # Try known browsers regardless of default (Safari + Chromium family)
-  local -a _browsers=(
-    com.apple.Safari
-    company.thebrowser.Browser
-    com.openai.atlas
-    com.google.Chrome
-    com.google.Chrome.canary
-    org.chromium.Chromium
-    com.brave.Browser
-    com.microsoft.edgemac
-  )
-  if [[ -n "$GITPUSH_DEBUG" ]]; then
-    echo "[gitpush][debug] sweep candidates: ${_browsers[*]}"
-  fi
-
-  local bid result appname
-  for bid in "${_browsers[@]}"; do
-    # Skip bundle ids that are not installed
-    if ! _app_exists "$bid"; then
-      [[ -n "$GITPUSH_DEBUG" ]] && echo "[gitpush][debug] $bid -> not installed"
-      continue
-    fi
-    case "$bid" in
-      com.apple.Safari)
-        result=$(_run_applescript "$bid" "$safari_as" "$pr_url") ;;
-      com.openai.atlas)
-        # Atlas is not reliably AppleScript-scriptable for tabs; skip to reduce noise
-        [[ -n "$GITPUSH_DEBUG" ]] && echo "[gitpush][debug] $bid -> skipped (no tab scripting)"
-        result="skipped" ;;
-      *)
-        result=$(_run_applescript "$bid" "$chromium_as" "$pr_url") ;;
-    esac
-    case "$bid" in
-      com.apple.Safari)
-        result=$(_run_applescript "$bid" "$safari_as" "$pr_url") ;;
-      *)
-        result=$(_run_applescript "$bid" "$chromium_as" "$pr_url") ;;
-    esac
-    if [[ -n "$GITPUSH_DEBUG" ]]; then
-      echo "[gitpush][debug] $bid -> ${result:-<no result>}"
-    fi
-    if [[ "$result" == "found" ]]; then
-      _dbg "Match in $bid"
-      appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
-      [[ -z "$appname" ]] && appname="$bid"
-      echo "[gitpush] ✅ Focused existing tab in $appname."
+  if command -v osascript >/dev/null 2>&1; then
+    # First check if we can access Chrome at all
+    if ! osascript -e 'tell application "Google Chrome" to get name' &>/dev/null; then
+      echo "[gitpush] ℹ️  Chrome access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
       return
     fi
-  done
 
-  echo "[gitpush] ℹ️  No existing tab found in known browsers."
-  # If debug is on, dump what we can see for this repo
-  if [[ -n "$GITPUSH_DEBUG" ]]; then
-    local baseRepo
-    baseRepo=$(printf %s "$pr_url" | sed -E 's#(https://github\.com/[^/]+/[^/]+/).*#\1#')
-    _log_repo_tabs "$baseRepo"
+    local found_tab
+    found_tab=$(osascript -e "
+      tell application \"Google Chrome\"
+        try
+          if not (exists window 1) then return \"no_windows\"
+          set targetURL to \"$pr_url\"
+          set baseTargetURL to targetURL
+          if baseTargetURL contains \"?\" then
+            set baseTargetURL to text 1 thru ((offset of \"?\" in baseTargetURL) - 1) of baseTargetURL
+          end if
+          set winIdx to 1
+          repeat with theWindow in windows
+            set tabIdx to 1
+            repeat with theTab in tabs of theWindow
+              set tabURL to URL of theTab
+              set baseTabURL to tabURL
+              if baseTabURL contains \"?\" then
+                set baseTabURL to text 1 thru ((offset of \"?\" in baseTabURL) - 1) of baseTabURL
+              end if
+              if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
+                set active tab index of theWindow to tabIdx
+                set index of theWindow to 1
+                activate
+                return \"found\"
+              end if
+              set tabIdx to tabIdx + 1
+            end repeat
+            set winIdx to winIdx + 1
+          end repeat
+          return \"not_found\"
+        on error errMsg
+          return \"error: \" & errMsg
+        end try
+      end tell
+    " 2>/dev/null)
+
+    if [[ "$found_tab" == "found" ]]; then
+      echo "[gitpush] ✅ Focused existing Chrome tab with PR (fuzzy match)."
+    elif [[ "$found_tab" == "no_windows" ]]; then
+      echo "[gitpush] ℹ️  Chrome is running but has no windows open."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    elif [[ "$found_tab" =~ ^error: ]]; then
+      echo "[gitpush] ℹ️  Chrome access error: ${found_tab#error: }"
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    else
+      echo "[gitpush] ℹ️  No existing Chrome tab found for this PR."
+      echo "[gitpush] ℹ️  PR URL: $pr_url"
+    fi
+  else
+    echo "[gitpush] ℹ️  AppleScript not available. PR URL: $pr_url"
   fi
-  echo "[gitpush] 🔗 Opening PR URL in default browser..."
-  open "$pr_url"
 }
-
 
 # Generate commit message and description, using aicommits if available, else fallback
 _generate_commit_message() {
