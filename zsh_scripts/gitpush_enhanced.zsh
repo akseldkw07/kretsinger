@@ -49,7 +49,13 @@ _run_applescript_repo() {
 chromium_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
-      if not (exists window 1) then return "no_windows"
+      set wcount to 0
+      try
+        set wcount to count of windows
+      on error
+        return "no_windows"
+      end try
+      if wcount < 1 then return "no_windows"
       set targetURL to "%PR_URL%"
 
       -- Extract PR number from targetURL
@@ -125,7 +131,13 @@ APPLESCRIPT
 safari_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
-      if not (exists window 1) then return "no_windows"
+      set wcount to 0
+      try
+        set wcount to count of windows
+      on error
+        return "no_windows"
+      end try
+      if wcount < 1 then return "no_windows"
       set targetURL to "%PR_URL%"
 
       -- Extract PR number from targetURL
@@ -198,7 +210,13 @@ APPLESCRIPT
 chromium_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
-      if not (exists window 1) then return "no_windows"
+      set wcount to 0
+      try
+        set wcount to count of windows
+      on error
+        return "no_windows"
+      end try
+      if wcount < 1 then return "no_windows"
       set baseRepo to "%BASE_REPO%"
       set branchComparePath to "%BRANCH_COMPARE%"
       repeat with theWindow in windows
@@ -228,7 +246,13 @@ APPLESCRIPT
 safari_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
-      if not (exists window 1) then return "no_windows"
+      set wcount to 0
+      try
+        set wcount to count of windows
+      on error
+        return "no_windows"
+      end try
+      if wcount < 1 then return "no_windows"
       set baseRepo to "%BASE_REPO%"
       set branchComparePath to "%BRANCH_COMPARE%"
       repeat with theWindow in windows
@@ -256,7 +280,13 @@ APPLESCRIPT
 list_chromium_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
-      if not (exists window 1) then return ""
+      set wcount to 0
+      try
+        set wcount to count of windows
+      on error
+        return ""
+      end try
+      if wcount < 1 then return ""
       set baseRepo to "%BASE_REPO%"
       set out to {}
       set winIdx to 0
@@ -289,7 +319,13 @@ APPLESCRIPT
 list_safari_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
-      if not (exists window 1) then return ""
+      set wcount to 0
+      try
+        set wcount to count of windows
+      on error
+        return ""
+      end try
+      if wcount < 1 then return ""
       set baseRepo to "%BASE_REPO%"
       set out to {}
       set winIdx to 0
