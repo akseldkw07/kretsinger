@@ -385,11 +385,13 @@ _log_repo_tabs() {
       continue
     fi
     case "$bid" in
-      com.apple.Safari)
-        out=$(_run_applescript_repo "$bid" "$list_safari_repo_as" "$baseRepo" "") ;;
-      *)
-        out=$(_run_applescript_repo "$bid" "$list_chromium_repo_as" "$baseRepo" "") ;;
-    esac
+  com.apple.Safari)
+    out=$(_run_applescript_repo "$bid" "$list_safari_repo_as" "$baseRepo" "") ;;
+  com.openai.atlas)
+    _dbg "ChatGPT Atlas -> skipped listing (no tab scripting)"; out="" ;;
+  *)
+    out=$(_run_applescript_repo "$bid" "$list_chromium_repo_as" "$baseRepo" "") ;;
+esac
     [[ -z "$out" ]] && continue
     appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
     [[ -z "$appname" ]] && appname="$bid"
@@ -411,9 +413,10 @@ _maybe_add_bundle_by_name() {
 _app_exists() {
   local bid="$1"
   local name
-  name=$(osascript -e 'try name of application id "'$bid'" on error "" end try' 2>/dev/null)
+  name=$(osascript -e 'try name of application id "'"$bid"'" on error "" end try' 2>/dev/null)
   [[ -n "$name" ]]
 }
+
 gitpush() {
   local commit_message="$1"
   git add .
@@ -645,6 +648,21 @@ _focus_existing_pr_tab() {
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
+    # Skip bundle ids that are not installed
+    if ! _app_exists "$bid"; then
+      [[ -n "$GITPUSH_DEBUG" ]] && echo "[gitpush][debug] $bid -> not installed"
+      continue
+    fi
+    case "$bid" in
+      com.apple.Safari)
+        result=$(_run_applescript "$bid" "$safari_as" "$pr_url") ;;
+      com.openai.atlas)
+        # Atlas is not reliably AppleScript-scriptable for tabs; skip to reduce noise
+        [[ -n "$GITPUSH_DEBUG" ]] && echo "[gitpush][debug] $bid -> skipped (no tab scripting)"
+        result="skipped" ;;
+      *)
+        result=$(_run_applescript "$bid" "$chromium_as" "$pr_url") ;;
+    esac
     case "$bid" in
       com.apple.Safari)
         result=$(_run_applescript "$bid" "$safari_as" "$pr_url") ;;
