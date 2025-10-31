@@ -6,6 +6,8 @@
 # Works on systems with `gh` CLI installed, otherwise falls back to manual PR creation.
 
 # --- AppleScript helpers & snippets (global) ---
+# Debug logger (enable by: export GITPUSH_DEBUG=1)
+_dbg() { [[ -n "$GITPUSH_DEBUG" ]] && print -P "%F{244}[gitpush][debug]%f $*"; }
 # Run an AppleScript snippet substituting %APP_ID% and %PR_URL%
 _run_applescript() {
   local app_id="$1"; shift
@@ -206,6 +208,7 @@ chromium_repo_as=$(cat <<'APPLESCRIPT'
 APPLESCRIPT
 )
 
+## Existing Safari repo AppleScript
 safari_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
@@ -232,6 +235,101 @@ safari_repo_as=$(cat <<'APPLESCRIPT'
   end tell
 APPLESCRIPT
 )
+
+# List all visible GitHub repo tabs for a given base repo URL (Chromium family)
+list_chromium_repo_as=$(cat <<'APPLESCRIPT'
+  tell application id "%APP_ID%"
+    try
+      if not (exists window 1) then return ""
+      set baseRepo to "%BASE_REPO%"
+      set out to {}
+      set winIdx to 0
+      repeat with theWindow in windows
+        set winIdx to winIdx + 1
+        set tabIdx to 0
+        repeat with theTab in tabs of theWindow
+          set tabIdx to tabIdx + 1
+          try
+            set u to URL of theTab
+            if u starts with baseRepo then
+              set end of out to ("W" & winIdx & " T" & tabIdx & "\t" & u)
+            end if
+          end try
+        end repeat
+      end repeat
+      if (count of out) = 0 then return ""
+      set {TID, AppleScript's text item delimiters} to {AppleScript's text item delimiters, linefeed}
+      set s to out as text
+      set AppleScript's text item delimiters to TID
+      return s
+    on error errMsg
+      return "error: " & errMsg
+    end try
+  end tell
+APPLESCRIPT
+)
+
+# List all visible GitHub repo tabs for a given base repo URL (Safari)
+list_safari_repo_as=$(cat <<'APPLESCRIPT'
+  tell application id "%APP_ID%"
+    try
+      if not (exists window 1) then return ""
+      set baseRepo to "%BASE_REPO%"
+      set out to {}
+      set winIdx to 0
+      repeat with theWindow in windows
+        set winIdx to winIdx + 1
+        set tabIdx to 0
+        repeat with theTab in tabs of theWindow
+          set tabIdx to tabIdx + 1
+          try
+            set u to URL of theTab
+            if u starts with baseRepo then
+              set end of out to ("W" & winIdx & " T" & tabIdx & "\t" & u)
+            end if
+          end try
+        end repeat
+      end repeat
+      if (count of out) = 0 then return ""
+      set {TID, AppleScript's text item delimiters} to {AppleScript's text item delimiters, linefeed}
+      set s to out as text
+      set AppleScript's text item delimiters to TID
+      return s
+    on error errMsg
+      return "error: " & errMsg
+    end try
+  end tell
+APPLESCRIPT
+)
+
+# Helper to run listing scripts over known browsers and print results
+_log_repo_tabs() {
+  local baseRepo="$1"
+  [[ -z "$baseRepo" ]] && return 0
+  _dbg "Scanning open tabs for base repo: $baseRepo"
+  local -a _browsers=(
+    com.apple.Safari
+    company.thebrowser.Browser
+    com.google.Chrome
+    com.google.Chrome.canary
+    org.chromium.Chromium
+    com.brave.Browser
+    com.microsoft.edgemac
+  )
+  local bid appname out
+  for bid in "${_browsers[@]}"; do
+    case "$bid" in
+      com.apple.Safari)
+        out=$(_run_applescript_repo "$bid" "$list_safari_repo_as" "$baseRepo" "") ;;
+      *)
+        out=$(_run_applescript_repo "$bid" "$list_chromium_repo_as" "$baseRepo" "") ;;
+    esac
+    [[ -z "$out" ]] && continue
+    appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
+    [[ -z "$appname" ]] && appname="$bid"
+    _dbg "Visible GitHub tabs in $appname:"$'\n'"$out"
+  done
+}
 
 gitpush() {
   local commit_message="$1"
@@ -409,6 +507,7 @@ _focus_existing_repo_pr_or_compare_tab() {
         result=$(_run_applescript_repo "$bid" "$chromium_repo_as" "$baseRepo" "$branchComparePath") ;;
     esac
     if [[ "$result" == "found" ]]; then
+      _dbg "Match in $bid"
       appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
       [[ -z "$appname" ]] && appname="$bid"
       echo "[gitpush] 🔎 Focused existing GitHub tab for this repo/branch in $appname."
@@ -416,6 +515,7 @@ _focus_existing_repo_pr_or_compare_tab() {
     fi
   done
 
+  _log_repo_tabs "$baseRepo"
   return 1
 }
 
@@ -450,6 +550,7 @@ _focus_existing_pr_tab() {
         result=$(_run_applescript "$bid" "$chromium_as" "$pr_url") ;;
     esac
     if [[ "$result" == "found" ]]; then
+      _dbg "Match in $bid"
       appname=$(osascript -e 'name of application id "'"$bid"'"' 2>/dev/null)
       [[ -z "$appname" ]] && appname="$bid"
       echo "[gitpush] ✅ Focused existing tab in $appname."
@@ -458,6 +559,12 @@ _focus_existing_pr_tab() {
   done
 
   echo "[gitpush] ℹ️  No existing tab found in known browsers."
+  # If debug is on, dump what we can see for this repo
+  if [[ -n "$GITPUSH_DEBUG" ]]; then
+    local baseRepo
+    baseRepo=$(printf %s "$pr_url" | sed -E 's#(https://github\.com/[^/]+/[^/]+/).*#\1#')
+    _log_repo_tabs "$baseRepo"
+  fi
   echo "[gitpush] 🔗 Opening PR URL in default browser..."
   open "$pr_url"
 }
