@@ -47,8 +47,9 @@ _run_applescript_repo() {
 }
 
 chromium_as=$(cat <<'APPLESCRIPT'
-  tell application id "%APP_ID%"
-    try
+  using terms from application "Google Chrome"
+    tell application id "%APP_ID%"
+      try
       set wcount to 0
       try
         set wcount to count of windows
@@ -123,8 +124,9 @@ chromium_as=$(cat <<'APPLESCRIPT'
       return "not_found"
     on error errMsg
       return "error: " & errMsg
-    end try
-  end tell
+      end try
+    end tell
+  end using terms from
 APPLESCRIPT
 )
 
@@ -208,8 +210,9 @@ APPLESCRIPT
 )
 
 chromium_repo_as=$(cat <<'APPLESCRIPT'
-  tell application id "%APP_ID%"
-    try
+  using terms from application "Google Chrome"
+    tell application id "%APP_ID%"
+      try
       set wcount to 0
       try
         set wcount to count of windows
@@ -237,8 +240,9 @@ chromium_repo_as=$(cat <<'APPLESCRIPT'
       return "not_found"
     on error errMsg
       return "error: " & errMsg
-    end try
-  end tell
+      end try
+    end tell
+  end using terms from
 APPLESCRIPT
 )
 
@@ -278,8 +282,9 @@ APPLESCRIPT
 
 # List all visible GitHub repo tabs for a given base repo URL (Chromium family)
 list_chromium_repo_as=$(cat <<'APPLESCRIPT'
-  tell application id "%APP_ID%"
-    try
+  using terms from application "Google Chrome"
+    tell application id "%APP_ID%"
+      try
       set wcount to 0
       try
         set wcount to count of windows
@@ -310,8 +315,9 @@ list_chromium_repo_as=$(cat <<'APPLESCRIPT'
       return s
     on error errMsg
       return "error: " & errMsg
-    end try
-  end tell
+      end try
+    end tell
+  end using terms from
 APPLESCRIPT
 )
 
@@ -371,6 +377,13 @@ _log_repo_tabs() {
   )
   local bid appname out
   for bid in "${_browsers[@]}"; do
+    # Skip bundle ids that are not installed
+    if ! _app_exists "$bid"; then
+      if [[ -n "$GITPUSH_DEBUG" ]]; then
+        echo "[gitpush][debug] $bid -> not installed"
+      fi
+      continue
+    fi
     case "$bid" in
       com.apple.Safari)
         out=$(_run_applescript_repo "$bid" "$list_safari_repo_as" "$baseRepo" "") ;;
@@ -576,6 +589,13 @@ _focus_existing_repo_pr_or_compare_tab() {
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
+    # Skip bundle ids that are not installed
+    if ! _app_exists "$bid"; then
+      if [[ -n "$GITPUSH_DEBUG" ]]; then
+        echo "[gitpush][debug] $bid -> not installed"
+      fi
+      continue
+    fi
     case "$bid" in
       com.apple.Safari)
         result=$(_run_applescript_repo "$bid" "$safari_repo_as" "$baseRepo" "$branchComparePath") ;;
