@@ -28,30 +28,71 @@ _run_applescript_repo() {
   osascript -e "$script" 2>/dev/null
 }
 
-# AppleScript for Chromium-family browsers (Chrome/Brave/Edge/Chromium/Arc) — focus PR tab
-chromium_as='
+chromium_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
       if not (exists window 1) then return "no_windows"
       set targetURL to "%PR_URL%"
-      set baseTargetURL to targetURL
-      if baseTargetURL contains "?" then
-        set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
+
+      -- Extract PR number from targetURL
+      set prNum to ""
+      set TID to AppleScript's text item delimiters
+      set AppleScript's text item delimiters to "/pull/"
+      set parts to text items of targetURL
+      if (count of parts) > 1 then
+        set afterPull to item 2 of parts
+        set AppleScript's text item delimiters to {"/", "?", "#"}
+        set prNum to item 1 of afterPull
       end if
+      set AppleScript's text item delimiters to TID
+
       repeat with theWindow in windows
         set tabIdx to 1
         repeat with theTab in tabs of theWindow
           set tabURL to URL of theTab
-          set baseTabURL to tabURL
-          if baseTabURL contains "?" then
-            set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
-          end if
-          if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
+
+          -- Quick exact/startswith match fallback
+          if tabURL is equal to targetURL or tabURL starts with targetURL then
             set active tab index of theWindow to tabIdx
             set index of theWindow to 1
             activate
             return "found"
           end if
+
+          -- If we have a PR number, match by /pull/<prNum> regardless of suffix
+          if prNum is not "" then
+            if tabURL contains ("/pull/" & prNum) then
+              set active tab index of theWindow to tabIdx
+              set index of theWindow to 1
+              activate
+              return "found"
+            end if
+          end if
+
+          -- Base URL match ignoring query/fragment
+          set baseTabURL to tabURL
+          if baseTabURL contains "?" then
+            set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
+          end if
+          if baseTabURL contains "#" then
+            set baseTabURL to text 1 thru ((offset of "#" in baseTabURL) - 1) of baseTabURL
+          end if
+
+          set baseTargetURL to targetURL
+          if baseTargetURL contains "?" then
+            set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
+          end if
+          if baseTargetURL contains "#" then
+            set baseTargetURL to text 1 thru ((offset of "#" in baseTargetURL) - 1) of baseTargetURL
+          end if
+
+          if baseTabURL is equal to baseTargetURL then
+            set active tab index of theWindow to tabIdx
+            set index of theWindow to 1
+            activate
+            return "found"
+          end if
+
           set tabIdx to tabIdx + 1
         end repeat
       end repeat
@@ -59,26 +100,68 @@ chromium_as='
     on error errMsg
       return "error: " & errMsg
     end try
-  end tell'
+  end tell
+APPLESCRIPT
+)
 
-# AppleScript for Safari — focus PR tab
-safari_as='
+safari_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
       if not (exists window 1) then return "no_windows"
       set targetURL to "%PR_URL%"
-      set baseTargetURL to targetURL
-      if baseTargetURL contains "?" then
-        set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
+
+      -- Extract PR number from targetURL
+      set prNum to ""
+      set TID to AppleScript's text item delimiters
+      set AppleScript's text item delimiters to "/pull/"
+      set parts to text items of targetURL
+      if (count of parts) > 1 then
+        set afterPull to item 2 of parts
+        set AppleScript's text item delimiters to {"/", "?", "#"}
+        set prNum to item 1 of afterPull
       end if
+      set AppleScript's text item delimiters to TID
+
       repeat with theWindow in windows
         repeat with theTab in tabs of theWindow
           set tabURL to URL of theTab
+
+          -- Quick exact/startswith match fallback
+          if tabURL is equal to targetURL or tabURL starts with targetURL then
+            set current tab of theWindow to theTab
+            set index of theWindow to 1
+            activate
+            return "found"
+          end if
+
+          -- If we have a PR number, match by /pull/<prNum> regardless of suffix
+          if prNum is not "" then
+            if tabURL contains ("/pull/" & prNum) then
+              set current tab of theWindow to theTab
+              set index of theWindow to 1
+              activate
+              return "found"
+            end if
+          end if
+
+          -- Base URL match ignoring query/fragment
           set baseTabURL to tabURL
           if baseTabURL contains "?" then
             set baseTabURL to text 1 thru ((offset of "?" in baseTabURL) - 1) of baseTabURL
           end if
-          if tabURL is equal to targetURL or tabURL starts with targetURL or baseTabURL is equal to baseTargetURL then
+          if baseTabURL contains "#" then
+            set baseTabURL to text 1 thru ((offset of "#" in baseTabURL) - 1) of baseTabURL
+          end if
+
+          set baseTargetURL to targetURL
+          if baseTargetURL contains "?" then
+            set baseTargetURL to text 1 thru ((offset of "?" in baseTargetURL) - 1) of baseTargetURL
+          end if
+          if baseTargetURL contains "#" then
+            set baseTargetURL to text 1 thru ((offset of "#" in baseTargetURL) - 1) of baseTargetURL
+          end if
+
+          if baseTabURL is equal to baseTargetURL then
             set current tab of theWindow to theTab
             set index of theWindow to 1
             activate
@@ -90,10 +173,11 @@ safari_as='
     on error errMsg
       return "error: " & errMsg
     end try
-  end tell'
+  end tell
+APPLESCRIPT
+)
 
-# AppleScript for Chromium-family — fuzzy match repo PR/pulls/compare tabs
-chromium_repo_as='
+chromium_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
       if not (exists window 1) then return "no_windows"
@@ -118,10 +202,11 @@ chromium_repo_as='
     on error errMsg
       return "error: " & errMsg
     end try
-  end tell'
+  end tell
+APPLESCRIPT
+)
 
-# AppleScript for Safari — fuzzy match repo PR/pulls/compare tabs
-safari_repo_as='
+safari_repo_as=$(cat <<'APPLESCRIPT'
   tell application id "%APP_ID%"
     try
       if not (exists window 1) then return "no_windows"
@@ -144,7 +229,9 @@ safari_repo_as='
     on error errMsg
       return "error: " & errMsg
     end try
-  end tell'
+  end tell
+APPLESCRIPT
+)
 
 gitpush() {
   local commit_message="$1"
