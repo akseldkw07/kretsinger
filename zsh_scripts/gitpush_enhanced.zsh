@@ -7,6 +7,7 @@
 gitpush() {
   local commit_message="$1"
   git add .
+  echo 'TESTING GIT PUSH'
 
   # Get commit message/description (AI or fallback)
   local summary
