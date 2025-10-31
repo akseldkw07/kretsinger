@@ -394,7 +394,13 @@ _maybe_add_bundle_by_name() {
     _browsers+=("$id")
   fi
 }
-
+# Return 0 if an app with this bundle id is installed (resolves), else 1
+_app_exists() {
+  local bid="$1"
+  local name
+  name=$(osascript -e 'try name of application id "'$bid'" on error "" end try' 2>/dev/null)
+  [[ -n "$name" ]]
+}
 gitpush() {
   local commit_message="$1"
   git add .
