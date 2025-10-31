@@ -554,8 +554,6 @@ _focus_existing_pr_tab() {
     com.brave.Browser
     com.microsoft.edgemac
   )
-  # Try to include ChatGPT Atlas if installed
-  _maybe_add_bundle_by_name "ChatGPT Atlas"
 
   local bid result appname
   for bid in "${_browsers[@]}"; do
