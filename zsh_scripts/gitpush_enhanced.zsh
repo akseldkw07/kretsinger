@@ -18,6 +18,7 @@ _run_applescript() {
   osascript -e "$script" 2>/dev/null
 }
 
+
 # Run an AppleScript snippet substituting %APP_ID%, %BASE_REPO%, %BRANCH_COMPARE%
 _run_applescript_repo() {
   local app_id="$1"; shift
