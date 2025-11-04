@@ -67,7 +67,7 @@ class CondaUtils:
     CONDA_PACKAGES_R_STATS = ["sympy", "siuba"]
     CONDA_PACKAGES_NLP = [
         "nltk",
-        #   "gensim",
+        #   "gensim", #conflicts with numpy > 2.0.0
         "spacy",
         "textblob",
         "transformers",

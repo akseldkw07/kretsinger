@@ -9,6 +9,7 @@ import typing
 import typing as t
 from pathlib import Path
 from pprint import pformat
+import json
 
 # networkx
 import networkx as nx
@@ -41,6 +42,9 @@ import gymnasium as gym
 # Language
 from sentence_transformers import SentenceTransformer, models, losses, InputExample, evaluation
 from sentence_transformers.readers import STSBenchmarkDataReader
+import spacy
+import gensim
+import gensim.downloader as gensim_api
 
 # sklearn
 import sklearn
