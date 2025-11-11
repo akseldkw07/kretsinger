@@ -11,13 +11,23 @@ from kret_studies.low_prio.typed_cls import TorchTrainResult
 
 LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 
-DEVICE_TORCH_STR: t.Literal["cuda", "mps", "cpu"]
-if torch.cuda.is_available():
-    DEVICE_TORCH_STR = "cuda"
-elif torch.backends.mps.is_available():
-    DEVICE_TORCH_STR = "mps"
-else:
-    DEVICE_TORCH_STR = "cpu"
+# DEVICE
+DEVICE_LITERAL = t.Literal["cuda", "mps", "xpu", "cpu"]  # extend to include "xla", "xpu" if needed
+
+
+def pick_device() -> DEVICE_LITERAL:
+    if torch.cuda.is_available():
+        return "cuda"
+    # If you plan to use TPUs:
+    if torch.backends.mps.is_available():
+        return "mps"
+    # If using Intel GPUs:
+    if hasattr(torch, "xpu") and torch.xpu.is_available():
+        return "xpu"
+    return "cpu"
+
+
+DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
 DEVICE = torch.device(DEVICE_TORCH_STR)
 
 
