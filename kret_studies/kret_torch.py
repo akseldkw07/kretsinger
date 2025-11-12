@@ -1,11 +1,9 @@
-from collections.abc import Callable
 from functools import cache
 from math import ceil, log
 
 import numpy as np
 import torch
 
-LossSpec = str | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 from kret_studies.helpers.numpy_utils import SingleReturnArray
 from kret_studies.helpers.torch_helper import train_regression  # autoflake: ignore
 
