@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pathlib
 import typing as t
 from abc import ABC, abstractmethod
