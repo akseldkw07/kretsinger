@@ -7,7 +7,6 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from kret_studies.helpers.numpy_utils import SingleReturnArray
-from kret_studies.helpers.torch_helper import train_regression  # autoflake: ignore
 
 
 @cache
@@ -48,7 +47,7 @@ def make_loader_from_xy(X: XTYPE, y: YTYPE, batch_size: int = 128, shuffle: bool
     """
     # X -> numpy
     if isinstance(X, pd.DataFrame):
-        X = X.to_numpy()
+        X = X.astype(np.float32).to_numpy()
     if isinstance(X, np.ndarray):
         X_tensor = torch.from_numpy(X).float()
     elif isinstance(X, torch.Tensor):
@@ -60,9 +59,9 @@ def make_loader_from_xy(X: XTYPE, y: YTYPE, batch_size: int = 128, shuffle: bool
     if isinstance(y, (pd.Series, pd.DataFrame)):
         y = y.to_numpy()
     if isinstance(y, np.ndarray):
-        y_tensor = torch.from_numpy(y)
+        y_tensor = torch.from_numpy(y).float()  # [N]
     elif isinstance(y, torch.Tensor):
-        y_tensor = y
+        y_tensor = y.float()
     else:
         raise TypeError(f"Unsupported y type: {type(y)}")
 

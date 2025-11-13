@@ -1,6 +1,6 @@
 import torch.nn as nn
-from mixin.base_nn import BaseNN
-from mixin.single_variate import SingleVariateMixin
+from .mixin.base_nn import BaseNN
+from .mixin.single_variate import SingleVariateMixin
 
 
 class LinearNN(SingleVariateMixin, BaseNN):

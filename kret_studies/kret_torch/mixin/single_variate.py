@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import tqdm
 import wandb
-from improvement_float import CheckImprovementFloat
+from .improvement_float import CheckImprovementFloat
 from torch.utils.data import DataLoader
 
 from ..utils import XTYPE, YTYPE, make_loader_from_xy
@@ -22,7 +22,6 @@ class SingleVariateMixin(CheckImprovementFloat, nn.Module):
             raise RuntimeError("post_init must be called before training the model.")
 
         device = self.device
-        self.model_state["epochs_trained"] + epochs
 
         train_loader = (
             train_loader
@@ -91,7 +90,7 @@ class SingleVariateMixin(CheckImprovementFloat, nn.Module):
         with torch.no_grad():
             for inputs, labels in val_loader:
                 inputs: torch.Tensor = inputs.to(device)
-                labels: torch.Tensor = labels
+                labels: torch.Tensor = labels.to(device)
                 outputs = self(inputs)
 
                 loss = self.get_loss(outputs, labels)

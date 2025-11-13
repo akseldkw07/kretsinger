@@ -1,4 +1,4 @@
-from abc_nn import ABCNN
+from .abc_nn import ABCNN
 
 
 class CheckImprovementFloat(ABCNN):

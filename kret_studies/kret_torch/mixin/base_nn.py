@@ -8,7 +8,7 @@ import typing as t
 
 import torch
 import torch.nn as nn
-from abc_nn import (
+from .abc_nn import (
     ABCNN,
     FullStateDict,
     HyperParamDict,
@@ -16,7 +16,7 @@ from abc_nn import (
     ModelPathDict,
     ModelStateDict,
 )
-from mixin.constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
+from .constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
 
 LOAD_LTRL = t.Literal["assert", "try", "fresh"]
 
@@ -196,7 +196,7 @@ class BaseNN(ABCNN, nn.Module):
 
     def forward(self, x: torch.Tensor):
         h: torch.Tensor = self.model(x)
-        return h
+        return h.squeeze(-1)
 
     def get_loss(self, outputs: torch.Tensor, labels: torch.Tensor):
         return self.criterion(outputs, labels)
