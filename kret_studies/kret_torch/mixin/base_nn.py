@@ -1,45 +1,34 @@
 from __future__ import annotations
+
 import json
-import pprint
 import logging
 import pathlib
+import pprint
 import typing as t
 
 import torch
 import torch.nn as nn
-
-from kret_studies.kret_torch.abc_nn import (
+from abc_nn import (
     ABCNN,
-    ModelPathDict,
+    FullStateDict,
     HyperParamDict,
     HyperParamTotalDict,
+    ModelPathDict,
     ModelStateDict,
-    FullStateDict,
 )
-from kret_studies.kret_torch.constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
+from mixin.constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
 
 LOAD_LTRL = t.Literal["assert", "try", "fresh"]
 
 
 # Default training state
-DEFAULT_HYPER_PARAMS = HyperParamTotalDict(lr=1e-3, gamma=0.1, stepsize=7, patience=25, improvement_tol=1e-4)
+DEFAULT_HYPER_PARAMS = HyperParamTotalDict(
+    lr=1e-3, gamma=0.1, stepsize=7, batchsize=128, patience=25, improvement_tol=1e-4
+)
 DEFAULT_MODEL_STATE = ModelStateDict(best_loss=float("inf"), epochs_trained=0)
 
 
 class BaseNN(ABCNN, nn.Module):
-    version: str = "v000"
-    model: nn.Module  # nn.Sequential or other nn.Module TODO define in subclass
-    optimizer: torch.optim.Optimizer  # NOTE: NOT SET in __init__
-    scheduler: torch.optim.lr_scheduler.LRScheduler  # NOTE: NOT SET in __init__
-    device: t.Literal["cuda", "mps", "xpu", "cpu"]  # DEVICE_TORCH_STR
-    _criterion: nn.Module  # TODO define
-
-    hparams: HyperParamTotalDict
-
-    _load_weights_act: t.Literal["assert", "try", "fresh"]
-    _post_init_done: bool = False
-    model_state: ModelStateDict
-    _log: bool
     # region INHERITED METHODS
     """INHERITED METHODS"""
 
@@ -212,6 +201,14 @@ class BaseNN(ABCNN, nn.Module):
     def get_loss(self, outputs: torch.Tensor, labels: torch.Tensor):
         return self.criterion(outputs, labels)
 
+    def _patience_reached(self, epochs_no_improve: int) -> bool:
+        patience_reached = epochs_no_improve >= self.hparams["patience"]
+        if patience_reached:
+            self.logger.warning(
+                f"Early stopping activated: no improvement for {self.hparams['patience']} consecutive epochs."
+            )
+        return patience_reached
+
     # endregion
     # region NOT IMPLEMENTED
     """NOT IMPLEMENTED"""
@@ -219,31 +216,8 @@ class BaseNN(ABCNN, nn.Module):
     def set_model(self, *args, **kwargs):
         raise NotImplementedError("Subclasses must implement set_model().")
 
-    def train_model(self, epochs: int, **kwargs) -> None:
-        """
-        Train the model using the provided data loaders and optimizer.
-        Implements early stopping: if neither val_loss nor val accuracies improve by
-        `improvement_tol` for `patience` consecutive epochs, stop training.
-        """
-        if not self._post_init_done:
-            raise RuntimeError("post_init must be called before training the model.")
+    def evaluate(self, *args, **kwargs) -> float | t.Any: ...
 
-        self.device
-        self.model_state["epochs_trained"] + epochs
-
-        raise NotImplementedError("Subclasses must implement train_model().")
-
-    def evaluate(self, **kwargs) -> float:
-        """
-        Evaluate the model on a validation set.
-
-        Returns:
-            tuple: (validation loss, validation accuracy (subclass), validation accuracy (superclass))
-        """
-        # raise NotImplementedError("Subclasses must implement evaluate().")
-        self.eval()
-        self.device
-
-        raise NotImplementedError("Subclasses must implement evaluate().")
+    def train_model(self, *args, **kwargs) -> None: ...
 
     # endregion
