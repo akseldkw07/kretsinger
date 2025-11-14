@@ -8,24 +8,27 @@ import typing as t
 
 import torch
 import torch.nn as nn
-from .abc_nn import (
-    ABCNN,
-    FullStateDict,
-    HyperParamDict,
-    HyperParamTotalDict,
-    ModelPathDict,
-    ModelStateDict,
-)
+import wandb
+from torch.utils.data import DataLoader
+
+from ..utils import XTYPE, YTYPE, make_loader_from_xy
+from .abc_nn import ABCNN, FullStateDict, HyperParamDict, HyperParamTotalDict, ModelPathDict, ModelStateDict
 from .constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
 
 LOAD_LTRL = t.Literal["assert", "try", "fresh"]
-
+from copy import deepcopy
 
 # Default training state
 DEFAULT_HYPER_PARAMS = HyperParamTotalDict(
     lr=1e-3, gamma=0.1, stepsize=7, batchsize=128, patience=25, improvement_tol=1e-4
 )
-DEFAULT_MODEL_STATE = ModelStateDict(best_loss=float("inf"), epochs_trained=0)
+DEFAULT_MODEL_STATE = ModelStateDict(
+    best_eval_loss=float("inf"),
+    best_eval_r2=float("-inf"),
+    best_accuracy=float("-inf"),
+    best_f1=float("-inf"),
+    epochs_trained=0,
+)
 
 
 class BaseNN(ABCNN, nn.Module):
@@ -47,6 +50,7 @@ class BaseNN(ABCNN, nn.Module):
         # Initialize default training state (may be overridden by load)
         self.model_state = DEFAULT_MODEL_STATE.copy()
         self._log = log
+        self._wandb = True
 
         self.to(self.device)
 
@@ -71,8 +75,16 @@ class BaseNN(ABCNN, nn.Module):
 
     @property
     def FullStateDictDisplay(self):
-        ret = self.FullStateDict.copy()
-        ret["state"]["best_loss"] = round(ret["state"]["best_loss"], 3)
+        ret = deepcopy(self.FullStateDict)
+        for k, v in ret["state"].items():
+            if not isinstance(v, float):
+                continue
+            if v < 1e-3 and v > 0:
+                ret["state"][k] = f"{v:.2e}"
+            if v <= 1:
+                ret["state"][k] = f"{v:.2%}"
+            if v >= 1:
+                ret["state"][k] = round(v, 3)
         return ret
 
     def save_weights(self, increment_version: bool = False):
@@ -113,8 +125,6 @@ class BaseNN(ABCNN, nn.Module):
             except Exception as ex:
                 self.logger.error(f"Failed to load state from {self.root_dir}: {ex}. Continuing with fresh weights.")
                 self.model_state = DEFAULT_MODEL_STATE.copy()
-                if override_load_hp:
-                    self.hparams = DEFAULT_HYPER_PARAMS.copy()
         elif load_weights == "fresh":
             self.model_state = DEFAULT_MODEL_STATE.copy()
         else:
@@ -129,9 +139,9 @@ class BaseNN(ABCNN, nn.Module):
         with open(self.model_paths["state_path"], encoding="utf-8") as f:
             full_state: FullStateDict = json.load(f)
 
-        self.model_state = full_state["state"]
+        self.model_state = self.model_state | full_state["state"]
         if override_load_hp:
-            self.hparams = full_state["hparams"]
+            self.hparams = self.hparams | full_state["hparams"]
         self.logger.info(f"Loaded model weights and state from {self.root_dir}.")
 
     # NAMING
@@ -209,6 +219,17 @@ class BaseNN(ABCNN, nn.Module):
             )
         return patience_reached
 
+    def _to_dataloader(self, data: tuple[XTYPE, YTYPE] | DataLoader) -> DataLoader:
+        return data if isinstance(data, DataLoader) else make_loader_from_xy(*data, self.hparams["batchsize"])
+
+    def _log_wandb(self, data: dict[str, float]):
+        def format_key(key: str) -> str:
+            return key.replace("_", " ").capitalize()
+
+        if self._wandb:
+            data = {format_key(k): v for k, v in data.items()}
+            wandb.log(data)
+
     # endregion
     # region NOT IMPLEMENTED
     """NOT IMPLEMENTED"""
@@ -216,7 +237,7 @@ class BaseNN(ABCNN, nn.Module):
     def set_model(self, *args, **kwargs):
         raise NotImplementedError("Subclasses must implement set_model().")
 
-    def evaluate(self, *args, **kwargs) -> float | t.Any: ...
+    def evaluate(self, *args, **kwargs) -> dict[str, float]: ...
 
     def train_model(self, *args, **kwargs) -> None: ...
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import os
 from pathlib import Path
+
 from kret_studies.low_prio.typed_cls import LBGMRegressor__init___TypedDict
 
 from .nb_setup import load_dotenv_file

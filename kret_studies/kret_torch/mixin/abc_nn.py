@@ -7,6 +7,9 @@ from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
+
+from ..utils import XTYPE, YTYPE
 
 
 class ModelPathDict(t.TypedDict):
@@ -36,8 +39,11 @@ class HyperParamTotalDict(t.TypedDict, total=True):
 
 
 class ModelStateDict(t.TypedDict):
-    best_loss: float
     epochs_trained: int
+    best_eval_loss: float
+    best_eval_r2: float
+    best_accuracy: float
+    best_f1: float
 
 
 class FullStateDict(t.TypedDict):
@@ -60,6 +66,7 @@ class ABCNN(ABC):
     model_state: ModelStateDict
     logger: logging.Logger
     _log: bool
+    _wandb: bool
 
     @property
     @abstractmethod
@@ -102,14 +109,21 @@ class ABCNN(ABC):
     @abstractmethod
     def get_loss(self, *args, **kwargs) -> torch.Tensor: ...
 
+    # Helper training methods
     @abstractmethod
     def _patience_reached(self, *args, **kwargs) -> bool: ...
+
+    @abstractmethod
+    def _to_dataloader(self, data: tuple[XTYPE, YTYPE] | DataLoader) -> DataLoader: ...
+
+    @abstractmethod
+    def _log_wandb(self, *args, **kwargs) -> None: ...
 
     @abstractmethod
     def set_model(self, *args, **kwargs) -> None: ...
 
     @abstractmethod
-    def evaluate(self, *args, **kwargs) -> float | t.Any: ...
+    def evaluate(self, *args, **kwargs) -> dict[str, float]: ...
 
     @abstractmethod
     def train_model(self, *args, **kwargs) -> None: ...
@@ -117,7 +131,7 @@ class ABCNN(ABC):
     # Helper methods for training with early stopping
 
     @abstractmethod
-    def _improved(self, *args, **kwargs) -> bool: ...
+    def _improved(self, *args, **kwargs) -> dict[str, bool]: ...
 
     @abstractmethod
     def _on_improvement(self, *args, **kwargs) -> int: ...
