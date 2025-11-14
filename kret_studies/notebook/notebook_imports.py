@@ -49,7 +49,7 @@ import gensim.downloader as gensim_api
 # sklearn
 import sklearn
 from sklearn.linear_model import ElasticNet, HuberRegressor, Lasso, LinearRegression, Ridge
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler

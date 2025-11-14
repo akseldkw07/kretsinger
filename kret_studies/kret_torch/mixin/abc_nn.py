@@ -42,8 +42,8 @@ class ModelStateDict(t.TypedDict):
     epochs_trained: int
     best_eval_loss: float
     best_eval_r2: float
-    best_accuracy: float
-    best_f1: float
+    best_eval_accuracy: float
+    best_eval_f1: float
 
 
 class FullStateDict(t.TypedDict):
@@ -114,13 +114,16 @@ class ABCNN(ABC):
     def _patience_reached(self, *args, **kwargs) -> bool: ...
 
     @abstractmethod
-    def _to_dataloader(self, data: tuple[XTYPE, YTYPE] | DataLoader) -> DataLoader: ...
+    def _to_dataloader(self, data: tuple[XTYPE, YTYPE] | DataLoader, batch_size: int) -> DataLoader: ...
 
     @abstractmethod
     def _log_wandb(self, *args, **kwargs) -> None: ...
 
     @abstractmethod
     def set_model(self, *args, **kwargs) -> None: ...
+
+    @abstractmethod
+    def predict(self, *args, **kwargs) -> t.Any: ...
 
     @abstractmethod
     def evaluate(self, *args, **kwargs) -> dict[str, float]: ...

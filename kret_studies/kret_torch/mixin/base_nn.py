@@ -25,8 +25,8 @@ DEFAULT_HYPER_PARAMS = HyperParamTotalDict(
 DEFAULT_MODEL_STATE = ModelStateDict(
     best_eval_loss=float("inf"),
     best_eval_r2=float("-inf"),
-    best_accuracy=float("-inf"),
-    best_f1=float("-inf"),
+    best_eval_accuracy=float("-inf"),
+    best_eval_f1=float("-inf"),
     epochs_trained=0,
 )
 
@@ -219,8 +219,8 @@ class BaseNN(ABCNN, nn.Module):
             )
         return patience_reached
 
-    def _to_dataloader(self, data: tuple[XTYPE, YTYPE] | DataLoader) -> DataLoader:
-        return data if isinstance(data, DataLoader) else make_loader_from_xy(*data, self.hparams["batchsize"])
+    def _to_dataloader(self, data: tuple[XTYPE, YTYPE] | DataLoader, batch_size: int) -> DataLoader:
+        return data if isinstance(data, DataLoader) else make_loader_from_xy(*data, batch_size=batch_size)
 
     def _log_wandb(self, data: dict[str, float]):
         def format_key(key: str) -> str:
