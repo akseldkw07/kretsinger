@@ -183,7 +183,7 @@ class BaseNN(ABCNN, nn.Module):
         3) Restoring model performance
         """
         try:
-            self.model.to(self.device)
+            self.to(self.device)
         except AttributeError as ex:
             raise RuntimeError(
                 "Model architecture must be defined using set_model() before calling post_init()."
