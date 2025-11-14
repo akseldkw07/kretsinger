@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -136,7 +137,13 @@ def _cols_to_datetime(df: pd.DataFrame, thresh: float = 0.95) -> None:
             non_null = ser.dropna()
             if non_null.empty:
                 continue
-            parsed = pd.to_datetime(non_null, errors="coerce")
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="Could not infer format, so each element will be parsed individually, falling back to `dateutil`.",
+                    category=UserWarning,
+                )
+                parsed = pd.to_datetime(non_null, errors="coerce")
             success_frac = parsed.notna().mean()
             if success_frac >= thresh:
                 df[col] = pd.to_datetime(ser, errors="coerce")

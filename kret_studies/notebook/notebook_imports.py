@@ -49,7 +49,7 @@ import gensim.downloader as gensim_api
 # sklearn
 import sklearn
 from sklearn.linear_model import ElasticNet, HuberRegressor, Lasso, LinearRegression, Ridge
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -92,7 +92,8 @@ from math import sqrt, log10
 # local imports
 from .nb_setup import load_dotenv_file
 from .source_env_vars import source_zsh_env
-from kret_studies.helpers.torch_helper import DEVICE, DEVICE_TORCH_STR
+from .wandb_utils import start_wandb_run, WANDB_PROJECT_NAME, WANDB_TEAM_NAME
+from kret_studies.kret_torch import DEVICE, DEVICE_TORCH_STR
 
 DEVICE_TORCH = DEVICE
 

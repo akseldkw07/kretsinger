@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -36,35 +37,44 @@ def load_dotenv_file(dotenv_path: str | None = None):
     print(f"Loaded environment variables from {dotenv_path}.")
 
 
-def get_notebook_logger(level: int = logging.INFO) -> logging.Logger:
-    """
-    Sets up logging so that:
-    - All INFO and above go to the specified log file (from NB_LOGFILE env or 'notebook.log').
-    - All WARNING and above also go to stdout (notebook output).
-    - All loggers default to INFO.
-    Returns a logger for notebook usage (root logger).
-    """
-    logfile = os.environ.get("NB_LOGFILE", "notebook.log")
-    print(logfile)
-    root_logger = logging.getLogger()
-    root_logger.setLevel(level)
+def get_notebook_logger(level=logging.INFO):
+    logging.basicConfig(
+        level=level,
+        format="[%(asctime)s | %(levelname)s | %(name)s ] %(message)s",
+        stream=sys.stdout,
+        force=True,  # <- crucial in notebooks; overrides prior handlers
+    )
 
-    # Remove all handlers to avoid duplicates
-    while root_logger.handlers:
-        root_logger.removeHandler(root_logger.handlers[0])
 
-    # File handler for all INFO and above
-    fh = logging.FileHandler(logfile, mode="a")
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
-    root_logger.addHandler(fh)
+# def get_notebook_logger(level: int = logging.INFO) -> logging.Logger:
+#     """
+#     Sets up logging so that:
+#     - All INFO and above go to the specified log file (from NB_LOGFILE env or 'notebook.log').
+#     - All WARNING and above also go to stdout (notebook output).
+#     - All loggers default to INFO.
+#     Returns a logger for notebook usage (root logger).
+#     """
+#     logfile = os.environ.get("NB_LOGFILE", "notebook.log")
+#     print(logfile)
+#     root_logger = logging.getLogger()
+#     root_logger.setLevel(level)
 
-    # Stream handler for WARNING and above
-    sh = logging.StreamHandler()
-    sh.setLevel(logging.WARNING)
-    sh.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
-    root_logger.addHandler(sh)
+#     # Remove all handlers to avoid duplicates
+#     while root_logger.handlers:
+#         root_logger.removeHandler(root_logger.handlers[0])
 
-    # Optional: log that logging is set up
-    root_logger.info(f"Notebook logging initialized. Log file: {os.path.abspath(logfile)}")
-    return root_logger
+#     # File handler for all INFO and above
+#     fh = logging.FileHandler(logfile, mode="a")
+#     fh.setLevel(logging.INFO)
+#     fh.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+#     root_logger.addHandler(fh)
+
+#     # Stream handler for WARNING and above
+#     sh = logging.StreamHandler()
+#     sh.setLevel(logging.WARNING)
+#     sh.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+#     root_logger.addHandler(sh)
+
+#     # Optional: log that logging is set up
+#     root_logger.info(f"Notebook logging initialized. Log file: {os.path.abspath(logfile)}")
+#     return root_logger
