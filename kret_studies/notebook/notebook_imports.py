@@ -14,6 +14,7 @@ import json
 # networkx
 import networkx as nx
 import graphviz
+import osmnx as ox
 
 # huggingface
 import datasets

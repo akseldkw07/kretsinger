@@ -102,6 +102,7 @@ class CondaUtils:
         "kaggle",
         "kagglehub",
         "networkx",
+        "OSMnx",
         "openai",
         "openpyxl",
     ]
