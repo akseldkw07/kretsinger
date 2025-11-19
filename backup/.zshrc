@@ -184,3 +184,6 @@ else
 fi
 unset __mamba_setup
 # <<< mamba initialize <<<
+
+# Added by Antigravity
+export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"

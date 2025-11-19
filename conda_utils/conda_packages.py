@@ -12,7 +12,7 @@ from packaging.version import parse  # Used for robust version comparison
 
 class CondaUtils:
     JSON_NAME = "min_conda_versions.json"
-    CONDA_PACKAGES_CORE: list[str] = [
+    CORE: list[str] = [
         "numpy",
         "pandas",
         "pyarrow",
@@ -27,16 +27,16 @@ class CondaUtils:
         "conda-tree",
         "numba",
         "ipykernel",
+        "jax",  # high-performance numerical computing. Like numpy but faster. Vectorized
     ]
-    CONDA_PACKAGES_FINANCE = [
+    FINANCE = [
         "yfinance",
         "pandas-datareader",
         "pmdarima",  # timeseries
     ]
-    CONDA_PACKAGES_VISUALIZATION = [
+    VISUALIZATION = [
         "plotly",
         "bokeh",
-        "seaborn",
         "matplotlib",
         "dash",
         "panel",
@@ -51,21 +51,23 @@ class CondaUtils:
         "drawdata",  # https://python.plainenglish.io/drawdata-the-python-library-you-didnt-know-you-needed-b8c2f2ff328b
         "pydeps",
     ]
-    CONDA_PACKAGES_STATS = [
-        # "abess",  # don't add, pin to numpy 1.26
+    STATS = [
+        # "abess",  # Algorithm for Best Element-wise Subset selection. don't add, pin to numpy 1.26
         "scikit-learn",
+        "seaborn",
         "statsmodels",
         "scipy",
-        "pymc",  # bayesian modeling, MCMC, VAI
-        "jax",
-        "arviz",
         # "arviz_plots",
         # "arviz_base",
         # "arviz_stats",
     ]
-
-    CONDA_PACKAGES_R_STATS = ["sympy", "siuba"]
-    CONDA_PACKAGES_NLP = [
+    BAYESIAN_STATS = [
+        "pymc",  # bayesian modeling, MCMC, VAI
+        "arviz",  # Bayesian analysis and visualization
+        "scikit-surprise",  # recommender systems. https://surpriselib.com/]
+    ]
+    R_STATS = ["sympy", "siuba"]
+    NLP = [
         "nltk",
         #   "gensim", #conflicts with numpy > 2.0.0
         "spacy",
@@ -74,53 +76,52 @@ class CondaUtils:
         "sentence-transformers",
         "evaluate",
     ]
-    CONDA_PACKAGES_REDDIT = ["praw", "vaderSentiment"]
-    CONDA_PACKAGES_ML = [
-        "tensorflow",
-        "keras",
-        "pytorch",
-        "fastai",
+    REDDIT = ["praw", "vaderSentiment"]
+    ML = [
         "xgboost",
         "lightgbm",
         "catboost",
-        "autograd",
         # "fbprophet",  # timeseries forecasting, facebook NOTE doesn't exist
+        "wandb",  # weights and biases
     ]
-    CONDA_PACKAGES_LLM_QUERY = [
+    NN_DL = [
+        "tensorflow",
+        "keras",  # tensorflow wrapper
+        "pytorch",
+        "fastai",  # pytorch wrapper, more configurable than keras
+        "kaggle",
+        "kagglehub",
+        "autograd",
+    ]
+    LLM_QUERY = [
         # REQUIRE GPU
         "transformers",  # for LLMs
         "sentencepiece",
         "accelerate",
         "optimum",
     ]
-    CONDA_PACKAGES_LINALG_OPTIMIZATION = [
+    LINALG_OPTIMIZATION = [
         "pulp",  # optimization
         "sympy",
         "cvxpy",  # optimization
     ]
-    CONDA_PACKAGES_MISC = [
-        "kaggle",
-        "kagglehub",
-        "networkx",
-        "openai",
-        "openpyxl",
-    ]
-    CONDA_PACKAGES_RL = [
-        "wandb",  # weights and biases
-        "gymnasium",  # openai gym]
-        "pygame",  # for rendering environments
-    ]
-    CONDA_PACKAGES_ALL = (
-        CONDA_PACKAGES_CORE
-        + CONDA_PACKAGES_FINANCE
-        + CONDA_PACKAGES_VISUALIZATION
-        + CONDA_PACKAGES_STATS
-        + CONDA_PACKAGES_NLP
-        # + CONDA_PACKAGES_REDDIT
-        + CONDA_PACKAGES_ML
-        # + CONDA_PACKAGES_LLM_QUERY
-        + CONDA_PACKAGES_LINALG_OPTIMIZATION
-        + CONDA_PACKAGES_MISC
+    GRAPHS = ["graphviz", "networkx", "osmnx"]
+    MISC = ["openai", "openpyxl"]
+    RL = ["gymnasium", "pygame"]
+    ALL = (
+        CORE
+        # + FINANCE
+        + VISUALIZATION
+        + STATS
+        + BAYESIAN_STATS
+        # + R_STATS
+        + NLP
+        # + REDDIT
+        + ML
+        + NN_DL
+        # + LLM_QUERY
+        + LINALG_OPTIMIZATION
+        + MISC
     )
 
     PINS_OVERRIDE = {}
@@ -128,7 +129,7 @@ class CondaUtils:
 
     @staticmethod
     def conda_packages_to_str(
-        packages: t.Iterable[str] = CONDA_PACKAGES_ALL,
+        packages: t.Iterable[str] = ALL,
         pin_loc: str = JSON_NAME,
         pins_override: dict[str, str] = PINS_OVERRIDE,
         version: str = "3.12",
