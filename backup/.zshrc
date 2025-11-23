@@ -187,3 +187,9 @@ unset __mamba_setup
 
 # Added by Antigravity
 export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc'; fi
