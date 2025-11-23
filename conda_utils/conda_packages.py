@@ -64,7 +64,9 @@ class CondaUtils:
     BAYESIAN_STATS = [
         "pymc",  # bayesian modeling, MCMC, VAI
         "arviz",  # Bayesian analysis and visualization
-        "scikit-surprise",  # recommender systems. https://surpriselib.com/]
+        # "scikit-surprise",  # recommender systems. https://surpriselib.com/] ----- don't add, pin to numpy 1.26
+        # 'lightfm',  # hybrid recommendation algorithms ----- don't add, pin to numpy 1.26 AND python 3.11
+        "implicit",  # collaborative filtering for implicit datasets
     ]
     R_STATS = ["sympy", "siuba"]
     NLP = [
@@ -92,6 +94,7 @@ class CondaUtils:
         "kaggle",
         "kagglehub",
         "autograd",
+        # 'thop', # for calculating FLOPs and params in pytorch models - PIP ONLY
     ]
     LLM_QUERY = [
         # REQUIRE GPU

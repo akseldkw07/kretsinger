@@ -48,6 +48,15 @@ Desktop.ini   # Windows
 .dmypy.json
 mypy_data/
 
+# Latex
+*.aux
+*.bbl
+*.blg
+*.brf
+*.synctex*
+*.fdb_latexmk
+*.fls
+
 # Notebooks
 .ipynb_checkpoints/
 # Jupyter Lab and Notebook related files

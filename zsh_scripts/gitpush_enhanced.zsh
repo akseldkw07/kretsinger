@@ -192,25 +192,6 @@ _focus_existing_pr_tab() {
 
 # Generate commit message and description, using aicommits if available, else fallback
 _generate_commit_message() {
-  local ai_message=""
-  if command -v aicommits >/dev/null 2>&1; then
-    # Try to get AI-generated commit message (auto-accept feedback)
-    ai_message=$(aicommits --yes 2>&1)
-    if [[ -n "$ai_message" ]]; then
-      if echo "$ai_message" | grep -q 'OpenAI API Error'; then
-        echo "[gitpush] AI commit message failed: OpenAI API error. Falling back to handcrafted message." >&2
-      else
-        echo "[gitpush] Using AI-generated commit message." >&2
-        echo "$ai_message"
-        return 0
-      fi
-    else
-      echo "[gitpush] AI commit message failed, using fallback." >&2
-    fi
-  else
-    echo "[gitpush] aicommits not found, using fallback." >&2
-  fi
-
   # Fallback: handcrafted logic
   local added=()
   local modified=()
