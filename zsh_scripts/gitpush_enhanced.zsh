@@ -192,7 +192,7 @@ _focus_existing_pr_tab() {
 
 # Generate commit message and description without calling external AI services
 _generate_commit_message() {
-  # Collect basic change summary for the commit message
+  # Fallback: handcrafted logic
   local added=()
   local modified=()
   local deleted=()

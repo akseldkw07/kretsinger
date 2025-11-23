@@ -26,3 +26,5 @@ def pick_device() -> DEVICE_LITERAL:
 
 DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
 DEVICE = torch.device(DEVICE_TORCH_STR)
+
+"/Users/Akseldkw/coding/Columbia/COMS4776-Data/data"

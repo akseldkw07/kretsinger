@@ -2,14 +2,19 @@
 from __future__ import annotations
 
 import io
-import os
 import re
-import sys
 import typing
 import typing as t
-from pathlib import Path
 from pprint import pformat
 import json
+
+# filesystem
+import shutil
+from urllib.request import urlretrieve
+import zipfile
+from pathlib import Path
+import sys
+import os
 
 # networkx
 import networkx as nx
