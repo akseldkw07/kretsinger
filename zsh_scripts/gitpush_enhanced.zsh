@@ -190,7 +190,7 @@ _focus_existing_pr_tab() {
   fi
 }
 
-# Generate commit message and description, using aicommits if available, else fallback
+# Generate commit message and description without calling external AI services
 _generate_commit_message() {
   # Fallback: handcrafted logic
   local added=()
