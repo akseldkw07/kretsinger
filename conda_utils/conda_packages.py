@@ -108,7 +108,7 @@ class CondaUtils:
         "sympy",
         "cvxpy",  # optimization
     ]
-    GRAPHS = ["graphviz", "networkx", "osmnx"]
+    GRAPHS = ["graphviz", "networkx", "osmnx", "pytorch_geometric"]
     MISC = ["openai", "openpyxl"]
     RL = ["gymnasium", "pygame"]
     ALL = (
