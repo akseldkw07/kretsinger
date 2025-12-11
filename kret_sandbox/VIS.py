@@ -65,7 +65,7 @@ def dtt(
     args_: t.Sequence[pd.DataFrame | pd.Series | np.ndarray | torch.Tensor],
     n: int = 5,
     filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
-    samp_head_tail: t.Literal["sample", "head", "tail"] = "sample",
+    how: t.Literal["sample", "head", "tail"] = "sample",
     titles: list[str] | cycle = cycle([""]),
     seed: int | None = None,
     round: int | None = 3,
@@ -94,7 +94,7 @@ def dtt(
                 f'<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
             )
 
-        mask = gen_display_mask(len(df), min(n, len(df)), seed, samp_head_tail)
+        mask = gen_display_mask(len(df), min(n, len(df)), seed, how)
         table_html = df[mask].to_html()
         html_str += table_html
         html_str += "</div>"
