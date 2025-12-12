@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import typing as t
 from functools import cache
 from itertools import chain, cycle
@@ -7,7 +8,6 @@ import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display_html
-
 
 DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150}
 
