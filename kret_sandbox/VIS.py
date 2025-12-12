@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing as t
 from functools import cache
 from itertools import chain, cycle
@@ -6,6 +7,98 @@ import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display_html
+
+
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150}
+
+
+def dtt(
+    args_: t.Sequence[pd.DataFrame | pd.Series | np.ndarray | torch.Tensor],
+    n: int = 5,
+    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
+    how: t.Literal["sample", "head", "tail"] = "sample",
+    titles: list[str] | cycle = cycle([""]),
+    **hparams: t.Unpack[DTTParams],
+) -> None:
+    hparams = {**DEFAULT_DTT_PARAMS, **hparams}
+    seed = hparams.get("seed") or np.random.randint(0, 1_000_000)
+    filter = process_filter(filter)
+
+    args: list[pd.DataFrame] = []
+    for arg in args_:
+        arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
+        df = arg[filter] if filter is not None else arg
+        df = coerce_to_df(df)
+        if (round_float := hparams.get("round_float")) is not None:
+            df = df.round(round_float)
+        args.append(df)
+
+    # Add overflow-x: auto for horizontal scrolling
+    html_str = '<div style="display: flex; gap: 20px; overflow-x: auto;">'
+    html_str = fmt_css(hparams, html_str)
+
+    for df, title in zip(args, chain(titles, cycle([""]))):
+        # Add flex-shrink: 0 to prevent tables from shrinking
+        html_str += '<div style="flex: 0 0 auto; min-width: 30px;">'
+
+        if title:
+            html_str += (
+                f'<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
+            )
+
+        mask = gen_display_mask(len(df), min(n, len(df)), seed, how)
+        table_html = df[mask].to_html()
+        html_str += table_html
+        html_str += "</div>"
+    html_str += "</div>"
+    display_html(html_str, raw=True)
+
+
+def fmt_css(hparams: DTTParams, html_str: str):
+    # Add CSS for column width limits if specified
+    if (max_col_width := hparams.get("max_col_width")) is not None:
+        html_str += f"""
+        <style>
+            table td, table th {{
+                max-width: {max_col_width}px;
+                overflow: hidden;
+                white-space: nowrap;
+                position: relative;
+            }}
+            table td {{
+                text-overflow: ellipsis;
+            }}
+            table td.truncated::after, table th.truncated::after {{
+                content: '';
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 20px;
+                background: linear-gradient(to right, transparent, rgba(255, 0, 0, 0.4));
+                pointer-events: none;
+            }}
+        </style>
+        <script>
+            (function() {{
+                // Wait for the DOM to be ready
+                setTimeout(function() {{
+                    document.querySelectorAll('table td, table th').forEach(function(cell) {{
+                        if (cell.scrollWidth > cell.clientWidth) {{
+                            cell.classList.add('truncated');
+                        }}
+                    }});
+                }}, 100);
+            }})();
+        </script>
+        """
+    return html_str
+
+
+class DTTParams(t.TypedDict, total=False):
+    seed: int | None
+    round_float: int | None
+    max_col_width: int | None
 
 
 @cache
@@ -59,44 +152,3 @@ def coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | obj
         return pd.DataFrame(obj.detach().cpu().numpy())
     else:
         return pd.DataFrame([obj])
-
-
-def dtt(
-    args_: t.Sequence[pd.DataFrame | pd.Series | np.ndarray | torch.Tensor],
-    n: int = 5,
-    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
-    how: t.Literal["sample", "head", "tail"] = "sample",
-    titles: list[str] | cycle = cycle([""]),
-    seed: int | None = None,
-    round: int | None = 3,
-) -> None:
-    seed = seed or np.random.randint(0, 1_000_000)
-    filter = process_filter(filter)
-
-    args: list[pd.DataFrame] = []
-    for arg in args_:
-        arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
-        df = arg[filter] if filter is not None else arg
-        df = coerce_to_df(df)
-        if round is not None:
-            df = df.round(round)
-        args.append(df)
-
-    # Add overflow-x: auto for horizontal scrolling
-    html_str = '<div style="display: flex; gap: 20px; overflow-x: auto;">'
-
-    for df, title in zip(args, chain(titles, cycle([""]))):
-        # Add flex-shrink: 0 to prevent tables from shrinking
-        html_str += '<div style="flex: 0 0 auto; min-width: 30px;">'
-
-        if title:
-            html_str += (
-                f'<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
-            )
-
-        mask = gen_display_mask(len(df), min(n, len(df)), seed, how)
-        table_html = df[mask].to_html()
-        html_str += table_html
-        html_str += "</div>"
-    html_str += "</div>"
-    display_html(html_str, raw=True)
