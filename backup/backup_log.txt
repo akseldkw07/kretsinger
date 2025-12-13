@@ -335,3 +335,33 @@ total size is 6850  speedup is 0.98
 [2025-12-11 18:46:02] ℹ️ No changes detected in .zshrc. Early exit.
 [2025-12-11 18:46:39] ℹ️ No changes detected in .zshrc. Early exit.
 [2025-12-11 19:27:15] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 00:41:36] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 00:41:44] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 00:41:47] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 04:16:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 04:16:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 04:16:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 05:07:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 05:08:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 05:15:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 13:42:36] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:50:15] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 16:02:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 16:02:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 16:48:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 18:05:34] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 18:05:43] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 18:06:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:50:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:50:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:50:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:56:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:57:09] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 01:12:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 01:12:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 01:53:24] ℹ️ No changes detected in .zshrc. Early exit.

@@ -9,7 +9,7 @@ import pandas as pd
 import torch
 from IPython.display import display_html
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150}
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150, "cols_per_row": None}
 
 
 def dtt(
@@ -99,6 +99,7 @@ class DTTParams(t.TypedDict, total=False):
     seed: int | None
     round_float: int | None
     max_col_width: int | None
+    cols_per_row: int | None
 
 
 @cache
