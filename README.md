@@ -34,7 +34,7 @@ kretsinger/
         optuna/
         fastai_integration/
         torch_utils/
-            def obs_numpy_to_torch (RL)
+            def obs_numpy_to_torch (RL) - timedelta conversion
     kret_numpy_pd/
         numpy_utils/
         pandas_utils/
