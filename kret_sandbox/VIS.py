@@ -9,7 +9,7 @@ import pandas as pd
 import torch
 from IPython.display import display_html
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150, "cols_per_row": None}
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150, "num_cols": None}
 
 
 def dtt(
@@ -56,33 +56,27 @@ def dtt(
 
 def generate_table_with_dtypes(df: pd.DataFrame) -> str:
     """Generate HTML table with datatypes displayed below column headers."""
-    # Start table
-    html = '<table border="1" class="dataframe">\n'
+    # Use pandas' fast to_html() method
+    base_html = df.to_html()
 
-    # Header row with column names
-    html += '  <thead>\n    <tr style="text-align: right;">\n'
-    html += "      <th></th>\n"  # Index column
-    for col in df.columns:
-        html += f"      <th>{col}</th>\n"
-    html += "    </tr>\n"
-
-    # Datatype row
-    html += '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'
-    html += "      <th></th>\n"  # Index column
+    # Build the dtype row HTML
+    dtype_row = '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'
+    dtype_row += "      <th></th>\n"  # Index column
     for col in df.columns:
         dtype_str = str(df[col].dtype)
-        html += f"      <th>{dtype_str}</th>\n"
-    html += "    </tr>\n  </thead>\n"
+        dtype_row += f"      <th>{dtype_str}</th>\n"
+    dtype_row += "    </tr>\n"
 
-    # Body
-    html += "  <tbody>\n"
-    for idx, row in df.iterrows():
-        html += "    <tr>\n"
-        html += f"      <th>{idx}</th>\n"
-        for val in row:
-            html += f"      <td>{val}</td>\n"
-        html += "    </tr>\n"
-    html += "  </tbody>\n</table>"
+    # Inject dtype row after the first </tr> in thead
+    # Find the end of the first header row
+    first_tr_end = base_html.find("</tr>", base_html.find("<thead>"))
+    if first_tr_end != -1:
+        # Insert dtype row after the first </tr>
+        insert_pos = first_tr_end + len("</tr>\n")
+        html = base_html[:insert_pos] + dtype_row + base_html[insert_pos:]
+    else:
+        # Fallback if structure is unexpected
+        html = base_html
 
     return html
 
@@ -132,7 +126,7 @@ class DTTParams(t.TypedDict, total=False):
     seed: int | None
     round_float: int | None
     max_col_width: int | None
-    cols_per_row: int | None
+    num_cols: int | None
 
 
 @cache
