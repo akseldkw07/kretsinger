@@ -23,6 +23,7 @@ kretsinger/
         stuff/
         dtt/
         wandb/
+            look at christian's wandb example
         typehint_utils/
             func_to_typehint/
             single-return-array/
@@ -33,6 +34,8 @@ kretsinger/
             mixin/ (PMML mixins)
         optuna/
         fastai_integration/
+        pytorch_dataloaders/
+        nn_weight_viz/
         torch_utils/
             def obs_numpy_to_torch (RL) - timedelta conversion
     kret_numpy_pd/
@@ -45,5 +48,9 @@ kretsinger/
             generic_stuff
     kret_mpl/
         mpl_utils/
+    kret_RL/
+        gymnasium/
+        Stable-Baselines/
+        CleanRL/
     kret_sandbox/
         *new experimental code*

@@ -15,8 +15,8 @@ DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width"
 def dtt(
     args_: t.Sequence[pd.DataFrame | pd.Series | np.ndarray | torch.Tensor],
     n: int = 5,
-    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
     how: t.Literal["sample", "head", "tail"] = "sample",
+    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
     titles: list[str] | cycle = cycle([""]),
     **hparams: t.Unpack[DTTParams],
 ) -> None:
@@ -47,11 +47,44 @@ def dtt(
             )
 
         mask = gen_display_mask(len(df), min(n, len(df)), seed, how)
-        table_html = df[mask].to_html()
+        table_html = generate_table_with_dtypes(df[mask])
         html_str += table_html
         html_str += "</div>"
     html_str += "</div>"
     display_html(html_str, raw=True)
+
+
+def generate_table_with_dtypes(df: pd.DataFrame) -> str:
+    """Generate HTML table with datatypes displayed below column headers."""
+    # Start table
+    html = '<table border="1" class="dataframe">\n'
+
+    # Header row with column names
+    html += '  <thead>\n    <tr style="text-align: right;">\n'
+    html += "      <th></th>\n"  # Index column
+    for col in df.columns:
+        html += f"      <th>{col}</th>\n"
+    html += "    </tr>\n"
+
+    # Datatype row
+    html += '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'
+    html += "      <th></th>\n"  # Index column
+    for col in df.columns:
+        dtype_str = str(df[col].dtype)
+        html += f"      <th>{dtype_str}</th>\n"
+    html += "    </tr>\n  </thead>\n"
+
+    # Body
+    html += "  <tbody>\n"
+    for idx, row in df.iterrows():
+        html += "    <tr>\n"
+        html += f"      <th>{idx}</th>\n"
+        for val in row:
+            html += f"      <td>{val}</td>\n"
+        html += "    </tr>\n"
+    html += "  </tbody>\n</table>"
+
+    return html
 
 
 def fmt_css(hparams: DTTParams, html_str: str):
