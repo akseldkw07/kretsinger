@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import inspect
 import typing as t
 from functools import cache
 from itertools import chain, cycle
@@ -14,6 +14,13 @@ if t.TYPE_CHECKING:
     pass
 
     from pandas._typing import ListLike, ColspaceArgType, FormattersType, FloatFormatType
+
+
+class DTTParams(t.TypedDict, total=False):
+    seed: int | None
+    max_col_width: int | None
+    num_cols: int | None
+    align_cols: bool  # not implemented
 
 
 DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None}
@@ -48,9 +55,11 @@ def dtt(
 
 
 TITLE_FMT = '<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
-OUTER_DIV = "<div style='display: flex; gap: 20px; overflow-x: auto;'>"
-PER_ROW_DIV = "<div style='display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow: hidden;'>"
-PER_TABLE_DIV = "<div style='flex: 0 0 auto; min-width: 30px;'>"
+
+OUTER_STYLE_TABLE = "<div style='display: flex; flex-direction: column; gap: 20px; overflow-x: auto;'>"
+OUTER_STYLE_ROW = "<div style='display: flex; gap: 20px; overflow-x: auto;'>"
+PER_ROW_DIV = "<div style='display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow: hidden; '>"
+PER_TABLE_DIV = "<div style='flex: 0 0 auto; min-width: 30px; width: fit-content'>"
 
 
 def display_df_list(
@@ -64,7 +73,7 @@ def display_df_list(
 ):
     """Original behavior: display all items in a single row with horizontal scroll."""
     # Add overflow-x: auto for horizontal scrolling
-    html_str = OUTER_DIV
+    html_str = OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
     html_str = fmt_css(hparams, html_str)
 
     for idx, (df, title) in enumerate(zip(args, chain(titles, cycle([""])))):
@@ -115,10 +124,13 @@ class To_html_TypedDict(t.TypedDict, total=False):
     encoding: str | None
 
 
+class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
+    pass
+
+
 def generate_table_with_dtypes(df: pd.DataFrame, **hparams: t.Unpack[To_html_TypedDict]) -> str:
     """Generate HTML table with datatypes displayed below column headers."""
     # Use pandas' fast to_html() method
-    import inspect
 
     html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
     base_html = df.to_html(**html_params)  # type: ignore
@@ -186,12 +198,6 @@ def fmt_css(hparams: DTTParams, html_str: str):
     return html_str
 
 
-class DTTParams(t.TypedDict, total=False):
-    seed: int | None
-    max_col_width: int | None
-    num_cols: int | None
-
-
 @cache
 def gen_display_mask(n: int, hot: int, seed: int, display_method: t.Literal["sample", "head", "tail"]):
     rng = np.random.default_rng(seed)
@@ -243,7 +249,3 @@ def coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | obj
         return pd.DataFrame(obj.detach().cpu().numpy())
     else:
         return pd.DataFrame([obj])
-
-
-class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
-    pass
