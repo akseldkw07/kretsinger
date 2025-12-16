@@ -17,7 +17,7 @@ if t.TYPE_CHECKING:
 
 
 class DTTParams(t.TypedDict, total=False):
-    seed: int | None
+    seed: t.Required[int | None]
     max_col_width: int | None
     num_cols: int | None
     align_cols: bool  # not implemented
@@ -30,18 +30,19 @@ PD_TO_HTML_KWARGS: To_html_TypedDict = {
     # "justify": "left",
     # "classes": "dataframe dtt-table",
 }
+ViewHow = t.Literal["sample", "head", "tail"]
 
 
 def dtt(
     args_: t.Sequence[pd.DataFrame | pd.Series | np.ndarray | torch.Tensor],
     n: int = 5,
-    how: t.Literal["sample", "head", "tail"] = "sample",
+    how: ViewHow = "sample",
     filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
     titles: list[str] | cycle = cycle([""]),
     **hparams: t.Unpack[DTTKwargs],
 ):
     hparams = {**DEFAULT_DTT_PARAMS, **DEFAULT_DTT_PARAMS, **hparams}
-    seed = hparams.get("seed") or np.random.randint(0, 1_000_000)
+    hparams.setdefault("seed", np.random.randint(0, 1_000_000))
     filter = process_filter(filter)
 
     args: list[pd.DataFrame] = []
@@ -51,23 +52,23 @@ def dtt(
         df = coerce_to_df(df)
         args.append(df)
 
-    display_df_list(args, titles, n, seed, how, hparams, num_cols=hparams.get("num_cols"))
+    display_df_list(args, titles, n, how, hparams, num_cols=hparams.get("num_cols"))
 
 
 TITLE_FMT = '<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
-
 OUTER_STYLE_TABLE = "<div style='display: flex; flex-direction: column; gap: 20px; overflow-x: auto;'>"
 OUTER_STYLE_ROW = "<div style='display: flex; gap: 20px; overflow-x: auto;'>"
-PER_ROW_DIV = "<div style='display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow: hidden; '>"
-PER_TABLE_DIV = "<div style='flex: 0 0 auto; min-width: 30px; width: fit-content'>"
+PER_ROW_DIV = "<div style='display: flex; gap: 20px; flex-shrink: 0; overflow: hidden; width: fit-content;'>"
+PER_TABLE_DIV = (
+    "<div style='flex: 0 0 auto; min-width: 30px; border-left: 2px solid #ccc; padding-left: {addtl_width}px;'>"
+)
 
 
 def display_df_list(
     args: list[pd.DataFrame],
     titles: t.Iterable[str],
     n: int,
-    seed: int,
-    how: str,
+    how: ViewHow,
     hparams: DTTKwargs,
     num_cols: int | None = None,
 ):
@@ -76,7 +77,7 @@ def display_df_list(
     html_str = OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
     html_str = fmt_css(hparams, html_str)
 
-    for idx, (df, title) in enumerate(zip(args, chain(titles, cycle([""])))):
+    for idx, (df, title) in enumerate(zip(args, chain(titles, cycle(["NO_TITLE"])))):
         if num_cols is not None and idx % num_cols == 0:
             # Close previous row and start a new one
             if idx > 0:
@@ -85,12 +86,12 @@ def display_df_list(
             html_str += PER_ROW_DIV  # Start new div
 
         # Add flex-shrink: 0 to prevent tables from shrinking
-        html_str += PER_TABLE_DIV
+        html_str += PER_TABLE_DIV.format(addtl_width=0)
 
         if title:
             html_str += TITLE_FMT.format(title=title)
 
-        mask = gen_display_mask(len(df), min(n, len(df)), seed, how)
+        mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
         table_html = generate_table_with_dtypes(df[mask], **hparams)
         html_str += table_html
         html_str += "</div>"
