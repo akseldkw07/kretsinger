@@ -91,7 +91,8 @@ from numpy.typing import NDArray
 import pandas as pd
 
 # misc
-import tqdm
+from tqdm.auto import tqdm as tqdm_auto
+from tqdm.notebook import tqdm as tqdm_notebook
 from IPython.display import HTML, Markdown, display
 import polars as pl
 import requests

@@ -36,8 +36,11 @@ kretsinger/
         fastai_integration/
         pytorch_dataloaders/
         nn_weight_viz/
+        data_loader_utils/
+            DataLoader next() typehinted to return two tensors
         torch_utils/
             def obs_numpy_to_torch (RL) - timedelta conversion
+        RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
     kret_numpy_pd/
         numpy_utils/
         pandas_utils/
@@ -52,5 +55,8 @@ kretsinger/
         gymnasium/
         Stable-Baselines/
         CleanRL/
+    kret_tqdm/
+        tqdm patterns for notebooks and scripts. tqdm.auto, tqdm.notebook, etc.
+        how to safely keyboard interrupt tqdm loops/ (GracefulInterrupt)
     kret_sandbox/
         *new experimental code*

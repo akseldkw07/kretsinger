@@ -19,7 +19,7 @@ def dtt(
     filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
     titles: list[str] | cycle = cycle([""]),
     **hparams: t.Unpack[DTTParams],
-) -> None:
+):
     hparams = {**DEFAULT_DTT_PARAMS, **hparams}
     seed = hparams.get("seed") or np.random.randint(0, 1_000_000)
     filter = process_filter(filter)
