@@ -9,7 +9,20 @@ import pandas as pd
 import torch
 from IPython.display import display_html
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "round_float": 3, "max_col_width": 150, "num_cols": None}
+
+if t.TYPE_CHECKING:
+    pass
+
+    from pandas._typing import ListLike, ColspaceArgType, FormattersType, FloatFormatType
+
+
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None}
+PD_TO_HTML_KWARGS: To_html_TypedDict = {
+    "border": 1,
+    # "index": False,
+    # "justify": "left",
+    # "classes": "dataframe dtt-table",
+}
 
 
 def dtt(
@@ -18,9 +31,9 @@ def dtt(
     how: t.Literal["sample", "head", "tail"] = "sample",
     filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
     titles: list[str] | cycle = cycle([""]),
-    **hparams: t.Unpack[DTTParams],
+    **hparams: t.Unpack[DTTKwargs],
 ):
-    hparams = {**DEFAULT_DTT_PARAMS, **hparams}
+    hparams = {**DEFAULT_DTT_PARAMS, **DEFAULT_DTT_PARAMS, **hparams}
     seed = hparams.get("seed") or np.random.randint(0, 1_000_000)
     filter = process_filter(filter)
 
@@ -29,35 +42,86 @@ def dtt(
         arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
         df = arg[filter] if filter is not None else arg
         df = coerce_to_df(df)
-        if (round_float := hparams.get("round_float")) is not None:
-            df = df.round(round_float)
         args.append(df)
 
+    display_df_list(args, titles, n, seed, how, hparams, num_cols=hparams.get("num_cols"))
+
+
+TITLE_FMT = '<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
+OUTER_DIV = "<div style='display: flex; gap: 20px; overflow-x: auto;'>"
+PER_ROW_DIV = "<div style='display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow: hidden;'>"
+PER_TABLE_DIV = "<div style='flex: 0 0 auto; min-width: 30px;'>"
+
+
+def display_df_list(
+    args: list[pd.DataFrame],
+    titles: t.Iterable[str],
+    n: int,
+    seed: int,
+    how: str,
+    hparams: DTTKwargs,
+    num_cols: int | None = None,
+):
+    """Original behavior: display all items in a single row with horizontal scroll."""
     # Add overflow-x: auto for horizontal scrolling
-    html_str = '<div style="display: flex; gap: 20px; overflow-x: auto;">'
+    html_str = OUTER_DIV
     html_str = fmt_css(hparams, html_str)
 
-    for df, title in zip(args, chain(titles, cycle([""]))):
+    for idx, (df, title) in enumerate(zip(args, chain(titles, cycle([""])))):
+        if num_cols is not None and idx % num_cols == 0:
+            # Close previous row and start a new one
+            if idx > 0:
+                html_str += "</div>"  # Close previous div
+
+            html_str += PER_ROW_DIV  # Start new div
+
         # Add flex-shrink: 0 to prevent tables from shrinking
-        html_str += '<div style="flex: 0 0 auto; min-width: 30px;">'
+        html_str += PER_TABLE_DIV
 
         if title:
-            html_str += (
-                f'<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
-            )
+            html_str += TITLE_FMT.format(title=title)
 
         mask = gen_display_mask(len(df), min(n, len(df)), seed, how)
-        table_html = generate_table_with_dtypes(df[mask])
+        table_html = generate_table_with_dtypes(df[mask], **hparams)
         html_str += table_html
         html_str += "</div>"
-    html_str += "</div>"
+    html_str += "</div>" + ("</div>" if num_cols is not None else "")
     display_html(html_str, raw=True)
 
 
-def generate_table_with_dtypes(df: pd.DataFrame) -> str:
+class To_html_TypedDict(t.TypedDict, total=False):
+    buf: None
+    columns: ListLike | None
+    col_space: ColspaceArgType | None
+    header: bool
+    index: bool
+    na_rep: str
+    formatters: FormattersType | None
+    float_format: FloatFormatType | None
+    sparsify: bool | None
+    index_names: bool
+    justify: str | None
+    max_rows: int | None
+    max_cols: int | None
+    show_dimensions: bool
+    decimal: str
+    bold_rows: bool
+    classes: str | list | tuple | None
+    escape: bool
+    notebook: bool
+    border: int | bool | None
+    table_id: str | None
+    render_links: bool
+    encoding: str | None
+
+
+def generate_table_with_dtypes(df: pd.DataFrame, **hparams: t.Unpack[To_html_TypedDict]) -> str:
     """Generate HTML table with datatypes displayed below column headers."""
     # Use pandas' fast to_html() method
-    base_html = df.to_html()
+    import inspect
+
+    html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
+    base_html = df.to_html(**html_params)  # type: ignore
 
     # Build the dtype row HTML
     dtype_row = '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'
@@ -124,7 +188,6 @@ def fmt_css(hparams: DTTParams, html_str: str):
 
 class DTTParams(t.TypedDict, total=False):
     seed: int | None
-    round_float: int | None
     max_col_width: int | None
     num_cols: int | None
 
@@ -180,3 +243,7 @@ def coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | obj
         return pd.DataFrame(obj.detach().cpu().numpy())
     else:
         return pd.DataFrame([obj])
+
+
+class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
+    pass
