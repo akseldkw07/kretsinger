@@ -92,3 +92,328 @@ total size is 6850  speedup is 0.98
 [2025-11-23 09:45:01] ℹ️ No changes detected in .zshrc. Early exit.
 [2025-11-23 09:46:23] ℹ️ No changes detected in .zshrc. Early exit.
 [2025-11-23 09:47:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 10:58:37] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 10:59:12] ❌ .zshrc source error. Backup canceled.
+[2025-11-23 11:35:33] ✅ .zshrc updated and backed up.
+[2025-11-23 11:37:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 12:06:35] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 12:19:09] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 12:19:30] ❌ .zshrc source error. Backup canceled.
+[2025-11-23 12:31:35] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 12:32:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 12:45:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 13:45:33] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 15:01:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 16:43:51] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 17:41:50] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 23:01:25] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 23:36:08] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-23 23:57:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 11:26:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 14:41:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 14:41:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 18:50:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 18:50:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 18:56:42] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-24 18:56:42] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 11:49:59] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 11:50:13] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 12:52:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 12:52:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 12:53:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 12:53:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 12:53:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 12:54:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 13:10:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 14:46:03] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 19:06:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 19:07:11] ❌ .zshrc source error. Backup canceled.
+[2025-11-25 19:07:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 19:07:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 19:09:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 19:09:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 21:33:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 21:34:39] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 21:48:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-25 23:56:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-26 00:04:29] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-26 00:13:27] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-26 00:20:55] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-30 15:14:16] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-30 15:14:40] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-11-30 18:12:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-01 16:53:59] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-02 16:49:40] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-02 16:49:40] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-02 20:28:55] ✅ .zshrc updated and backed up.
+[2025-12-02 20:30:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-02 21:21:30] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 18:15:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 18:31:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 18:31:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 19:16:17] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 19:16:17] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 22:48:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 23:03:03] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-03 23:03:03] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 00:15:46] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 00:15:46] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 00:23:37] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 06:26:13] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 06:48:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 07:05:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 08:51:33] ❌ .zshrc source error. Backup canceled.
+[2025-12-04 08:51:33] ❌ .zshrc source error. Backup canceled.
+[2025-12-04 09:37:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 09:37:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 09:41:04] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 10:10:18] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 10:10:18] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 10:40:55] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 14:54:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 14:54:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 16:42:45] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 18:20:06] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 18:20:06] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 20:19:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 20:19:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 22:35:35] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 22:48:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 22:48:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-04 22:48:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-05 15:40:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 14:06:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 16:32:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 16:32:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 16:57:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 16:57:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 18:22:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 20:30:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 20:30:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 21:10:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-06 21:10:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 04:55:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 04:55:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 05:00:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 05:00:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 13:32:50] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 13:35:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:19:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:19:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:19:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:19:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:33:39] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 14:40:30] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:50:03] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 14:50:10] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 16:15:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 16:54:20] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 17:04:25] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 18:50:08] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 18:50:10] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 19:16:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 21:09:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 21:45:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 22:57:50] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 23:22:12] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 23:22:19] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 23:22:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-07 23:51:05] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 23:51:05] ❌ .zshrc source error. Backup canceled.
+[2025-12-07 23:51:10] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 01:31:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 02:29:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 02:36:45] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 02:37:55] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 02:44:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 03:24:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 04:52:14] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 04:52:15] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 04:52:22] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 04:53:27] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 06:33:16] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 06:50:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 06:52:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 06:54:09] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 06:54:10] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 06:54:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 07:03:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 07:09:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 07:41:05] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 07:41:07] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 07:42:04] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 14:52:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 14:55:25] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 14:57:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 14:57:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 15:00:12] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:04:45] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:04:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 15:10:29] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 15:11:15] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 15:50:00] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:50:05] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:50:08] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:53:30] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 15:56:29] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:56:31] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:56:46] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 15:56:59] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 15:58:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 19:53:26] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 19:53:34] ❌ .zshrc source error. Backup canceled.
+[2025-12-08 19:53:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 20:36:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 20:36:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 22:06:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 22:06:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-08 22:07:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 02:26:55] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 11:44:14] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 11:51:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 11:51:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 11:51:34] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 11:58:16] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 12:03:39] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 12:16:27] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 13:10:47] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 13:22:19] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 15:45:19] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 16:32:20] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 16:37:54] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 17:08:45] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 17:14:09] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 17:37:44] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 17:57:05] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 18:36:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 18:47:43] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 18:47:43] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 18:49:17] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 18:50:04] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 18:57:01] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 19:13:00] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 19:48:01] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 22:15:22] ❌ .zshrc source error. Backup canceled.
+[2025-12-09 22:20:29] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 23:30:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-09 23:30:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 10:25:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 13:19:58] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 15:56:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 15:56:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 15:56:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 15:57:57] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 15:57:57] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 16:46:54] ❌ .zshrc source error. Backup canceled.
+[2025-12-10 16:47:04] ❌ .zshrc source error. Backup canceled.
+[2025-12-10 16:48:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 20:31:01] ❌ .zshrc source error. Backup canceled.
+[2025-12-10 20:31:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 22:10:59] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 22:10:59] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 23:30:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-10 23:42:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 03:53:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 03:53:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 14:12:01] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 14:12:01] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 15:32:14] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 15:32:14] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 15:34:13] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 15:34:13] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 16:25:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 16:36:25] ❌ .zshrc source error. Backup canceled.
+[2025-12-11 16:36:28] ❌ .zshrc source error. Backup canceled.
+[2025-12-11 16:37:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 17:11:30] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 17:11:30] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 17:44:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 18:30:16] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 18:38:45] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 18:44:38] ❌ .zshrc source error. Backup canceled.
+[2025-12-11 18:44:43] ❌ .zshrc source error. Backup canceled.
+[2025-12-11 18:46:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 18:46:39] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-11 19:27:15] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 00:41:36] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 00:41:44] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 00:41:47] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 04:16:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 04:16:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 04:16:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 05:07:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 05:08:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 05:15:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 13:42:36] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:44:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 15:50:15] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 16:02:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 16:02:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 16:48:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-12 18:05:34] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 18:05:43] ❌ .zshrc source error. Backup canceled.
+[2025-12-12 18:06:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:50:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:50:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:50:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:56:41] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 00:57:09] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 01:12:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 01:12:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 01:53:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 03:08:28] ❌ .zshrc source error. Backup canceled.
+[2025-12-13 03:08:30] ❌ .zshrc source error. Backup canceled.
+[2025-12-13 03:08:34] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 05:15:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 05:15:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 14:24:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 14:24:37] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 17:00:54] ❌ .zshrc source error. Backup canceled.
+[2025-12-13 17:00:56] ❌ .zshrc source error. Backup canceled.
+[2025-12-13 17:01:48] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 17:23:30] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 17:39:10] ❌ .zshrc source error. Backup canceled.
+[2025-12-13 17:39:12] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 18:43:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 18:43:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 19:08:42] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 19:08:42] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 19:15:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-13 19:25:44] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 17:57:25] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 17:57:38] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 22:59:51] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 23:02:22] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 23:04:24] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 23:25:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-14 23:25:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 02:51:50] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 03:47:28] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 04:06:08] ❌ .zshrc source error. Backup canceled.
+[2025-12-15 04:06:19] ❌ .zshrc source error. Backup canceled.
+[2025-12-15 04:06:31] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 04:36:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 05:01:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 05:01:49] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 12:22:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 12:22:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 12:22:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 12:22:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 14:03:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 14:03:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 14:03:02] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 14:03:17] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 14:03:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 15:16:56] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 15:16:56] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 17:50:43] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 23:42:55] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-15 23:43:42] ❌ .zshrc source error. Backup canceled.
+[2025-12-16 00:16:50] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-16 00:19:05] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-16 01:57:59] ℹ️ No changes detected in .zshrc. Early exit.
+[2025-12-16 03:18:55] ℹ️ No changes detected in .zshrc. Early exit.

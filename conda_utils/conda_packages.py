@@ -28,6 +28,7 @@ class CondaUtils:
         "numba",
         "ipykernel",
         "jax",  # high-performance numerical computing. Like numpy but faster. Vectorized
+        "pytest",
     ]
     FINANCE = [
         "yfinance",
@@ -108,7 +109,7 @@ class CondaUtils:
         "sympy",
         "cvxpy",  # optimization
     ]
-    GRAPHS = ["graphviz", "networkx", "osmnx"]
+    GRAPHS = ["graphviz", "networkx", "osmnx", "pytorch_geometric"]
     MISC = ["openai", "openpyxl"]
     RL = ["gymnasium", "pygame"]
     ALL = (

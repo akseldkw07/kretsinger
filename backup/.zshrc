@@ -162,15 +162,7 @@ tailkret() {
 }
 
 rgf() {
-  # This function searches for files and folders by name using ripgrep.
-  # It defaults to suppressing 'Permission denied' errors.
-  #
-  # -g '**/$@': The glob pattern is updated to search for folders and files.
-  #              '**/' matches any number of subdirectories, and '$@' passes
-  #              your search term(s).
-  # 2>/dev/null: This redirects stderr (where the errors are printed) to /dev/null,
-  #              which is a "black hole" for output, effectively suppressing it.
-  rg --files -g "**/$@" 2>/dev/null
+  rg --files -g "**/*$@*" 2>/dev/null
 }
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!
@@ -187,3 +179,9 @@ unset __mamba_setup
 
 # Added by Antigravity
 export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc'; fi

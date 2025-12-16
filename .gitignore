@@ -101,3 +101,8 @@ static_collected/
 scratch/
 vault/
 data/
+*.out
+
+# Claude Desktop
+ClaudeDesktopConfig.json
+.claude/
