@@ -24,6 +24,7 @@ kretsinger/
         dtt/
         wandb/
             look at christian's wandb example
+            programatically download run data (util to expand summary)
         typehint_utils/
             func_to_typehint/
             single-return-array/
@@ -31,16 +32,21 @@ kretsinger/
         sklearn_pipelines/ (PMML examples)
     kret_torch/
         models/
-            mixin/ (PMML mixins)
+            mixin/ (PMML mixins) (use pytorch lightning modules)
         optuna/
+            RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
+            https://optuna.readthedocs.io/en/stable/tutorial/index.html
         fastai_integration/
-        pytorch_dataloaders/
+        pytorch_dataloaders/ (custom datasets and dataloaders)
         nn_weight_viz/
+        pytorch_lightning/
+            *tutorials*
+        rl_utils/
+        graph_neural_networks/
         data_loader_utils/
             DataLoader next() typehinted to return two tensors
         torch_utils/
             def obs_numpy_to_torch (RL) - timedelta conversion
-        RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
     kret_numpy_pd/
         numpy_utils/
         pandas_utils/

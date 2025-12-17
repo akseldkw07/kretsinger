@@ -17,7 +17,7 @@ if t.TYPE_CHECKING:
 
 
 class DTTParams(t.TypedDict, total=False):
-    seed: t.Required[int | None]
+    seed: int | None
     max_col_width: int | None
     num_cols: int | None
     align_cols: bool  # not implemented
@@ -90,8 +90,8 @@ def display_df_list(
 
         if title:
             html_str += TITLE_FMT.format(title=title)
-
-        mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
+        assert "seed" in hparams and hparams["seed"] is not None, f"Seed must be set in hparams, got {hparams}"
+        mask = gen_display_mask(len(df), min(n, len(df)), (hparams["seed"]), how)
         table_html = generate_table_with_dtypes(df[mask], **hparams)
         html_str += table_html
         html_str += "</div>"

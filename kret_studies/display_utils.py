@@ -45,10 +45,10 @@ def display_side_by_side(
     display_html(html_str, raw=True)
 
 
-def dataset_to_table(
-    *dfs: pd.DataFrame | np.ndarray | torch.Tensor, names: list[str] | None = None, spacing: int = 10
-) -> None:
-    """
-    Display a list of pandas DataFrames side-by-side in Jupyter or VS Code.
-    """
-    display_side_by_side(list(dfs), names=names, spacing=spacing)
+# def dataset_to_table(
+#     *dfs: pd.DataFrame | np.ndarray | torch.Tensor, names: list[str] | None = None, spacing: int = 10
+# ) -> None:
+#     """
+#     Display a list of pandas DataFrames side-by-side in Jupyter or VS Code.
+#     """
+#     display_side_by_side(list(dfs), names=names, spacing=spacing)
