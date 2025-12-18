@@ -22,6 +22,7 @@ kretsinger/
         **Every other submodule will import from here**
         stuff/
         dtt/
+        dir/ (print class attributes better)
         wandb/
             look at christian's wandb example
             programatically download run data (util to expand summary)
@@ -30,6 +31,7 @@ kretsinger/
             single-return-array/
     kret_sklearn/
         sklearn_pipelines/ (PMML examples)
+        sklearn.datasets.make_*
     kret_torch/
         models/
             mixin/ (PMML mixins) (use pytorch lightning modules)
@@ -50,6 +52,9 @@ kretsinger/
     kret_numpy_pd/
         numpy_utils/
         pandas_utils/
+            pd.options.mode.copy_on_write
+            dtt/
+            pd_heatmap/
     kret_notebook/
         notebook_imports/
             torch_stuff

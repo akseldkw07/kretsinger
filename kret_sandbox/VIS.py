@@ -24,35 +24,37 @@ class DTTParams(t.TypedDict, total=False):
 
 
 DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None}
-PD_TO_HTML_KWARGS: To_html_TypedDict = {
-    "border": 1,
-    # "index": False,
-    # "justify": "left",
-    # "classes": "dataframe dtt-table",
-}
+PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
+
 ViewHow = t.Literal["sample", "head", "tail"]
+VectorMatrixType = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor
 
 
 def dtt(
-    args_: t.Sequence[pd.DataFrame | pd.Series | np.ndarray | torch.Tensor],
+    input: list[VectorMatrixType] | VectorMatrixType,
     n: int = 5,
     how: ViewHow = "sample",
     filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
     titles: list[str] | cycle = cycle([""]),
     **hparams: t.Unpack[DTTKwargs],
 ):
-    hparams = {**DEFAULT_DTT_PARAMS, **DEFAULT_DTT_PARAMS, **hparams}
+    """
+    TODO add shape to the titles
+    Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
+    """
+    input = input if isinstance(input, (list)) else [input]
+    hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
     hparams.setdefault("seed", np.random.randint(0, 1_000_000))
     filter = process_filter(filter)
 
     args: list[pd.DataFrame] = []
-    for arg in args_:
+    for arg in input:
         arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
         df = arg[filter] if filter is not None else arg
         df = coerce_to_df(df)
         args.append(df)
 
-    display_df_list(args, titles, n, how, hparams, num_cols=hparams.get("num_cols"))
+    display_df_list(args, titles, n, how, hparams)
 
 
 TITLE_FMT = '<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
@@ -64,16 +66,10 @@ PER_TABLE_DIV = (
 )
 
 
-def display_df_list(
-    args: list[pd.DataFrame],
-    titles: t.Iterable[str],
-    n: int,
-    how: ViewHow,
-    hparams: DTTKwargs,
-    num_cols: int | None = None,
-):
+def display_df_list(args: list[pd.DataFrame], titles: t.Iterable[str], n: int, how: ViewHow, hparams: DTTKwargs):
     """Original behavior: display all items in a single row with horizontal scroll."""
     # Add overflow-x: auto for horizontal scrolling
+    num_cols = hparams.get("num_cols")
     html_str = OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
     html_str = fmt_css(hparams, html_str)
 
@@ -90,8 +86,8 @@ def display_df_list(
 
         if title:
             html_str += TITLE_FMT.format(title=title)
-        assert "seed" in hparams and hparams["seed"] is not None, f"Seed must be set in hparams, got {hparams}"
-        mask = gen_display_mask(len(df), min(n, len(df)), (hparams["seed"]), how)
+        assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
+        mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
         table_html = generate_table_with_dtypes(df[mask], **hparams)
         html_str += table_html
         html_str += "</div>"
@@ -200,7 +196,10 @@ def fmt_css(hparams: DTTParams, html_str: str):
 
 
 @cache
-def gen_display_mask(n: int, hot: int, seed: int, display_method: t.Literal["sample", "head", "tail"]):
+def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
+    # print(n)
+    if hot == -1:
+        return np.full(n, True, dtype=bool)
     rng = np.random.default_rng(seed)
     if display_method == "sample":
         mask = np.zeros(n, dtype=bool)
