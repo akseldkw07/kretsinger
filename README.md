@@ -21,11 +21,9 @@ kretsinger/
     kret_utils/
         **Every other submodule will import from here**
         stuff/
-        dtt/
+        ~dtt/~
         dir/ (print class attributes better)
-        wandb/
-            look at christian's wandb example
-            programatically download run data (util to expand summary)
+        ~wandb/~
         typehint_utils/
             func_to_typehint/
             single-return-array/
@@ -69,5 +67,8 @@ kretsinger/
     kret_tqdm/
         tqdm patterns for notebooks and scripts. tqdm.auto, tqdm.notebook, etc.
         how to safely keyboard interrupt tqdm loops/ (GracefulInterrupt)
+    kret_wandb/
+            look at christian's wandb example
+            programatically download run data (util to expand summary)
     kret_sandbox/
         *new experimental code*
