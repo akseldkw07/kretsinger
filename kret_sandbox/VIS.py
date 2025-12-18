@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import inspect
 import typing as t
 from functools import cache
@@ -9,11 +10,10 @@ import pandas as pd
 import torch
 from IPython.display import display_html
 
-
 if t.TYPE_CHECKING:
     pass
 
-    from pandas._typing import ListLike, ColspaceArgType, FormattersType, FloatFormatType
+    from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
 
 
 class DTTParams(t.TypedDict, total=False):

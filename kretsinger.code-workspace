@@ -8,6 +8,9 @@
         },
         {
             "path": "../ONLINE-REPOS"
+        },
+        {
+            "path": "../Columbia/PMML-Project"
         }
     ],
     "settings": {

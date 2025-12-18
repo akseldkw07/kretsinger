@@ -19,7 +19,7 @@ repos:
     hooks:
       - id: autoflake
         name: autoflake (remove unused imports only)
-        args: [--remove-all-unused-imports, --exclude=kret_studies/notebook/notebook_imports.py, --in-place]
+        args: [--remove-all-unused-imports, --exclude=.*nb_imports\.py$, --in-place]
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:
