@@ -1,7 +1,7 @@
+import sys
+import typing as t
 from dataclasses import dataclass
 from types import ModuleType
-import typing as t
-import sys
 
 from kret_utils.dataclass import ResettableDataclassMixin
 

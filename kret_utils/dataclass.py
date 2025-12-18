@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import fields, is_dataclass, replace
 import typing as t
+from dataclasses import fields, is_dataclass, replace
 
 
 class ResettableDataclassMixin:

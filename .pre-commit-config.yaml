@@ -29,7 +29,7 @@ repos:
           (?x)^(
             sandbox/.*|
             tests/.*|
-            ^.*\nb_imports.py
+            ^.*nb_imports.py
           )$
   - repo: https://github.com/python/black
     rev: 24.4.2

@@ -7,12 +7,12 @@ TODO FunctionTransformer? Seems like a good experimental first step
 """
 
 from __future__ import annotations
-from sklearn.base import BaseEstimator, TransformerMixin
 
-
-import pandas as pd
-import numpy as np
 import typing as t
+
+import numpy as np
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class PandasColumnOrderBase(BaseEstimator, TransformerMixin):

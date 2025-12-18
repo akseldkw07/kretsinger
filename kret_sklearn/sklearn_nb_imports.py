@@ -1,4 +1,3 @@
-# isort: skip_file
 # autoflake: skip_file
 
 import sklearn
