@@ -4,4 +4,4 @@ import numpy as np
 import pandas as pd
 
 
-from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
+from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype, is_bool_dtype

@@ -4,7 +4,7 @@ import typing as t
 
 import numpy as np
 import pandas as pd
-from .translate_types import PD_NP_Torch_Translation
+from .translate_libraries import PD_NP_Torch_Translation
 
 
 class Enriched_DF(pd.DataFrame):

@@ -63,13 +63,7 @@ class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
         return self.new_columns
 
 
-DEF_DATETIME_COLS = {
-    "month": 12,
-    "day": 31,
-    "dayofweek": 7,
-    "hour": 24,
-    "minute": 60,
-}
+DEF_DATETIME_COLS = {"month": 12, "day": 31, "dayofweek": 7, "hour": 24, "minute": 60}
 
 
 class DateTimeSinCosNormalizer(PandasColumnOrderBase):

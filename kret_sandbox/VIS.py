@@ -4,11 +4,12 @@ import inspect
 import typing as t
 from functools import cache
 from itertools import chain, cycle
-
+from pandas.api.types import is_bool_dtype
 import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display_html
+from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
 
 if t.TYPE_CHECKING:
     from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
@@ -44,13 +45,13 @@ def dtt(
     input = input if isinstance(input, (list)) else [input]
     hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
     hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
-    filter = process_filter(filter)
+    filter = process_filter(filter) if filter is not None else None
 
     args: list[pd.DataFrame] = []
     for arg in input:
         arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
         df = arg[filter] if filter is not None else arg
-        df = coerce_to_df(df)
+        df = PD_NP_Torch_Translation.coerce_to_df(df)
         args.append(df)
 
     display_df_list(args, titles, n, how, hparams)
@@ -212,38 +213,9 @@ def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
     return mask
 
 
-def process_filter(
-    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None,
-) -> np.ndarray | None:
-    if isinstance(filter, torch.Tensor):
-        assert filter.dim() == 1, "Filter tensor must be 1-dimensional."
-        filter = filter.detach().cpu().numpy()
-    elif isinstance(filter, pd.DataFrame):
-        assert filter.shape[1] == 1, "Filter DataFrame must have a single column."
-        filter = filter.iloc[:, 0].to_numpy()
-    elif isinstance(filter, pd.Series):
-        filter = filter.to_numpy()
+def process_filter(filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
+    ret = PD_NP_Torch_Translation.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
 
-    if isinstance(filter, np.ndarray):
-        assert filter.ndim == 1, "Filter array must be 1-dimensional."
-        assert filter.dtype == bool or np.issubdtype(
-            filter.dtype, np.integer
-        ), "Filter array must be of boolean or integer type."
-        if np.issubdtype(filter.dtype, np.integer):
-            filter = np.asarray(filter, dtype=bool)
-    return filter
+    assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
 
-
-def coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor) -> pd.DataFrame:
-    if isinstance(obj, pd.DataFrame):
-        return obj
-    elif isinstance(obj, pd.Series):
-        return obj.to_frame()
-    elif isinstance(obj, np.ndarray):
-        return pd.DataFrame({i: obj[:, i] for i in range(obj.shape[1])}) if obj.ndim > 1 else pd.DataFrame({0: obj})
-    elif isinstance(obj, (list, tuple)):
-        return pd.DataFrame(obj)
-    elif isinstance(obj, torch.Tensor):
-        return pd.DataFrame(obj.detach().cpu().numpy())
-    else:
-        return pd.DataFrame([obj])
+    return ret
