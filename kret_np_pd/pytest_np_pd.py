@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import torch
 
-from .utils_np_pd import NP_PD_Utils
+from .UTILS_np_pd import NP_PD_Utils
 
 
 class TestMaskAnd:

@@ -5,7 +5,7 @@ from pandas.api.types import CategoricalDtype
 STR_TO_BOOL = {"yes": True, "no": False, "y": True, "n": False, "0": False, "1": True}
 
 
-class NPDTypeUtils:
+class NP_Dtype_Utils:
     @classmethod
     def is_int_dtype(cls, ser: pd.Series | np.ndarray) -> bool:
         if isinstance(ser, pd.Series):

@@ -6,10 +6,10 @@ import warnings
 
 import pandas as pd
 
-from kret_np_pd.np_dtype_utils import STR_TO_BOOL, NPDTypeUtils
+from kret_np_pd.np_dtype_utils import STR_TO_BOOL, NP_Dtype_Utils
 
 
-class PDCleanup:
+class PD_Cleanup:
 
     @classmethod
     def data_cleanup(cls, df: pd.DataFrame):
@@ -36,12 +36,12 @@ class PDCleanup:
         for col in df.columns:
             ser = df[col]
             # Check for 'yes'/'no' columns (string/object)
-            if NPDTypeUtils._is_str_bool_candidate(ser):
+            if NP_Dtype_Utils._is_str_bool_candidate(ser):
                 df[col] = ser.str.lower().map(STR_TO_BOOL)
                 continue
 
             # Check for 0/1 columns (integer)
-            if NPDTypeUtils._is_int_bool_candidate(ser):
+            if NP_Dtype_Utils._is_int_bool_candidate(ser):
                 df[col] = ser.astype(bool)
                 continue
 
@@ -59,7 +59,7 @@ class PDCleanup:
                 continue
 
             ser = df[col]
-            if NPDTypeUtils.is_str_dtype(ser, True):
+            if NP_Dtype_Utils.is_str_dtype(ser, True):
                 nunique = ser.nunique(dropna=True)
                 if nunique <= k:
                     df[col] = ser.astype("category")
@@ -80,7 +80,7 @@ class PDCleanup:
                 continue
 
             ser = df[col]
-            if NPDTypeUtils.is_str_dtype(ser, False):
+            if NP_Dtype_Utils.is_str_dtype(ser, False):
                 non_null = ser.dropna()
                 if non_null.empty:
                     continue

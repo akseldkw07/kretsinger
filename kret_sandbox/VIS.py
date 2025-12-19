@@ -21,11 +21,12 @@ class DTTParams(t.TypedDict, total=False):
     seed: int | None
     max_col_width: int | None
     num_cols: int | None
+    show_dimensions: bool  # TODO make this nicer, add to the bottom of the dataframe instead of applying it to title
     align_cols: bool  # NOTE not implemented
 
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None}
-PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format, "show_dimensions": True}
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
+PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
 ViewHow = t.Literal["sample", "head", "tail"]
 VectorMatrixType = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor
@@ -86,7 +87,8 @@ def display_df_list(args: list[pd.DataFrame], titles: t.Iterable[str], n: int, h
         # Add flex-shrink: 0 to prevent tables from shrinking
         html_str += PER_TABLE_DIV.format(addtl_width=0)
 
-        html_str += TITLE_FMT.format(title=title)
+        title += f"{df.shape[0]} rows x {df.shape[1] } columns" if hparams.get("show_dimensions", False) else ""
+        html_str += TITLE_FMT.format(title=title) if title else ""
         assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
         mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
         table_html = generate_table_with_dtypes(df[mask], **hparams)
@@ -110,7 +112,6 @@ class To_html_TypedDict(t.TypedDict, total=False):
     justify: str | None
     max_rows: int | None
     max_cols: int | None
-    show_dimensions: bool  # TODO fix to show original dimensions, not just the post-filter dimensions
     decimal: str
     bold_rows: bool
     classes: str | list | tuple | None
