@@ -6,7 +6,7 @@ import warnings
 
 import pandas as pd
 
-from kret_np_pd.np_dtype_utils import NPDTypeUtils, STR_TO_BOOL
+from kret_np_pd.np_dtype_utils import STR_TO_BOOL, NPDTypeUtils
 
 
 class PDCleanup:

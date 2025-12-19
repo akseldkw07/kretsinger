@@ -4,11 +4,13 @@ import inspect
 import typing as t
 from functools import cache
 from itertools import chain, cycle
-from pandas.api.types import is_bool_dtype
+
 import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display_html
+from pandas.api.types import is_bool_dtype
+
 from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
 
 if t.TYPE_CHECKING:

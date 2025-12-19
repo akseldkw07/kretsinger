@@ -3,6 +3,7 @@ Utility class to hop between pandas, numpy, and pytorch
 """
 
 from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import torch

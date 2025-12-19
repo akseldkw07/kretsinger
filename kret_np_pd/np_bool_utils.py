@@ -1,7 +1,8 @@
+import typing as t
+
 import numpy as np
 import pandas as pd
 import torch
-import typing as t
 
 AnyAll = t.Literal["any", "all"]
 IndexLabel = t.Hashable | t.Sequence[t.Hashable]

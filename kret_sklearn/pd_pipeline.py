@@ -1,6 +1,7 @@
+import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.pipeline import Pipeline
-import pandas as pd
+
 from kret_sklearn.custom_transformers import PandasColumnOrderBase
 
 
