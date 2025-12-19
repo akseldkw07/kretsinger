@@ -34,12 +34,17 @@ class NP_PD_Utils(NPDTypeUtils, PDCleanup):
         return mask_or
 
     @classmethod
-    def nan_filter(cls, *args: DF_SERIES_NP_TENSOR, how: AnyAll = "any"):
+    def nan_filter(cls, *args: DF_SERIES_NP_TENSOR | None, how: AnyAll = "any"):
         """
         Create a boolean mask that is True where rows have NaN values according to the specified `how` across all inputs.
+
+        If `how` is "any", the mask is True if any input has NaN in that row.
+        If `how` is "all", the mask is True only if all inputs are NaN in that row.
         """
         masks: list[np.ndarray | pd.DataFrame] = []
         for arr in args:
+            if arr is None:
+                continue
             if isinstance(arr, torch.Tensor):
                 arr = arr.numpy(force=True)
             assert isinstance(arr, (np.ndarray | pd.Series | pd.DataFrame))

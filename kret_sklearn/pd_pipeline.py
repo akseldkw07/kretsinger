@@ -1,19 +1,24 @@
+from sklearn.base import TransformerMixin
 from sklearn.pipeline import Pipeline
 import pandas as pd
 from kret_sklearn.custom_transformers import PandasColumnOrderBase
 
 
 class PipelinePD(Pipeline):
+    """
+    Wrapper around sklearn Pipeline to add pandas DataFrame support
+    """
+
     def post_init(self):
         self.set_output(transform="pandas")
 
     @staticmethod
-    def validate_contents(idx: int, name: str, transform: PandasColumnOrderBase):
+    def validate_contents(idx: int, name: str, transform: TransformerMixin):
         assert isinstance(name, str), f"Expected str for step name, got {type(name)!r} for step at index {idx!r}"
         assert len(name) > 0, f"Step name cannot be empty for step at index {idx!r}"
         assert isinstance(
-            transform, PandasColumnOrderBase
-        ), f"Expected PandasColumnOrderBase, got {type(transform)!r} for step {name!r} at index {idx!r}"
+            transform, TransformerMixin
+        ), f"Expected TransformerMixin, got {type(transform)!r} for step {name!r} at index {idx!r}"
         err_template = "Estimator {} does not provide get_feature_names_out. Did you mean to call pipeline[:-1].get_feature_names_out()?"
         if not hasattr(transform, "get_feature_names_out"):
             raise AttributeError(err_template.format(name))
@@ -27,7 +32,11 @@ class PipelinePD(Pipeline):
             transform: PandasColumnOrderBase
             self.validate_contents(idx, name, transform)
 
-            feature_names_out[name] = transform.get_feature_names_out_list()
+            feature_names_out[name] = (
+                transform.get_feature_names_out_list()
+                if isinstance(transform, PandasColumnOrderBase)
+                else transform.get_feature_names_out()
+            )
 
         return feature_names_out
 

@@ -11,8 +11,6 @@ import torch
 from IPython.display import display_html
 
 if t.TYPE_CHECKING:
-    pass
-
     from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
 
 
@@ -20,11 +18,11 @@ class DTTParams(t.TypedDict, total=False):
     seed: int | None
     max_col_width: int | None
     num_cols: int | None
-    align_cols: bool  # not implemented
+    align_cols: bool  # NOTE not implemented
 
 
 DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None}
-PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
+PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format, "show_dimensions": True}
 
 ViewHow = t.Literal["sample", "head", "tail"]
 VectorMatrixType = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor
@@ -40,11 +38,12 @@ def dtt(
 ):
     """
     TODO add shape to the titles
+    TODO ability to view slice of rows
     Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
     """
     input = input if isinstance(input, (list)) else [input]
     hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
-    hparams.setdefault("seed", np.random.randint(0, 1_000_000))
+    hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
     filter = process_filter(filter)
 
     args: list[pd.DataFrame] = []
@@ -84,8 +83,7 @@ def display_df_list(args: list[pd.DataFrame], titles: t.Iterable[str], n: int, h
         # Add flex-shrink: 0 to prevent tables from shrinking
         html_str += PER_TABLE_DIV.format(addtl_width=0)
 
-        if title:
-            html_str += TITLE_FMT.format(title=title)
+        html_str += TITLE_FMT.format(title=title)
         assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
         mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
         table_html = generate_table_with_dtypes(df[mask], **hparams)
@@ -109,7 +107,7 @@ class To_html_TypedDict(t.TypedDict, total=False):
     justify: str | None
     max_rows: int | None
     max_cols: int | None
-    show_dimensions: bool
+    show_dimensions: bool  # TODO fix to show original dimensions, not just the post-filter dimensions
     decimal: str
     bold_rows: bool
     classes: str | list | tuple | None

@@ -13,7 +13,7 @@ import typing as t
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from kret_np_pd.utils_np_pd import AnyAll, IndexLabel
+from kret_np_pd.utils_np_pd import AnyAll, IndexLabel, NP_PD_Utils
 
 
 class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
@@ -63,6 +63,15 @@ class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
         return self.new_columns
 
 
+DEF_DATETIME_COLS = {
+    "month": 12,
+    "day": 31,
+    "dayofweek": 7,
+    "hour": 24,
+    "minute": 60,
+}
+
+
 class DateTimeSinCosNormalizer(PandasColumnOrderBase):
     """
     Normalize datetime features (e.g., month, day, hour) using sine and cosine transformations.
@@ -71,12 +80,12 @@ class DateTimeSinCosNormalizer(PandasColumnOrderBase):
 
     datetime_cols: dict[str, int]
 
-    def __init__(self, datetime_cols: dict[str, int]) -> None:
+    def __init__(self, datetime_cols: dict[str, int] | None) -> None:
         """
         Args:
             datetime_cols: Dictionary mapping column names to their periodicity (e.g., {'month': 12, 'hour': 24})
         """
-        self.datetime_cols = datetime_cols
+        self.datetime_cols = datetime_cols if datetime_cols is not None else DEF_DATETIME_COLS
 
     def _fit(self, X: pd.DataFrame, y: t.Any = None) -> DateTimeSinCosNormalizer:
 
@@ -103,7 +112,11 @@ class DateTimeSinCosNormalizer(PandasColumnOrderBase):
 
 
 class MissingValueRemover(PandasColumnOrderBase):
-    """Remove rows with missing values from X only."""
+    """
+    Remove rows with missing values (NaNs) from the DataFrame based on the specified criteria.
+
+    NOTE WARNING this transformer removes rows, which can lead to misalignment between X and y if not handled carefully.
+    """
 
     how: AnyAll
     subset: IndexLabel | None
@@ -120,22 +133,10 @@ class MissingValueRemover(PandasColumnOrderBase):
         # Remove rows with any NaN values in X
         self._orig_columns = list(X.columns)
 
-        X_nan = X.isna() if self.subset is None else pd.DataFrame(X[self.subset]).isna()
-        nan_rows = (X_nan.any(axis=1) if self.how == "any" else X_nan.all(axis=1)).to_numpy()
-
+        nan_mask = NP_PD_Utils.nan_filter(X[self.subset] if self.subset is not None else X, y, how=self.how)
+        ret = X.loc[~nan_mask]  # NOTE KEEP INDEX ON PURPOSE .reset_index(drop=True)
         if y is not None:
-            y_pd = pd.DataFrame(y) if not isinstance(y, pd.DataFrame) else y
-            y_nan = y_pd.isna()  # dont check against subset for y
-            y_nan_rows = (y_nan.any(axis=1) if self.how == "any" else y_nan.all(axis=1)).to_numpy()
-
-            combined_nan_rows = np.logical_or(nan_rows, y_nan_rows)
-        else:
-            combined_nan_rows = nan_rows
-
-        ret = X.loc[~combined_nan_rows].reset_index(drop=True)
-
-        if y is not None:
-            y = (y_pd).loc[~combined_nan_rows].reset_index(drop=True)
+            y = y[~nan_mask] if isinstance(y, np.ndarray) else y.loc[~nan_mask].reset_index(drop=True)
             error_msg = f"Y and x must have same number of rows after dropping NaNs: {len(ret)} vs {len(y)}"
             assert len(ret) == len(y), error_msg
 

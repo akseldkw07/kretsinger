@@ -1,5 +1,5 @@
 """
-NOTE most of this code could probably be replaced with sklearn etc
+NOTE most of this code could probably be replaced with sklearn etc, it's for data cleanup
 """
 
 import warnings

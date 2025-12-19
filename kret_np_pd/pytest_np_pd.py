@@ -340,6 +340,7 @@ class TestIntegration:
         # Get rows without NaN
         clean_df = df[~nan_mask]
 
+        assert clean_df.isna().sum().sum() == 0, "DataFrame should have no NaN values after filtering"
         assert len(clean_df) == 1, f"Expected 1 row after filtering, got {len(clean_df)}"
         assert clean_df.index.tolist() == [0], f"Expected indices [0], got {clean_df.index.tolist()}"
 
