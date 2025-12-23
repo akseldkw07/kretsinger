@@ -18,6 +18,8 @@ dtt - use torch.tensor.cols_pd?
 3-
 
 kretsinger/
+    example_notebooks/
+        notebooks downloaded from (Kaggle, etc)
     kret_utils/
         **Every other submodule will import from here**
         stuff/
@@ -72,3 +74,10 @@ kretsinger/
             programatically download run data (util to expand summary)
     kret_sandbox/
         *new experimental code*
+
+os.env values:
+    RUN_SUPERVISED - optuna hyperparameter optimization
+    DEBUG_MODE - more verbose logging
+    USE_WANDB - toggle wandb logging
+    USE_TQDM - toggle tqdm progress bars
+    ERROR_ON_BAD_OUTCOME - when running applicable code, raise error on bad outcome (or just warn)

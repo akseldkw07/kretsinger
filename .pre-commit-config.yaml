@@ -15,11 +15,22 @@ repos:
         language: system
         stages: [pre-commit]
   - repo: https://github.com/myint/autoflake
-    rev: v2.2.1
+    rev: v2.3.1
     hooks:
       - id: autoflake
-        name: autoflake (remove unused imports only)
-        args: [--remove-all-unused-imports, --exclude=kret_studies/notebook/notebook_imports.py, --in-place]
+        args:
+          [
+            '--remove-all-unused-imports',
+            '--remove-unused-variables',
+            '--ignore-init-module-imports',
+          ]
+        # Use the 'exclude' key to ignore files matching a regex pattern
+        exclude: |
+          (?x)^(
+            sandbox/.*|
+            tests/.*|
+            ^.*nb_imports.py
+          )$
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:

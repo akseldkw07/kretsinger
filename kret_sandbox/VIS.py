@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import inspect
 import typing as t
 from functools import cache
@@ -8,22 +9,23 @@ import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display_html
+from pandas.api.types import is_bool_dtype
 
+from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
 
 if t.TYPE_CHECKING:
-    pass
-
-    from pandas._typing import ListLike, ColspaceArgType, FormattersType, FloatFormatType
+    from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
 
 
 class DTTParams(t.TypedDict, total=False):
     seed: int | None
     max_col_width: int | None
     num_cols: int | None
-    align_cols: bool  # not implemented
+    show_dimensions: bool  # TODO make this nicer, add to the bottom of the dataframe instead of applying it to title
+    align_cols: bool  # NOTE not implemented
 
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None}
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
 ViewHow = t.Literal["sample", "head", "tail"]
@@ -40,18 +42,19 @@ def dtt(
 ):
     """
     TODO add shape to the titles
+    TODO ability to view slice of rows
     Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
     """
     input = input if isinstance(input, (list)) else [input]
     hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
-    hparams.setdefault("seed", np.random.randint(0, 1_000_000))
-    filter = process_filter(filter)
+    hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
+    filter = process_filter(filter) if filter is not None else None
 
     args: list[pd.DataFrame] = []
     for arg in input:
         arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
         df = arg[filter] if filter is not None else arg
-        df = coerce_to_df(df)
+        df = PD_NP_Torch_Translation.coerce_to_df(df)
         args.append(df)
 
     display_df_list(args, titles, n, how, hparams)
@@ -84,8 +87,8 @@ def display_df_list(args: list[pd.DataFrame], titles: t.Iterable[str], n: int, h
         # Add flex-shrink: 0 to prevent tables from shrinking
         html_str += PER_TABLE_DIV.format(addtl_width=0)
 
-        if title:
-            html_str += TITLE_FMT.format(title=title)
+        title += f"{df.shape[0]} rows x {df.shape[1] } columns" if hparams.get("show_dimensions", False) else ""
+        html_str += TITLE_FMT.format(title=title) if title else ""
         assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
         mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
         table_html = generate_table_with_dtypes(df[mask], **hparams)
@@ -109,7 +112,6 @@ class To_html_TypedDict(t.TypedDict, total=False):
     justify: str | None
     max_rows: int | None
     max_cols: int | None
-    show_dimensions: bool
     decimal: str
     bold_rows: bool
     classes: str | list | tuple | None
@@ -214,38 +216,9 @@ def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
     return mask
 
 
-def process_filter(
-    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None,
-) -> np.ndarray | None:
-    if isinstance(filter, torch.Tensor):
-        assert filter.dim() == 1, "Filter tensor must be 1-dimensional."
-        filter = filter.detach().cpu().numpy()
-    elif isinstance(filter, pd.DataFrame):
-        assert filter.shape[1] == 1, "Filter DataFrame must have a single column."
-        filter = filter.iloc[:, 0].to_numpy()
-    elif isinstance(filter, pd.Series):
-        filter = filter.to_numpy()
+def process_filter(filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
+    ret = PD_NP_Torch_Translation.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
 
-    if isinstance(filter, np.ndarray):
-        assert filter.ndim == 1, "Filter array must be 1-dimensional."
-        assert filter.dtype == bool or np.issubdtype(
-            filter.dtype, np.integer
-        ), "Filter array must be of boolean or integer type."
-        if np.issubdtype(filter.dtype, np.integer):
-            filter = np.asarray(filter, dtype=bool)
-    return filter
+    assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
 
-
-def coerce_to_df(obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor) -> pd.DataFrame:
-    if isinstance(obj, pd.DataFrame):
-        return obj
-    elif isinstance(obj, pd.Series):
-        return obj.to_frame()
-    elif isinstance(obj, np.ndarray):
-        return pd.DataFrame({i: obj[:, i] for i in range(obj.shape[1])}) if obj.ndim > 1 else pd.DataFrame({0: obj})
-    elif isinstance(obj, (list, tuple)):
-        return pd.DataFrame(obj)
-    elif isinstance(obj, torch.Tensor):
-        return pd.DataFrame(obj.detach().cpu().numpy())
-    else:
-        return pd.DataFrame([obj])
+    return ret
