@@ -1,6 +1,10 @@
 # autoflake: skip_file
 
-import matplotlib.pyplot as mpl
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 import matplotlib.colors as mcolors
+import matplotlib.pyplot as mpl
+import seaborn as sns
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from .UTILS_Matplotlib import PlottingUtils as UKS_MPL
+
+sns.set_theme()

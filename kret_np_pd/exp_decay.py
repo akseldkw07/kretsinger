@@ -3,7 +3,6 @@ from functools import cache
 
 import numpy as np
 
-
 if t.TYPE_CHECKING:
     from kret_np_pd.single_ret_ndarray import SingleReturnArray
 

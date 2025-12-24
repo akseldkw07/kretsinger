@@ -3,8 +3,6 @@ from __future__ import annotations
 import inspect
 import re
 import typing as t
-
-import typing as t
 from typing import TypeVar
 
 T = TypeVar("T")

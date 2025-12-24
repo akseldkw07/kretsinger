@@ -5,4 +5,7 @@ from .pd_cleanup import PD_Cleanup
 from .pd_convenience_utils import PD_Convenience_utils
 
 
-class NP_PD_Utils(NP_Dtype_Utils, NP_Boolean_Utils, NPExpDecayUtils, PD_Cleanup, PD_Convenience_utils): ...
+class NP_PD_Utils(NP_Dtype_Utils, NP_Boolean_Utils, NPExpDecayUtils, PD_Cleanup, PD_Convenience_utils):
+    """
+    TODO debug long import time
+    """
