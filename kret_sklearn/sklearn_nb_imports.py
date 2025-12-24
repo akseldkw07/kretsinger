@@ -1,5 +1,7 @@
 # autoflake: skip_file
+import time
 
+start_time = time.time()
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer, make_column_selector
@@ -13,3 +15,8 @@ from sklearn.preprocessing import FunctionTransformer, LabelEncoder, OneHotEncod
 
 from .custom_transformers import DateTimeSinCosNormalizer, MissingValueRemover, PandasColumnOrderBase
 from .pd_pipeline import PipelinePD
+
+start_time_end = time.time()
+print(
+    f"[kret_sklearn.sklearn_nb_imports] Imported kret_sklearn.sklearn_nb_imports in {start_time_end - start_time:.4f} seconds"
+)

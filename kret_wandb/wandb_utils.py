@@ -1,14 +1,16 @@
 import os
 import typing as t
 from datetime import datetime
+from pathlib import Path
 
 import wandb
 
 WANDB_TEAM_NAME = "akseldkw07"
 WANDB_PROJECT_NAME = "MISC"
+DATA_DIR = Path("/Users/Akseldkw/coding/kretsinger/data")
 
 
-class WandBUtils:
+class WandB_Utils:
     @classmethod
     def start_wandb_run(
         cls,

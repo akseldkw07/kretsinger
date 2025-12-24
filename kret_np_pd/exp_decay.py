@@ -7,7 +7,7 @@ if t.TYPE_CHECKING:
     from kret_np_pd.single_ret_ndarray import SingleReturnArray
 
 
-class NPExpDecayUtils:
+class NP_ExpDecay_Utils:
     @classmethod
     def get_gamma_from_half_life(cls, half_life: float) -> float:
         """

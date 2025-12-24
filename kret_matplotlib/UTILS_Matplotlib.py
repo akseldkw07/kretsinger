@@ -16,7 +16,7 @@ from kret_np_pd.single_ret_ndarray import SingleReturnArray
 from kret_type_hints.typed_cls import Pairplot_TypedDict, Sns_Heatmap_TypedDict, Subplots_TypedDict
 
 
-class PlottingUtils(KretMatplotHelper):
+class Plotting_Utils(KretMatplotHelper):
     """
     Utility class for common plotting functions using Matplotlib and Seaborn.
     """

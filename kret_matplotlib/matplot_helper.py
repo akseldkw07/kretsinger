@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from kret_type_hints.typed_cls import Heatmap_Params_TD
-
-from ..kret_utils.float_utils import FloatPrecisionUtils
+from kret_utils.float_utils import FloatPrecisionUtils
 
 
 class KretMatplotHelper:
