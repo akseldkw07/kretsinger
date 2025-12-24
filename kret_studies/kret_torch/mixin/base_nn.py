@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 from ..utils import XTYPE, YTYPE, make_loader_from_xy
 from .abc_nn import ABCNN, FullStateDict, HyperParamDict, HyperParamTotalDict, ModelPathDict, ModelStateDict
-from .constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
+from ....kret_torch.constants import DEVICE_TORCH_STR, MODEL_WEIGHT_DIR
 
 LOAD_LTRL = t.Literal["assert", "try", "fresh"]
 from copy import deepcopy

@@ -139,5 +139,6 @@ class MissingValueRemover(PandasColumnOrderBase):
         error_msg = f"Column count mismatch after dropping NaNs: {len(ret.columns)} vs {len(X.columns)} vs {len(self._orig_columns)}"
         assert len(ret.columns) == len(X.columns) == len(self._orig_columns), error_msg
         self.new_columns = list(X.columns)
+        print(f"Removed {nan_mask.sum()} rows, representing {nan_mask.mean():.2%} of the data")
 
         return ret
