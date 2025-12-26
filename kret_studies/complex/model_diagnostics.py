@@ -13,8 +13,8 @@ def model_diagnostics(y_true, y_pred, X):
 
     - Coerces X to a numeric 2D DataFrame
     - Aligns y_true/y_pred with X and drops NaNs/inf rows
-    - Computes R^2, adjusted R^2, Jarque–Bera (stat & p), Durbin–Watson,
-      Breusch–Pagan (stat & p), and VIF per feature
+    - Computes R^2, adjusted R^2, Jarque-Bera (stat & p), Durbin-Watson,
+      Breusch-Pagan (stat & p), and VIF per feature
     - Returns a metrics DataFrame and a diagnostics figure
     """
     # --- Coerce inputs ---
@@ -66,7 +66,7 @@ def model_diagnostics(y_true, y_pred, X):
     # Standardized residuals
     resid_std = (residuals - residuals.mean()) / (residuals.std(ddof=1) if residuals.std(ddof=1) != 0 else 1.0)
 
-    # Heteroskedasticity (Breusch–Pagan). Requires >=1 regressor.
+    # Heteroskedasticity (Breusch-Pagan). Requires >=1 regressor.
     if p >= 1:
         # statsmodels is fine with a numpy array or DataFrame; add constant robustly
         exog = sm.add_constant(X_num.to_numpy(), has_constant="add")
@@ -88,7 +88,7 @@ def model_diagnostics(y_true, y_pred, X):
             "Metric": [
                 "R²",
                 "Adj R²",
-                "Durbin–Watson",
+                "Durbin-Watson",
                 "JB statistic",
                 "JB p-value",
                 "BP statistic",
