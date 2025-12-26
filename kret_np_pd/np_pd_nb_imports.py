@@ -9,6 +9,4 @@ from pandas.api.types import is_bool_dtype, is_datetime64_any_dtype, is_timedelt
 from .UTILS_np_pd import NP_PD_Utils as UKS_NP_PD
 
 start_time_end = time.time()
-print(
-    f"[kret_np_pd.np_pd_nb_imports] Imported kret_np_pd.np_pd_nb_imports in {start_time_end - start_time:.4f} seconds"
-)
+print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")

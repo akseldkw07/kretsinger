@@ -13,6 +13,4 @@ from .UTILS_Matplotlib import Plotting_Utils as UKS_MPL
 
 sns.set_theme()
 start_time_end = time.time()
-print(
-    f"[kret_matplotlib.mpl_nb_imports] Imported kret_matplotlib.mpl_nb_imports in {start_time_end - start_time:.4f} seconds"
-)
+print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")

@@ -17,6 +17,4 @@ from torch.utils.data.dataset import Subset
 # from torchvision import datasets, transforms
 
 start_time_end = time.time()
-print(
-    f"[kret_torch.pytorch_nb_imports] Imported kret_torch.pytorch_nb_imports in {start_time_end - start_time:.4f} seconds"
-)
+print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")

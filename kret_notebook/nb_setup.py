@@ -37,7 +37,7 @@ class NBSetupUtils:
             raise FileNotFoundError(f"No .env file found at {dotenv_path}")
 
         load_dotenv(dotenv_path)
-        print(f"Loaded environment variables from {dotenv_path}.")
+        print(f"Loaded environment variables from {dotenv_path}")
 
     @classmethod
     def source_zsh_env(cls):

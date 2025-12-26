@@ -23,6 +23,4 @@ from urllib.request import urlretrieve
 from IPython.display import HTML, Markdown, display
 
 start_time_end = time.time()
-print(
-    f"[kret_utils.utils_nb_imports] Imported kret_utils.utils_nb_imports in {start_time_end - start_time:.4f} seconds"
-)
+print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")
