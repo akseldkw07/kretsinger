@@ -63,10 +63,8 @@ class KretMatplotHelper:
     ) -> str:
         if vcenter is not None and vmin < vcenter < vmax:
             norm = TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
-            [(vmin, "min"), (vcenter, "0"), (vmax, "max")]
         else:
             norm = Normalize(vmin=vmin, vmax=vmax)
-            [(vmin, "min"), (vmax, "max")]
 
         # Sample the colormap in *normalized* space so the gradient matches the mapping.
         xs = np.linspace(vmin, vmax, n)
