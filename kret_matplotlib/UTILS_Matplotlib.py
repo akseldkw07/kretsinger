@@ -15,6 +15,7 @@ from kret_matplotlib.matplot_helper import KretMatplotHelper
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
 from kret_type_hints.typed_cls import (
     Background_gradient_TypedDict,
+    Format_TypedDict,
     Pairplot_TypedDict,
     Pandas_Styler_TypedDict,
     Sns_Heatmap_TypedDict,
@@ -70,7 +71,9 @@ class Plotting_Utils(KretMatplotHelper):
         sns.heatmap(df_data, **kwargs)
 
     @classmethod
-    def heatmap_styler(cls, df: pd.DataFrame | Styler, **kwargs: t.Unpack[Pandas_Styler_TypedDict]) -> Styler:
+    def heatmap_styler(
+        cls, df: pd.DataFrame | Styler, show_legend: bool = True, **kwargs: t.Unpack[Pandas_Styler_TypedDict]
+    ) -> Styler:
         """
         Generate a heatmap-styled DataFrame as a pandas Styler object (returns HTML without plotting).
 
@@ -88,12 +91,13 @@ class Plotting_Utils(KretMatplotHelper):
         df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
 
         computed_params = cls._generate_heatmap_params(df_data)
-        fmt = computed_params.pop("fmt", "{:.2f}")
+        fmt = computed_params.pop("fmt")
+        formatter = lambda v: format(v, fmt)
 
-        heatmap_params = cls.background_grad_defaults | kwargs | computed_params  # type: ignore
+        heatmap_params = cls.background_grad_defaults | computed_params | kwargs  # type: ignore
         heatmap_params = TypedDictUtils.filter_dict_by_typeddict(heatmap_params, Background_gradient_TypedDict)
-        fmt_params = cls.format_defaults | kwargs | {"formatter": fmt}
-        fmt_params = TypedDictUtils.filter_dict_by_typeddict(fmt_params, Pandas_Styler_TypedDict)
+        fmt_params = cls.format_defaults | {"formatter": formatter} | kwargs
+        fmt_params = TypedDictUtils.filter_dict_by_typeddict(fmt_params, Format_TypedDict)
 
         # Create a Styler with background gradient
         styled: Styler = df_data.style.background_gradient(**heatmap_params)
@@ -101,6 +105,9 @@ class Plotting_Utils(KretMatplotHelper):
 
         styled = styled.set_properties(**{"text-align": "center"})  # type: ignore[arg-type]
 
+        if show_legend:
+            legend_html = cls._legend_html(**computed_params)
+            styled = styled.set_caption(legend_html)
         return styled
 
     # endregion

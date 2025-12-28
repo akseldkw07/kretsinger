@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing as t
 from typing import TypeVar
 
-T = TypeVar("T", bound=dict)
+T = TypeVar("T", bound=t.Any)
 
 
 class TypedDictUtils:
@@ -15,7 +15,7 @@ class TypedDictUtils:
     """
 
     @classmethod
-    def filter_dict_by_typeddict(cls, data: dict | t.Any, typed_dict_class: t.Any, strict: bool = False) -> T:
+    def filter_dict_by_typeddict(cls, data: dict | t.Any, typed_dict_class: type[T], strict: bool = False) -> T:
         """
         Filter a dictionary to only include keys specified in a TypedDict.
 
