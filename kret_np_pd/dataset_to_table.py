@@ -104,100 +104,109 @@ class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
     pass
 
 
-class PD_Display: ...
+class PD_Display_Utils:
+    @classmethod
+    def dtt(
+        cls,
+        input: list[VectorMatrixType] | VectorMatrixType,
+        n: int = 5,
+        how: ViewHow = "sample",
+        filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
+        titles: list[str] | cycle = cycle([""]),
+        **hparams: t.Unpack[DTTKwargs],
+    ):
+        """
+        TODO add shape to the titles
+        TODO ability to view slice of rows
+        Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
+        """
+        input = input if isinstance(input, (list)) else [input]
+        hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
+        hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
+        filter = cls.process_filter(filter) if filter is not None else None
 
+        args: list[pd.DataFrame] = []
+        for arg in input:
+            arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
+            df = arg[filter] if filter is not None else arg
+            df = PD_NP_Torch_Translation.coerce_to_df(df)
+            args.append(df)
 
-def dtt(
-    input: list[VectorMatrixType] | VectorMatrixType,
-    n: int = 5,
-    how: ViewHow = "sample",
-    filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
-    titles: list[str] | cycle = cycle([""]),
-    **hparams: t.Unpack[DTTKwargs],
-):
-    """
-    TODO add shape to the titles
-    TODO ability to view slice of rows
-    Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
-    """
-    input = input if isinstance(input, (list)) else [input]
-    hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
-    hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
-    filter = process_filter(filter) if filter is not None else None
+        cls.display_df_list(args, titles, n, how, hparams)
 
-    args: list[pd.DataFrame] = []
-    for arg in input:
-        arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
-        df = arg[filter] if filter is not None else arg
-        df = PD_NP_Torch_Translation.coerce_to_df(df)
-        args.append(df)
+    @classmethod
+    def display_df_list(
+        cls, args: list[pd.DataFrame], titles: t.Iterable[str], n: int, how: ViewHow, hparams: DTTKwargs
+    ):
+        """Original behavior: display all items in a single row with horizontal scroll."""
+        # Add overflow-x: auto for horizontal scrolling
+        num_cols = hparams.get("num_cols")
+        html_str = OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
+        html_str = cls.fmt_css(hparams, html_str)
 
-    display_df_list(args, titles, n, how, hparams)
+        for idx, (df, title) in enumerate(zip(args, chain(titles, cycle(["NO_TITLE"])))):
+            if num_cols is not None and idx % num_cols == 0:
+                # Close previous row and start a new one
+                if idx > 0:
+                    html_str += "</div>"  # Close previous div
 
+                html_str += PER_ROW_DIV  # Start new div
 
-def display_df_list(args: list[pd.DataFrame], titles: t.Iterable[str], n: int, how: ViewHow, hparams: DTTKwargs):
-    """Original behavior: display all items in a single row with horizontal scroll."""
-    # Add overflow-x: auto for horizontal scrolling
-    num_cols = hparams.get("num_cols")
-    html_str = OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
-    html_str = fmt_css(hparams, html_str)
+            # Add flex-shrink: 0 to prevent tables from shrinking
+            html_str += PER_TABLE_DIV.format(addtl_width=0)
 
-    for idx, (df, title) in enumerate(zip(args, chain(titles, cycle(["NO_TITLE"])))):
-        if num_cols is not None and idx % num_cols == 0:
-            # Close previous row and start a new one
-            if idx > 0:
-                html_str += "</div>"  # Close previous div
+            title += f"{df.shape[0]} rows x {df.shape[1] } columns" if hparams.get("show_dimensions", False) else ""
+            html_str += TITLE_FMT.format(title=title) if title else ""
+            assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
+            mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
+            table_html = cls.generate_table_with_dtypes(df[mask], **hparams)
+            html_str += table_html
+            html_str += "</div>"
+        html_str += "</div>" + ("</div>" if num_cols is not None else "")
+        display_html(html_str, raw=True)
 
-            html_str += PER_ROW_DIV  # Start new div
+    @classmethod
+    def generate_table_with_dtypes(cls, df: pd.DataFrame, **hparams: t.Unpack[To_html_TypedDict]) -> str:
+        """Generate HTML table with datatypes displayed below column headers."""
+        # Use pandas' fast to_html() method
 
-        # Add flex-shrink: 0 to prevent tables from shrinking
-        html_str += PER_TABLE_DIV.format(addtl_width=0)
+        html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
+        base_html = df.to_html(**html_params)  # type: ignore
 
-        title += f"{df.shape[0]} rows x {df.shape[1] } columns" if hparams.get("show_dimensions", False) else ""
-        html_str += TITLE_FMT.format(title=title) if title else ""
-        assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
-        mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
-        table_html = generate_table_with_dtypes(df[mask], **hparams)
-        html_str += table_html
-        html_str += "</div>"
-    html_str += "</div>" + ("</div>" if num_cols is not None else "")
-    display_html(html_str, raw=True)
+        # Build the dtype row HTML
+        dtype_row = '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'
+        dtype_row += "      <th></th>\n"  # Index column
+        for col in df.columns:
+            dtype_str = str(df[col].dtype)
+            dtype_row += f"      <th>{dtype_str}</th>\n"
+        dtype_row += "    </tr>\n"
 
+        # Inject dtype row after the first </tr> in thead
+        # Find the end of the first header row
+        first_tr_end = base_html.find("</tr>", base_html.find("<thead>"))
+        if first_tr_end != -1:
+            # Insert dtype row after the first </tr>
+            insert_pos = first_tr_end + len("</tr>\n")
+            html = base_html[:insert_pos] + dtype_row + base_html[insert_pos:]
+        else:
+            # Fallback if structure is unexpected
+            html = base_html
 
-def generate_table_with_dtypes(df: pd.DataFrame, **hparams: t.Unpack[To_html_TypedDict]) -> str:
-    """Generate HTML table with datatypes displayed below column headers."""
-    # Use pandas' fast to_html() method
+        return html
 
-    html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
-    base_html = df.to_html(**html_params)  # type: ignore
+    @classmethod
+    def fmt_css(cls, hparams: DTTParams, html_str: str):
+        # Add CSS for column width limits if specified
+        if (max_col_width := hparams.get("max_col_width")) is not None:
+            html_str += TABLE_FMT.format(max_col_width=max_col_width)
+        return html_str
 
-    # Build the dtype row HTML
-    dtype_row = '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'
-    dtype_row += "      <th></th>\n"  # Index column
-    for col in df.columns:
-        dtype_str = str(df[col].dtype)
-        dtype_row += f"      <th>{dtype_str}</th>\n"
-    dtype_row += "    </tr>\n"
+    @classmethod
+    def process_filter(cls, filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
+        ret = PD_NP_Torch_Translation.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
+        assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
 
-    # Inject dtype row after the first </tr> in thead
-    # Find the end of the first header row
-    first_tr_end = base_html.find("</tr>", base_html.find("<thead>"))
-    if first_tr_end != -1:
-        # Insert dtype row after the first </tr>
-        insert_pos = first_tr_end + len("</tr>\n")
-        html = base_html[:insert_pos] + dtype_row + base_html[insert_pos:]
-    else:
-        # Fallback if structure is unexpected
-        html = base_html
-
-    return html
-
-
-def fmt_css(hparams: DTTParams, html_str: str):
-    # Add CSS for column width limits if specified
-    if (max_col_width := hparams.get("max_col_width")) is not None:
-        html_str += TABLE_FMT.format(max_col_width=max_col_width)
-    return html_str
+        return ret
 
 
 @cache
@@ -217,11 +226,3 @@ def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
         mask = np.zeros(n, dtype=bool)
         mask[-hot:] = True
     return mask
-
-
-def process_filter(filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
-    ret = PD_NP_Torch_Translation.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
-
-    assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
-
-    return ret
