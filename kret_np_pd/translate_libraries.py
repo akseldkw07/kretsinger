@@ -12,20 +12,26 @@ from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 
 class PD_NP_Torch_Translation:
     @classmethod
-    def coerce_to_df(cls, obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor):
+    def coerce_to_df(
+        cls,
+        obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor,
+        cols: list[str] | None = None,
+    ):
         if isinstance(obj, pd.DataFrame):
             ret = obj
         elif isinstance(obj, pd.Series):
             ret = obj.to_frame()
+            ret.columns = cols if cols is not None else [obj.name]
         elif isinstance(obj, np.ndarray):
             ret = pd.DataFrame({i: obj[:, i] for i in range(obj.shape[1])}) if obj.ndim > 1 else pd.DataFrame({0: obj})
         elif isinstance(obj, (list, tuple)):
             ret = pd.DataFrame(obj)
         elif isinstance(obj, torch.Tensor):
-            ret = pd.DataFrame(obj.detach().cpu().numpy())
+            ret = pd.DataFrame(obj.numpy(force=True))
         else:
             ret = pd.DataFrame([obj])
 
+        ret.columns = cols if cols is not None else ret.columns
         return ret
 
     @classmethod

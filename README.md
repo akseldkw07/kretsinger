@@ -31,7 +31,7 @@ kretsinger/
             single-return-array/
     kret_sklearn/
         sklearn_pipelines/ (PMML examples)
-        sklearn.datasets.make_*
+        sklearn.datasets.make_* # for generating datasets
     kret_torch/
         models/
             mixin/ (PMML mixins) (use pytorch lightning modules)

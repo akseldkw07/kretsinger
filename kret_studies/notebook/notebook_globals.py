@@ -5,7 +5,7 @@ from pathlib import Path
 
 from kret_studies.low_prio.typed_cls import LBGMRegressor__init___TypedDict
 
-from .nb_setup import load_dotenv_file
+from ...kret_notebook.nb_setup import load_dotenv_file
 from .source_env_vars import source_zsh_env
 
 # source env variables
