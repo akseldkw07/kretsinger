@@ -16,7 +16,7 @@ from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
 if t.TYPE_CHECKING:
     from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
 
-TITLE_FMT = '<div style="text-align: left; font-weight: bold; font-size: 18px; margin-bottom: 8px;">{title}</div>'
+TITLE_FMT = '<div style="text-align: left; font-weight: bold; margin-left: 5px; font-size: 18px; margin-bottom: 8px;">{title}</div>'
 OUTER_STYLE_TABLE = "<div style='display: flex; flex-direction: column; gap: 20px; overflow-x: auto;'>"
 OUTER_STYLE_ROW = "<div style='display: flex; gap: 20px; overflow-x: auto;'>"
 PER_ROW_DIV = "<div style='display: flex; gap: 20px; flex-shrink: 0; overflow: hidden; width: fit-content;'>"
