@@ -1,12 +1,14 @@
 import typing as t
 from typing import TypeVar, cast
 
+from kret_type_hints.typed_dict_utils import TypedDictUtils
+
 from .func_2_typed_dict import FuncToTypedDict
 
 T = TypeVar("T")
 
 
-class KretTypeHints(FuncToTypedDict):
+class KretTypeHints(FuncToTypedDict, TypedDictUtils):
     @classmethod
     def assert_type(cls: type[T], obj: t.Any) -> T:
         """

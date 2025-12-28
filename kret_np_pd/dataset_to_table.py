@@ -68,13 +68,6 @@ class DTTParams(t.TypedDict, total=False):
     align_cols: bool  # NOTE not implemented
 
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
-PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
-
-ViewHow = t.Literal["sample", "head", "tail"]
-VectorMatrixType = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor
-
-
 class To_html_TypedDict(t.TypedDict, total=False):
     buf: None
     columns: ListLike | None
@@ -102,6 +95,13 @@ class To_html_TypedDict(t.TypedDict, total=False):
 
 class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
     pass
+
+
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
+PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
+
+ViewHow = t.Literal["sample", "head", "tail"]
+VectorMatrixType = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor
 
 
 class PD_Display_Utils:

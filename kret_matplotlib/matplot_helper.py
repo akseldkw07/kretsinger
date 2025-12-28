@@ -4,7 +4,12 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from kret_type_hints.typed_cls import Heatmap_Params_TD
+from kret_type_hints.typed_cls import (
+    Background_gradient_TypedDict,
+    Format_TypedDict,
+    Heatmap_Params_TD,
+    Sns_Heatmap_TypedDict,
+)
 from kret_utils.float_utils import FloatPrecisionUtils
 
 
@@ -17,6 +22,22 @@ class KretMatplotHelper:
     red_green_centered = mcolors.LinearSegmentedColormap.from_list("RedWhiteGreen", rwg)
     white_green = mcolors.LinearSegmentedColormap.from_list("WhiteGreen", wg)
     white_red = mcolors.LinearSegmentedColormap.from_list("WhiteRed", wr)
+    sns_heatmap_defaults: Sns_Heatmap_TypedDict = {
+        "annot": True,
+        "cmap": red_green_centered,
+        "linewidths": 0.1,
+        "cbar": True,
+    }
+    background_grad_defaults: Background_gradient_TypedDict = {
+        "cmap": red_green_centered,
+        "axis": None,
+    }
+    format_defaults: Format_TypedDict = {
+        "formatter": "{:.2f}".format,
+        "decimal": ".",
+        "thousands": "_",
+        "na_rep": "NaN",
+    }
 
     @classmethod
     def _generate_heatmap_colors(cls, df: pd.DataFrame) -> Heatmap_Params_TD:

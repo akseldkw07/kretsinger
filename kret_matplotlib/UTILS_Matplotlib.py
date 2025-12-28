@@ -13,7 +13,14 @@ from pandas.io.formats.style import Styler
 
 from kret_matplotlib.matplot_helper import KretMatplotHelper
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
-from kret_type_hints.typed_cls import Pairplot_TypedDict, Sns_Heatmap_TypedDict, Subplots_TypedDict
+from kret_type_hints.typed_cls import (
+    Background_gradient_TypedDict,
+    Pairplot_TypedDict,
+    Pandas_Styler_TypedDict,
+    Sns_Heatmap_TypedDict,
+    Subplots_TypedDict,
+)
+from kret_type_hints.typed_dict_utils import TypedDictUtils
 
 
 class Plotting_Utils(KretMatplotHelper):
@@ -57,16 +64,44 @@ class Plotting_Utils(KretMatplotHelper):
 
         computed_params = cls._generate_heatmap_params(df_data)
 
-        kwargs_default: Sns_Heatmap_TypedDict = {
-            "annot": True,
-            "cmap": cls.red_green_centered,
-            "linewidths": 0.1,
-            "cbar": True,
-        }
-        kwargs_compute = kwargs_default | computed_params
+        kwargs_compute = cls.sns_heatmap_defaults | computed_params
         kwargs = {**kwargs_compute, **kwargs}
         # print(kwargs)
         sns.heatmap(df_data, **kwargs)
+
+    @classmethod
+    def heatmap_styler(cls, df: pd.DataFrame | Styler, **kwargs: t.Unpack[Pandas_Styler_TypedDict]) -> Styler:
+        """
+        Generate a heatmap-styled DataFrame as a pandas Styler object (returns HTML without plotting).
+
+        This follows the same logic as heatmap_df but returns a Styler object suitable for
+        displaying in Jupyter notebooks and for integration with dtt().
+
+        Args:
+            df: DataFrame or Styler to create heatmap from
+            **kwargs: Additional seaborn heatmap parameters
+
+        Returns:
+            pd.io.formats.style.Styler: Styled DataFrame with heatmap coloring
+        """
+        # Extract DataFrame if a Styler was passed
+        df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
+
+        computed_params = cls._generate_heatmap_params(df_data)
+        fmt = computed_params.pop("fmt", "{:.2f}")
+
+        heatmap_params = cls.background_grad_defaults | kwargs | computed_params  # type: ignore
+        heatmap_params = TypedDictUtils.filter_dict_by_typeddict(heatmap_params, Background_gradient_TypedDict)
+        fmt_params = cls.format_defaults | kwargs | {"formatter": fmt}
+        fmt_params = TypedDictUtils.filter_dict_by_typeddict(fmt_params, Pandas_Styler_TypedDict)
+
+        # Create a Styler with background gradient
+        styled: Styler = df_data.style.background_gradient(**heatmap_params)
+        styled = styled.format(**fmt_params)
+
+        styled = styled.set_properties(**{"text-align": "center"})  # type: ignore[arg-type]
+
+        return styled
 
     # endregion
     # region AXES STYLING
