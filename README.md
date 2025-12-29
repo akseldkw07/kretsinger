@@ -22,7 +22,7 @@ kretsinger/
         notebooks downloaded from (Kaggle, etc)
     kret_utils/
         **Every other submodule will import from here**
-        stuff/
+        ~stuff/~
         ~dtt/~
         dir/ (print class attributes better)
         ~wandb/~
