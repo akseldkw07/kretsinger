@@ -22,5 +22,7 @@ from urllib.request import urlretrieve
 
 from IPython.display import HTML, Markdown, display
 
+from .UTILS_kret_generic import KRET_UTILS as UKS_UTILS
+
 start_time_end = time.time()
 print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")
