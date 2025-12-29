@@ -10,6 +10,7 @@ import pandas as pd
 import torch
 from IPython.display import display_html
 from pandas.api.types import is_bool_dtype
+from pandas.io.formats.style import Styler
 
 from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
 
@@ -68,13 +69,6 @@ class DTTParams(t.TypedDict, total=False):
     align_cols: bool  # NOTE not implemented
 
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
-PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
-
-ViewHow = t.Literal["sample", "head", "tail"]
-VectorMatrixType = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor
-
-
 class To_html_TypedDict(t.TypedDict, total=False):
     buf: None
     columns: ListLike | None
@@ -104,6 +98,13 @@ class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
     pass
 
 
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
+PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
+
+ViewHow = t.Literal["sample", "head", "tail"]
+VectorMatrixType = pd.DataFrame | Styler | pd.Series | np.ndarray | torch.Tensor
+
+
 class PD_Display_Utils:
     @classmethod
     def dtt(
@@ -125,18 +126,21 @@ class PD_Display_Utils:
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
         filter = cls.process_filter(filter) if filter is not None else None
 
-        args: list[pd.DataFrame] = []
+        args: list[pd.DataFrame | Styler] = []
         for arg in input:
-            arg = arg.detach().cpu().numpy() if isinstance(arg, torch.Tensor) else arg
-            df = arg[filter] if filter is not None else arg
-            df = PD_NP_Torch_Translation.coerce_to_df(df)
+            arg = arg.numpy(force=True) if isinstance(arg, torch.Tensor) else arg
+            if not isinstance(arg, Styler):
+                df = arg[filter] if (filter is not None) else arg
+                df = PD_NP_Torch_Translation.coerce_to_df(df)
+            else:
+                df = arg
             args.append(df)
 
         cls.display_df_list(args, titles, n, how, hparams)
 
     @classmethod
     def display_df_list(
-        cls, args: list[pd.DataFrame], titles: t.Iterable[str], n: int, how: ViewHow, hparams: DTTKwargs
+        cls, args: list[pd.DataFrame | Styler], titles: t.Iterable[str], n: int, how: ViewHow, hparams: DTTKwargs
     ):
         """Original behavior: display all items in a single row with horizontal scroll."""
         # Add overflow-x: auto for horizontal scrolling
@@ -154,6 +158,12 @@ class PD_Display_Utils:
 
             # Add flex-shrink: 0 to prevent tables from shrinking
             html_str += PER_TABLE_DIV.format(addtl_width=0)
+            if isinstance(df, Styler):
+                table_html = cls.generate_table_with_dtypes(df, **hparams)
+                html_str += TITLE_FMT.format(title=title) if title else ""
+                html_str += table_html
+                html_str += "</div>"
+                continue
 
             title += f"{df.shape[0]} rows x {df.shape[1] } columns" if hparams.get("show_dimensions", False) else ""
             html_str += TITLE_FMT.format(title=title) if title else ""
@@ -166,12 +176,14 @@ class PD_Display_Utils:
         display_html(html_str, raw=True)
 
     @classmethod
-    def generate_table_with_dtypes(cls, df: pd.DataFrame, **hparams: t.Unpack[To_html_TypedDict]) -> str:
+    def generate_table_with_dtypes(cls, df: pd.DataFrame | Styler, **hparams: t.Unpack[To_html_TypedDict]) -> str:
         """Generate HTML table with datatypes displayed below column headers."""
         # Use pandas' fast to_html() method
 
         html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
         base_html = df.to_html(**html_params)  # type: ignore
+        if not isinstance(df, pd.DataFrame):
+            return base_html
 
         # Build the dtype row HTML
         dtype_row = '    <tr style="text-align: right; font-size: 0.85em; color: #666; font-style: italic;">\n'

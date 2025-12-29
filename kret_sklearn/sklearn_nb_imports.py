@@ -5,6 +5,7 @@ start_time = time.time()
 import sklearn
 import sklearn.datasets
 import sklearn.utils
+import sklearn.metrics
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.decomposition import PCA

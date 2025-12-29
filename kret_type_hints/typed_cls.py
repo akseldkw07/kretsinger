@@ -6,12 +6,14 @@ from typing import Any, Literal
 
 import matplotlib.colors as mcolors
 import numpy as np
-import torch
 from matplotlib.axes import Axes
 from requests import Session
 
 INTERVAL_LITERAL = t.Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
 PERIOD_LITERAL = t.Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+if t.TYPE_CHECKING:
+    from pandas._typing import Axis
+    from pandas.io.formats.style_render import Subset
 
 
 class Subplots_TypedDict(t.TypedDict, total=False):
@@ -26,10 +28,37 @@ class Subplots_TypedDict(t.TypedDict, total=False):
     gridspec_kw: dict[str, Any] | None
 
 
+class Background_gradient_TypedDict(t.TypedDict, total=False):
+    cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.Colormap
+    low: float
+    high: float
+    axis: Axis | None
+    subset: Subset | None
+    text_color_threshold: float
+    vmin: float | None
+    vmax: float | None
+    gmap: Sequence | None
+
+
+class Format_TypedDict(t.TypedDict, total=False):
+    formatter: str
+    subset: Subset | None
+    na_rep: str | None
+    precision: int | None
+    decimal: str
+    thousands: str | None
+    escape: str | None
+    hyperlinks: t.Literal["html", "latex"] | None
+
+
+class Pandas_Styler_TypedDict(Background_gradient_TypedDict, Format_TypedDict, total=False):
+    pass
+
+
 class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
     vmin: float
     vmax: float
-    cmap: str | mcolors.LinearSegmentedColormap
+    cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.LinearSegmentedColormap
     center: t.Any
     robust: t.Any
     annot: t.Any
@@ -50,7 +79,7 @@ class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
 class Heatmap_Params_TD(t.TypedDict, total=False):
     vmin: float
     vmax: float
-    cmap: str | mcolors.LinearSegmentedColormap
+    cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.LinearSegmentedColormap
     fmt: str
 
 
@@ -84,11 +113,10 @@ class LBGMRegressor__init___TypedDict(t.TypedDict, total=False):
     subsample_for_bin: int
     objective: (
         str
-        | t.Callable[[np.ndarray | None, np.ndarray], t.Tuple[np.ndarray, np.ndarray]]
-        | t.Callable[[np.ndarray | None, np.ndarray, np.ndarray | None], t.Tuple[np.ndarray, np.ndarray]]
+        | t.Callable[[np.ndarray | None, np.ndarray], tuple[np.ndarray, np.ndarray]]
+        | t.Callable[[np.ndarray | None, np.ndarray, np.ndarray | None], tuple[np.ndarray, np.ndarray]]
         | t.Callable[
-            [np.ndarray | None, np.ndarray, np.ndarray | None, np.ndarray | None],
-            t.Tuple[np.ndarray, np.ndarray],
+            [np.ndarray | None, np.ndarray, np.ndarray | None, np.ndarray | None], tuple[np.ndarray, np.ndarray]
         ]
         | None
     )
