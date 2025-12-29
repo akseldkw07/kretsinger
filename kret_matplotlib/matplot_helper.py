@@ -89,7 +89,7 @@ class KretMatplotHelper:
         <div style="height:{height}px; border:1px solid #ccc;
                     background: linear-gradient(to right, {gradient});"></div>
         {zero_marker}
-        <div style="display:flex; justify-content:space-between; font-family: monospace; font-size: 16px; color: #FFFFFF;">
+        <div style="display:flex; justify-content:space-between; font-family: monospace; font-size: 14px; color: #FFFFFF;">
             <span>{vmin:.2f}</span>
             <span>{vmax:.2f}</span>
         </div>
