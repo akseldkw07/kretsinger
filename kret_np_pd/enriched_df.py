@@ -17,6 +17,7 @@ class Enriched_DF(pd.DataFrame):
 
     @classmethod
     def column_order(cls) -> list[str]:
+        # TODO use get_type_hints to respect inheritance and typing.get_origin/args for generics
         return list(cls.__annotations__.keys())  # TODO modify pandas insert to update internal container in-place
 
     @property
@@ -51,7 +52,7 @@ T = t.TypeVar("T", bound=pd.DataFrame)
 
 
 def validate_typed_df_keys(
-    df: pd.DataFrame | dict, df_type: t.Type[T], action: t.Literal["warn", "raise"] = "raise"
+    df: pd.DataFrame | dict, df_type: type[T], action: t.Literal["warn", "raise"] = "raise"
 ) -> bool:
     """
     Validate that a pandas DataFrame conforms to the specified typed DataFrame structure.
