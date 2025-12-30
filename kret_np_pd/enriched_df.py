@@ -51,7 +51,7 @@ T = t.TypeVar("T", bound=pd.DataFrame)
 
 
 def validate_typed_df_keys(
-    df: pd.DataFrame | dict, df_type: t.Type[T], action: t.Literal["warn", "raise"] = "raise"
+    df: pd.DataFrame | dict, df_type: type[T], action: t.Literal["warn", "raise"] = "raise"
 ) -> bool:
     """
     Validate that a pandas DataFrame conforms to the specified typed DataFrame structure.

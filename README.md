@@ -24,13 +24,13 @@ kretsinger/
         **Every other submodule will import from here**
         ~stuff/~
         ~dtt/~
-        dir/ (print class attributes better)
+        ~dir/ (print class attributes better)~
         ~wandb/~
         typehint_utils/
             func_to_typehint/
             single-return-array/
     kret_sklearn/
-        sklearn_pipelines/ (PMML examples)
+        ~sklearn_pipelines/ (PMML examples)~
         sklearn.datasets.make_* # for generating datasets
     kret_torch/
         models/
@@ -49,12 +49,12 @@ kretsinger/
             DataLoader next() typehinted to return two tensors
         torch_utils/
             def obs_numpy_to_torch (RL) - timedelta conversion
-    kret_numpy_pd/
+    ~kret_numpy_pd/
         numpy_utils/
         pandas_utils/
             pd.options.mode.copy_on_write
             dtt/
-            pd_heatmap/
+            pd_heatmap/~
     kret_notebook/
         notebook_imports/
             torch_stuff
