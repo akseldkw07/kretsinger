@@ -17,6 +17,7 @@ class Enriched_DF(pd.DataFrame):
 
     @classmethod
     def column_order(cls) -> list[str]:
+        # TODO use get_type_hints to respect inheritance and typing.get_origin/args for generics
         return list(cls.__annotations__.keys())  # TODO modify pandas insert to update internal container in-place
 
     @property
