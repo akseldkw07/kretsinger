@@ -3,7 +3,9 @@ import time
 
 start_time = time.time()
 
-import pytorch_lightning as L
+import lightning as L
+
+from .constants_lightning import LightningConstants as UKS_LIGHTNING_CONSTANTS
 
 # from torchvision import datasets, transforms
 
