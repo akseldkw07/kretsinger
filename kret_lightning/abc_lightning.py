@@ -3,11 +3,11 @@ from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 
-import pytorch_lightning as L
+import lightning as L
 import torch
 
 
-class ABCNN(ABC, L.LightningModule):
+class ABCLM(ABC, L.LightningModule):
     nickname: str = "v000"  # eg. 'v001', 'L2reg-v000', ' Dropout-0.2v000'
 
     @abstractmethod
