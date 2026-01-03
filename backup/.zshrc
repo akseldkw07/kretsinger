@@ -185,3 +185,4 @@ if [ -f '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/Akseld
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc'; fi
+export PATH="$HOME/.local/bin:$PATH"
