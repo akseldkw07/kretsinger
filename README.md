@@ -41,7 +41,7 @@ kretsinger/
         fastai_integration/
         pytorch_dataloaders/ (custom datasets and dataloaders)
         nn_weight_viz/
-        pytorch_lightning/
+        lightning/
             *tutorials*
         rl_utils/
         graph_neural_networks/

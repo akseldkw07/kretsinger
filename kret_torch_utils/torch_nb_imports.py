@@ -6,8 +6,8 @@ start_time = time.time()
 import datasets
 import huggingface_hub
 import torch
-import torch.functional as F
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from datasets import Dataset, DatasetDict, IterableDataset, IterableDatasetDict, load_dataset, load_from_disk
 from huggingface_hub import hf_hub_download, list_datasets, snapshot_download
