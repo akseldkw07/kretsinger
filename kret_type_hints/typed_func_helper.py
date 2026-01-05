@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import typing as t
 
+import inspect
+
+from typing import get_args, get_origin
+
+# Types from typing module that we convert to PEP 604 syntax (don't import these)
+PEP604_REPLACEMENTS = {"Union", "Optional", "List", "Dict", "Set", "Tuple", "UnionType"}
+
 
 class TypedFuncHelper:
 
@@ -47,3 +54,46 @@ class TypedFuncHelper:
         else:
             dict_name = f"{func.__name__.capitalize()}_TypedDict"
         return dict_name
+
+    @classmethod
+    def extract_imports_from_annotation(cls, imports: dict[str, set], annotation):
+        """Recursively extract import statements from an annotation."""
+        if annotation is inspect.Parameter.empty or annotation is type(None):
+            return
+
+        # Handle string annotations
+        if isinstance(annotation, str):
+            return
+
+        origin = get_origin(annotation)
+        args = get_args(annotation)
+
+        # Process the origin type
+        if origin is not None:
+            type_to_process = origin
+        else:
+            type_to_process = annotation
+
+        # Skip builtin types
+        if isinstance(type_to_process, type) and type_to_process.__module__ == "builtins":
+            pass
+        elif hasattr(type_to_process, "__module__") and hasattr(type_to_process, "__name__"):
+            module_path = type_to_process.__module__
+            name = type_to_process.__name__
+
+            # Skip types we convert to PEP 604 syntax
+            skip_typing = module_path == "typing" and name in PEP604_REPLACEMENTS
+            skip_uniontype = module_path == "types" and name == "UnionType"
+            if skip_typing or skip_uniontype:
+                pass
+            else:
+                # Resolve to highest-level import
+                module, resolved_name = cls._resolve_import_location(type_to_process, name)
+
+                imports[module].add(resolved_name)
+
+        # Recursively process generic arguments (but skip Literal string values)
+        for arg in args:
+            # Don't try to extract imports from literal values (strings, ints, etc)
+            if not isinstance(arg, (str, int, float, bool, type(None))):
+                cls.extract_imports_from_annotation(imports, arg)

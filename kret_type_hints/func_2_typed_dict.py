@@ -11,10 +11,6 @@ from .typed_func_helper import TypedFuncHelper
 from typing import get_args, get_origin, Union
 
 
-# Types from typing module that we convert to PEP 604 syntax (don't import these)
-PEP604_REPLACEMENTS = {"Union", "Optional", "List", "Dict", "Set", "Tuple", "UnionType"}
-
-
 class FuncToTypedDict(TypedFuncHelper):
 
     @classmethod
@@ -41,54 +37,12 @@ class FuncToTypedDict(TypedFuncHelper):
         sig = inspect.signature(func)
         imports = defaultdict(set[str])  # {module: set(names)}
 
-        def extract_imports_from_annotation(annotation):
-            """Recursively extract import statements from an annotation."""
-            if annotation is inspect.Parameter.empty or annotation is type(None):
-                return
-
-            # Handle string annotations
-            if isinstance(annotation, str):
-                return
-
-            origin = get_origin(annotation)
-            args = get_args(annotation)
-
-            # Process the origin type
-            if origin is not None:
-                type_to_process = origin
-            else:
-                type_to_process = annotation
-
-            # Skip builtin types
-            if isinstance(type_to_process, type) and type_to_process.__module__ == "builtins":
-                pass
-            elif hasattr(type_to_process, "__module__") and hasattr(type_to_process, "__name__"):
-                module_path = type_to_process.__module__
-                name = type_to_process.__name__
-
-                # Skip types we convert to PEP 604 syntax
-                skip_typing = module_path == "typing" and name in PEP604_REPLACEMENTS
-                skip_uniontype = module_path == "types" and name == "UnionType"
-                if skip_typing or skip_uniontype:
-                    pass
-                else:
-                    # Resolve to highest-level import
-                    module, resolved_name = cls._resolve_import_location(type_to_process, name)
-
-                    imports[module].add(resolved_name)
-
-            # Recursively process generic arguments (but skip Literal string values)
-            for arg in args:
-                # Don't try to extract imports from literal values (strings, ints, etc)
-                if not isinstance(arg, (str, int, float, bool, type(None))):
-                    extract_imports_from_annotation(arg)
-
         # Extract imports from parameters
         for param in sig.parameters.values():
-            extract_imports_from_annotation(param.annotation)
+            cls.extract_imports_from_annotation(imports, param.annotation)
 
         # Extract imports from return annotation
-        extract_imports_from_annotation(sig.return_annotation)
+        cls.extract_imports_from_annotation(imports, sig.return_annotation)
 
         # Always import TypedDict from typing
         if imports.get("typing"):
