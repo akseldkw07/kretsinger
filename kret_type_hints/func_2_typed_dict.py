@@ -1,389 +1,166 @@
 from __future__ import annotations
+from collections import defaultdict
 
 import inspect
-import re
 import typing as t
+from types import UnionType
 
 from .typed_func_helper import TypedFuncHelper
 
 
+from typing import get_args, get_origin, Union
+
+
+# Types from typing module that we convert to PEP 604 syntax (don't import these)
+PEP604_REPLACEMENTS = {"Union", "Optional", "List", "Dict", "Set", "Tuple", "UnionType"}
+
+
 class FuncToTypedDict(TypedFuncHelper):
+
     @classmethod
     def func_to_typed_dict(cls, func: t.Callable, include_ret: bool = False):
-        """Convert function signature / annotations to a typed dict of accepted types."""
+        """
+        1. Print required imports
+        2. Print TypedDict class definition based on function annotations
+        """
+        cls.print_imports(func)
+        print()  # Blank line between imports and class definition
+        cls.print_typed_dict_from_callable(func, include_ret=include_ret)
+
+    @classmethod
+    def print_imports(cls, func: t.Callable):
+        """
+        Print necessary imports based on function annotations.
+
+        Rules:
+        - Always use python builtin types when possible. (E.g., use 'list' instead of 'typing.List', type1 | type2 instead of 'typing.Union[type1, type2]')
+        - Extract true import statement from Optional[], Callable[], Union[], etc. We want to print copy-pastable code for Python 3.10+ (PEP 604).
+        - Import from as highest level possible (e.g. `from pandas import DataFrame` instead of `from pandas.core.frame import DataFrame`).
+        """
 
         sig = inspect.signature(func)
-        doc = func.__doc__ or ""
+        imports = defaultdict(set[str])  # {module: set(names)}
 
-        # Parse docstring for :Parameters: section
-        param_types_from_doc: dict[str, str] = {}
-        param_descs: dict[str, str] = {}
-        param_literals: dict[str, list[str]] = {}
-        param_section = False
-        doc_lines = doc.splitlines()
-        i = 0
-        while i < len(doc_lines):
-            line = doc_lines[i].strip()
-            if line.lower().startswith(":parameters:"):
-                param_section = True
-                i += 1
-                continue
-            if param_section:
-                if not line or line.startswith(":"):
-                    break
-                # Try to parse lines like: name : type
-                m = re.match(r"([\w*]+)\s*:\s*([^#]+)", line)
-                if m:
-                    pname, ptype = m.group(1).strip(), m.group(2).strip()
-                    desc = line
-                    # Look ahead for valid values/intervals/periods in next lines
-                    lookahead = 1
-                    while i + lookahead < len(doc_lines):
-                        next_line = doc_lines[i + lookahead].strip()
-                        if not next_line or next_line.startswith(":") or re.match(r"^[\w*]+\s*:\s*", next_line):
-                            break
-                        valid_match = re.search(
-                            r"Valid (?:values|periods|intervals): ([^\n]+)", next_line, re.IGNORECASE
-                        )
-                        if valid_match:
-                            vals = [v.strip() for v in valid_match.group(1).replace(" ", "").split(",") if v.strip()]
-                            param_literals[pname] = vals
-                            desc += " " + next_line
-                        lookahead += 1
-                    param_types_from_doc[pname] = ptype
-                    param_descs[pname] = desc
-                    i += lookahead - 1
-                else:
-                    # Try to parse lines like: name : type, description
-                    m = re.match(r"([\w*]+)\s*:\s*([^,]+),?\s*(.*)", line)
-                    if m:
-                        pname, ptype, desc = m.group(1).strip(), m.group(2).strip(), m.group(3).strip()
-                        # Look ahead for valid values/intervals/periods in next lines
-                        lookahead = 1
-                        while i + lookahead < len(doc_lines):
-                            next_line = doc_lines[i + lookahead].strip()
-                            if not next_line or next_line.startswith(":") or re.match(r"^[\w*]+\s*:\s*", next_line):
-                                break
-                            valid_match = re.search(
-                                r"Valid (?:values|periods|intervals): ([^\n]+)",
-                                next_line,
-                                re.IGNORECASE,
-                            )
-                            if valid_match:
-                                vals = [
-                                    v.strip() for v in valid_match.group(1).replace(" ", "").split(",") if v.strip()
-                                ]
-                                param_literals[pname] = vals
-                                desc += " " + next_line
-                            lookahead += 1
-                        param_types_from_doc[pname] = ptype
-                        param_descs[pname] = desc
-                        i += lookahead - 1
-            i += 1
+        def extract_imports_from_annotation(annotation):
+            """Recursively extract import statements from an annotation."""
+            if annotation is inspect.Parameter.empty or annotation is type(None):
+                return
 
-        def _split_top_level_commas(s: str) -> list[str]:
-            """
-            Split a string on commas not nested inside [] or ().
-            """
-            out: list[str] = []
-            buf: list[str] = []
-            depth_sq = 0
-            depth_par = 0
-            for ch in s:
-                if ch == "[":
-                    depth_sq += 1
-                elif ch == "]":
-                    depth_sq = max(0, depth_sq - 1)
-                elif ch == "(":
-                    depth_par += 1
-                elif ch == ")":
-                    depth_par = max(0, depth_par - 1)
+            # Handle string annotations
+            if isinstance(annotation, str):
+                return
 
-                if ch == "," and depth_sq == 0 and depth_par == 0:
-                    out.append("".join(buf).strip())
-                    buf = []
-                else:
-                    buf.append(ch)
-            tail = "".join(buf).strip()
-            if tail:
-                out.append(tail)
-            return out
+            origin = get_origin(annotation)
+            args = get_args(annotation)
 
-        def _expand_typing_syntax(s: str) -> str:
-            """
-            Expand textual Optional[...] / Union[...] (even when nested) into pipe unions.
-            This is the key fix for cases like:
-              - Optional[bool] | None
-              - list[Union[A, B]]
-              - dict[str, Optional[int]]
-            """
-            s = s.strip()
-
-            def _find_matching_bracket(text: str, open_pos: int) -> int:
-                depth = 0
-                for j in range(open_pos, len(text)):
-                    ch = text[j]
-                    if ch == "[":
-                        depth += 1
-                    elif ch == "]":
-                        depth -= 1
-                        if depth == 0:
-                            return j
-                raise ValueError(f"Unmatched '[' in type string: {text!r}")
-
-            changed = True
-            while changed:
-                changed = False
-                # prefer Optional before Union
-                for kw in ("Optional[", "typing.Optional[", "Union[", "typing.Union["):
-                    start = s.find(kw)
-                    if start == -1:
-                        continue
-
-                    open_br = start + len(kw) - 1  # points at '['
-                    close_br = _find_matching_bracket(s, open_br)
-                    inner = s[open_br + 1 : close_br].strip()
-
-                    if "Optional" in kw:
-                        inner_expanded = _expand_typing_syntax(inner)
-                        repl = f"{inner_expanded} | None"
-                    else:
-                        inner_expanded = _expand_typing_syntax(inner)
-                        parts = [p.strip() for p in _split_top_level_commas(inner_expanded) if p.strip()]
-                        repl = " | ".join(parts) if parts else "t.Any"
-
-                    s = s[:start] + repl + s[close_br + 1 :]
-                    changed = True
-                    break
-
-            return s
-
-        def _dedupe_keep_order(parts: list[str]) -> list[str]:
-            seen: set[str] = set()
-            out: list[str] = []
-            for p in parts:
-                if p not in seen:
-                    out.append(p)
-                    seen.add(p)
-            return out
-
-        def _normalize_none(parts: list[str]) -> list[str]:
-            """
-            Convert any 'NoneType' mentions to 'None'.
-            """
-            norm: list[str] = []
-            for p in parts:
-                p2 = p.strip()
-                if p2 in {"NoneType", "nonetype.NoneType"}:
-                    norm.append("None")
-                elif p2.endswith(".NoneType") or p2.endswith("NoneType"):
-                    # last-ditch cleanup
-                    norm.append("None")
-                else:
-                    norm.append(p2)
-            return norm
-
-        def _split_unionish(s: str) -> list[str]:
-            """
-            Split a type-ish string into parts for unions.
-
-            Handles:
-              - 'A | B | None'
-              - 'A, B'
-              - 'A / B'
-              - 'A or B'
-              - 'Union[A, B]'
-              - 'Optional[T]'
-            """
-            s = s.strip()
-
-            # Expand Optional[...] / Union[...] anywhere (including nested)
-            s = _expand_typing_syntax(s)
-
-            # If already pipe unions, split first and recursively normalize each part
-            if "|" in s:
-                parts = [p.strip() for p in s.split("|") if p.strip()]
-                out: list[str] = []
-                for p in parts:
-                    out.extend(_split_unionish(p))
-                return [p for p in out if p]
-
-            # Still useful for edge cases where text is exactly Optional[...] / Union[...]
-            m_opt = re.match(r"^(?:typing\.)?Optional\[(.*)\]$", s)
-            if m_opt:
-                inner = m_opt.group(1).strip()
-                return _split_unionish(inner) + ["None"]
-
-            m_union = re.match(r"^(?:typing\.)?Union\[(.*)\]$", s)
-            if m_union:
-                inner = m_union.group(1).strip()
-                parts = _split_top_level_commas(inner)
-                return [p.strip() for p in parts if p.strip()]
-
-            # Other union-ish separators (docstrings etc.)
-            if any(x in s for x in [" or ", ",", "/"]):
-                parts = re.split(r",|/|\s+or\s+", s)
-                parts = [p.strip() for p in parts if p.strip()]
-                return parts
-
-            return [s]
-
-        def _normalize_optional_union_string(s: str) -> str:
-            """
-            Ensure we output unions only as 'A | B | None' (no Union/Optional),
-            and never mention NoneType.
-            """
-            s = _expand_typing_syntax(s)
-
-            parts = _split_unionish(s)
-            parts = _normalize_none(parts)
-            parts = _dedupe_keep_order(parts)
-
-            has_none = "None" in parts
-            parts_wo_none = [p for p in parts if p != "None"]
-            if has_none:
-                parts = parts_wo_none + ["None"]
+            # Process the origin type
+            if origin is not None:
+                type_to_process = origin
             else:
-                parts = parts_wo_none
+                type_to_process = annotation
 
-            return " | ".join(parts) if parts else "t.Any"
+            # Skip builtin types
+            if isinstance(type_to_process, type) and type_to_process.__module__ == "builtins":
+                pass
+            elif hasattr(type_to_process, "__module__") and hasattr(type_to_process, "__name__"):
+                module_path = type_to_process.__module__
+                name = type_to_process.__name__
 
-        def doc_type_to_hint(ptype: str, literals: list[str] | None = None) -> str:
-            ptype = ptype.strip()
-            if literals:
-                return f"t.Literal[{', '.join([repr(v) for v in literals])}]"
-
-            if ptype in {"str", "string"}:
-                return "str"
-            if ptype in {"int", "integer"}:
-                return "int"
-            if ptype in {"float"}:
-                return "float"
-            if ptype in {"bool", "boolean"}:
-                return "bool"
-            if ptype in {"list", "array", "sequence"}:
-                return "list"
-            if ptype in {"dict", "mapping"}:
-                return "dict"
-
-            if ptype == "str, list":
-                return "str | list[str]"
-
-            if any(x in ptype for x in [" or ", ",", "/"]):
-                parts = _split_unionish(ptype)
-                return _normalize_optional_union_string(" | ".join(parts))
-
-            return ptype
-
-        # We'll store imports as fully-qualified names (full import tree printing)
-        extra_imports: set[str] = set()
-
-        def _collect_imports_full(type_str: str) -> None:
-            """
-            Collect imports but keep them fully-qualified for easier copy/paste.
-
-            Rules:
-              - never import NoneType
-              - never print Optional/Union
-              - types are normalized to pipe unions
-            """
-            s = type_str
-            for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                s = s.replace(to_replace, replacement)
-
-            s = _expand_typing_syntax(s)
-            s = _normalize_optional_union_string(s)
-
-            # Collect fully-qualified tokens
-            tokens = re.findall(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+", s)
-            for tok in tokens:
-                if tok.startswith("typing."):
-                    continue
-                if tok in {"NoneType", "nonetype.NoneType"}:
-                    continue
-                if tok.endswith(".NoneType") or tok.endswith("NoneType"):
-                    continue
-                extra_imports.add(tok)
-
-        # First pass: collect all types and resolve param types
-        for param_name, param in sig.parameters.items():
-            if param.kind in (
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.VAR_KEYWORD,
-                inspect.Parameter.VAR_POSITIONAL,
-            ):
-                continue
-
-            if param_name in param_types_from_doc:
-                doc_type = param_types_from_doc[param_name]
-                literals = param_literals.get(param_name)
-                str_argtype = doc_type_to_hint(doc_type, literals)
-            else:
-                arg_type = param.annotation
-                if arg_type is inspect.Parameter.empty:
-                    str_argtype = "t.Any"
+                # Skip types we convert to PEP 604 syntax
+                skip_typing = module_path == "typing" and name in PEP604_REPLACEMENTS
+                skip_uniontype = module_path == "types" and name == "UnionType"
+                if skip_typing or skip_uniontype:
+                    pass
                 else:
-                    str_argtype = str(arg_type)
-                    if "<class" in str_argtype:
-                        str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
-                    for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                        str_argtype = str_argtype.replace(to_replace, replacement)
+                    # Resolve to highest-level import
+                    module, resolved_name = cls._resolve_import_location(type_to_process, name)
 
-            # If default None, ensure union includes None (not NoneType)
-            if param.default is None and "None" not in str_argtype and "NoneType" not in str_argtype:
-                str_argtype = f"{str_argtype} | None"
+                    imports[module].add(resolved_name)
 
-            # Enforce pipe union style + squash NoneType + expand nested Optional/Union
-            str_argtype = _normalize_optional_union_string(str_argtype)
+            # Recursively process generic arguments (but skip Literal string values)
+            for arg in args:
+                # Don't try to extract imports from literal values (strings, ints, etc)
+                if not isinstance(arg, (str, int, float, bool, type(None))):
+                    extract_imports_from_annotation(arg)
 
-            _collect_imports_full(str_argtype)
-            param_types_from_doc[param_name] = str_argtype
+        # Extract imports from parameters
+        for param in sig.parameters.values():
+            extract_imports_from_annotation(param.annotation)
 
-        # Return type
-        str_return_type: str | None = None
-        if include_ret and sig.return_annotation is not inspect.Parameter.empty:
-            return_type = sig.return_annotation
-            str_return_type = str(return_type)
-            if "<class" in str_return_type:
-                str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
-            for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                str_return_type = str_return_type.replace(to_replace, replacement)
+        # Extract imports from return annotation
+        extract_imports_from_annotation(sig.return_annotation)
 
-            str_return_type = _normalize_optional_union_string(str_return_type)
-            _collect_imports_full(str_return_type)
+        # Always import TypedDict from typing
+        if imports.get("typing"):
+            imports["typing"].add("TypedDict")
+        else:
+            imports["typing"] = {"TypedDict"}
 
-        def _print_full_import_tree(imports: set[str]) -> None:
-            """
-            Print imports as full module paths, one per line.
-            Example:
-              import lightning.pytorch.callbacks.callback
-            """
-            for imp in sorted(imports):
-                if imp in {"NoneType", "nonetype.NoneType"}:
-                    continue
-                if imp.endswith(".NoneType") or imp.endswith("NoneType"):
-                    continue
-                print(f"import {imp}")
+        # Print imports in sorted order
+        for module in sorted(imports.keys()):
+            names = sorted(imports[module])
+            for name in names:
+                print(f"from {module} import {name}")
 
-        def print_with_resolved_types() -> None:
-            name = func.__name__
+    @classmethod
+    def print_typed_dict_from_callable(
+        cls, callable: t.Callable, dict_name: str | None = None, include_ret: bool = False
+    ):
+        """
+        Print a TypedDict definition from a callable's annotations.
+        """
+        annotations = getattr(callable, "__annotations__", {})
 
-            _print_full_import_tree(extra_imports)
+        if not annotations:
+            print(f"No annotations found on {callable}")
+            return
 
-            print(f"class {name.capitalize()}_TypedDict(t.TypedDict, total=False):")
-            for param_name, param in sig.parameters.items():
-                if param.kind in (
-                    inspect.Parameter.POSITIONAL_ONLY,
-                    inspect.Parameter.VAR_KEYWORD,
-                    inspect.Parameter.VAR_POSITIONAL,
-                ):
-                    continue
-                str_argtype = param_types_from_doc.get(param_name, "t.Any")
-                str_argtype = _normalize_optional_union_string(str_argtype)
-                print(f"    {param_name}: {str_argtype}")
+        dict_name = dict_name or cls.resolve_dict_name(callable)
 
-            if include_ret and str_return_type is not None:
-                print(f"    # return: {str_return_type}")
+        print(f"class {dict_name}(TypedDict):")
+        for param_name, annotation in annotations.items():
+            if not include_ret and param_name == "return":
+                continue
+            formatted = cls.format_annotation(annotation)
+            print(f"    {param_name}: {formatted}")
 
-        print_with_resolved_types()
-        # return sig.parameters
+        return annotations
+
+    @classmethod
+    def format_annotation(cls, annotation) -> str:
+        """Convert a type annotation to Python 3.10+ syntax (PEP 604)."""
+
+        # Handle None type
+        if annotation is type(None):
+            return "None"
+
+        # NEW - CORRECT
+        if isinstance(annotation, (str, int, float, bool)):
+            return repr(annotation)  # Handles all literal types
+
+        origin = get_origin(annotation)
+        args = get_args(annotation)
+
+        # Handle Union types -> use | syntax
+        if origin is Union or origin is UnionType:
+            return " | ".join(cls.format_annotation(arg) for arg in args)
+
+        # Handle Optional types -> convert to | None
+        if origin is Union and type(None) in args:
+            non_none_args = [arg for arg in args if arg is not type(None)]
+            if len(non_none_args) == 1:
+                return f"{cls.format_annotation(non_none_args[0])} | None"
+
+        # Handle generic types like List, Dict, etc.
+        if origin is not None:
+            origin_name = getattr(origin, "__name__", str(origin))
+            if args:
+                formatted_args = ", ".join(cls.format_annotation(arg) for arg in args)
+                return f"{origin_name}[{formatted_args}]"
+            return origin_name
+
+        # Handle regular types
+        if hasattr(annotation, "__name__"):
+            return annotation.__name__
+
+        return str(annotation)

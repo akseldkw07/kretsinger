@@ -1,132 +1,49 @@
 from __future__ import annotations
 
-import inspect
-import re
 import typing as t
-from typing import TypeVar
-
-T = TypeVar("T")
 
 
 class TypedFuncHelper:
 
     @classmethod
-    # --- Shared printer ---
-    def print_typed_dict(cls, func: t.Callable, typed_dict: dict | None, include_ret: bool = False):
-        name = func.__name__
-        sig = inspect.signature(func)
-        extra_imports = set()
-        # If typed_dict is None, fallback to signature-based printing (like func_to_typed_dict)
-        if typed_dict is None:
-            # Reuse func_to_typed_dict logic for printing
-            for param_name, param in sig.parameters.items():
-                if param.kind in (
-                    inspect.Parameter.POSITIONAL_ONLY,
-                    inspect.Parameter.VAR_KEYWORD,
-                    inspect.Parameter.VAR_POSITIONAL,
-                ):
-                    continue
-                arg_type = param.annotation
-                if arg_type is inspect.Parameter.empty:
-                    str_argtype = "t.Any"
-                else:
-                    str_argtype = str(arg_type)
-                    if "<class" in str_argtype:
-                        str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
-                    for to_replace, replacement in cls.import_replace_dict.items():
-                        str_argtype = str_argtype.replace(to_replace, replacement)
-                if param.default is None and "None" not in str_argtype:
-                    str_argtype = f"{str_argtype} | None"
-                cls.collect_imports(str_argtype, extra_imports)
-            # Return type
-            if include_ret and sig.return_annotation is not inspect.Parameter.empty:
-                return_type = sig.return_annotation
-                str_return_type = str(return_type)
-                if "<class" in str_return_type:
-                    str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
-                for to_replace, replacement in cls.import_replace_dict.items():
-                    str_return_type = str_return_type.replace(to_replace, replacement)
-                cls.collect_imports(str_return_type, extra_imports)
-            for imp in sorted(extra_imports):
-                print(imp)
-            print(f"class {name.capitalize()}_TypedDict(t.TypedDict, total=False):")
-            for param_name, param in sig.parameters.items():
-                if param.kind in (
-                    inspect.Parameter.POSITIONAL_ONLY,
-                    inspect.Parameter.VAR_KEYWORD,
-                    inspect.Parameter.VAR_POSITIONAL,
-                ):
-                    continue
-                arg_type = param.annotation
-                if arg_type is inspect.Parameter.empty:
-                    str_argtype = "t.Any"
-                else:
-                    str_argtype = str(arg_type)
-                    if "<class" in str_argtype:
-                        str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
-                    for to_replace, replacement in cls.import_replace_dict.items():
-                        str_argtype = str_argtype.replace(to_replace, replacement)
-                if param.default is None and "None" not in str_argtype:
-                    str_argtype = f"{str_argtype} | None"
-                print(f"    {param_name}: {str_argtype}")
-            if include_ret and sig.return_annotation is not inspect.Parameter.empty:
-                return_type = sig.return_annotation
-                str_return_type = str(return_type)
-                if "<class" in str_return_type:
-                    str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
-                for to_replace, replacement in cls.import_replace_dict.items():
-                    str_return_type = str_return_type.replace(to_replace, replacement)
-                print(f"    # return: {str_return_type}")
-            return
-        # If typed_dict is a dict (from LLM/JSON), print using its keys/values
-        for v in typed_dict.values():
-            cls.collect_imports(str(v), extra_imports)
-        for imp in sorted(extra_imports):
-            print(imp)
-        print(f"class {name.capitalize()}_TypedDict(t.TypedDict, total=False):")
-        for k, v in typed_dict.items():
-            print(f"    {k}: {v}")
+    def _resolve_import_location(cls, type_obj, name: str) -> tuple[str, str]:
+        """
+        Resolve the best import location for a type.
 
-    import_replace_dict = {
-        "pandas.core.frame.DataFrame": "pd.DataFrame",
-        "pandas.core.series.Series": "pd.Series",
-        "numpy": "np",
-        "pandas": "pd",
-        "t.Union": "Union",
-        "t.Optional": "Optional",
-        "typing.Union": "Union",
-        "typing.Optional": "Optional",
-        "typing.": "t.",
-        "numba": "nb",
-    }
+        Returns (module, name) where module is the highest-level import possible.
+        E.g. (torch.nn, Module) instead of (torch.nn.modules.module, Module)
+        Also tries intermediate levels: torch.nn before torch
 
-    # --- Shared import collector ---
+        Prefers modules that explicitly export the name in __all__ (public API).
+        """
+        module: str = type_obj.__module__
+        best_match = (module, name)
+
+        # Start with the original module
+        if "." in module:
+            parts = module.split(".")
+            # Try progressively shorter module paths (e.g., torch.nn.modules.module -> torch.nn.modules -> torch.nn -> torch)
+            for i in range(len(parts) - 1, 0, -1):
+                candidate_module = ".".join(parts[:i])
+                try:
+                    imported = __import__(candidate_module, fromlist=[name])
+                    # Check if name is available at this module level
+
+                    best_match = (candidate_module, name) if hasattr(imported, name) else best_match
+
+                except (ImportError, AttributeError):
+                    continue
+
+        # Fall back to the original module or best match found
+        return best_match
+
     @classmethod
-    def collect_imports(cls, type_str: str, extra_imports: set):
-        known_type_map = {
-            "Session": "from requests import Session",
-        }
-        for match in re.findall(r"\b([A-Z][A-Za-z0-9_]*)\b", type_str):
-            if match in known_type_map:
-                extra_imports.add(known_type_map[match])
-            elif match not in {
-                "None",
-                "Any",
-                "Literal",
-                "Optional",
-                "Union",
-                "Sequence",
-                "Mapping",
-                "Dict",
-                "List",
-                "Tuple",
-                "Set",
-                "Type",
-                "Callable",
-                "str",
-                "int",
-                "float",
-                "bool",
-                "object",
-            }:
-                extra_imports.add(f"from {match.lower()} import {match}")
+    def resolve_dict_name(cls, func: t.Callable) -> str:
+        qualname = getattr(func, "__qualname__", "")
+        parts = qualname.split(".")
+        if len(parts) > 1 and "<locals>" not in qualname:
+            class_name = parts[-2]
+            dict_name = f"{class_name}_{func.__name__.capitalize()}_TypedDict"
+        else:
+            dict_name = f"{func.__name__.capitalize()}_TypedDict"
+        return dict_name

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+from collections import defaultdict
 import inspect
-import re
 import typing as t
-
+from types import UnionType
 from kret_type_hints.typed_func_helper import TypedFuncHelper
 
-from typing import get_args, get_origin, Union, Optional
-import sys
+from typing import get_args, get_origin, Union
+
+
+# Types from typing module that we convert to PEP 604 syntax (don't import these)
+PEP604_REPLACEMENTS = {"Union", "Optional", "List", "Dict", "Set", "Tuple", "UnionType"}
 
 
 class FuncToTypedDict(TypedFuncHelper):
@@ -19,36 +22,8 @@ class FuncToTypedDict(TypedFuncHelper):
         2. Print TypedDict class definition based on function annotations
         """
         cls.print_imports(func)
+        print()  # Blank line between imports and class definition
         cls.print_typed_dict_from_callable(func, include_ret=include_ret)
-
-    @classmethod
-    def _get_top_level_module(cls, module_path: str) -> str:
-        """Resolve a module path to its top-level package (e.g. 'pandas.core.frame' -> 'pandas')."""
-        return module_path.split(".")[0]
-
-    @classmethod
-    def _resolve_import_location(cls, type_obj, name: str) -> tuple[str, str]:
-        """
-        Resolve the best import location for a type.
-
-        Returns (module, name) where module is the highest-level import possible.
-        E.g. (pandas, DataFrame) instead of (pandas.core.frame, DataFrame)
-        """
-        module = type_obj.__module__
-
-        # Try to import from the top-level package
-        if "." in module:
-            top_level = cls._get_top_level_module(module)
-            try:
-                top_module = __import__(top_level)
-                # Check if name is available at the top level
-                if hasattr(top_module, name):
-                    return (top_level, name)
-            except (ImportError, AttributeError):
-                pass
-
-        # Fall back to the original module
-        return (module, name)
 
     @classmethod
     def print_imports(cls, func: t.Callable):
@@ -60,8 +35,9 @@ class FuncToTypedDict(TypedFuncHelper):
         - Extract true import statement from Optional[], Callable[], Union[], etc. We want to print copy-pastable code for Python 3.10+ (PEP 604).
         - Import from as highest level possible (e.g. `from pandas import DataFrame` instead of `from pandas.core.frame import DataFrame`).
         """
+
         sig = inspect.signature(func)
-        imports = {}  # {module: set(names)}
+        imports = defaultdict(set[str])  # {module: set(names)}
 
         def extract_imports_from_annotation(annotation):
             """Recursively extract import statements from an annotation."""
@@ -88,12 +64,16 @@ class FuncToTypedDict(TypedFuncHelper):
                 module_path = type_to_process.__module__
                 name = type_to_process.__name__
 
-                # Resolve to highest-level import
-                module, resolved_name = cls._resolve_import_location(type_to_process, name)
+                # Skip types we convert to PEP 604 syntax
+                skip_typing = module_path == "typing" and name in PEP604_REPLACEMENTS
+                skip_uniontype = module_path == "types" and name == "UnionType"
+                if skip_typing or skip_uniontype:
+                    pass
+                else:
+                    # Resolve to highest-level import
+                    module, resolved_name = cls._resolve_import_location(type_to_process, name)
 
-                if module not in imports:
-                    imports[module] = set()
-                imports[module].add(resolved_name)
+                    imports[module].add(resolved_name)
 
             # Recursively process generic arguments (but skip Literal string values)
             for arg in args:
@@ -145,17 +125,6 @@ class FuncToTypedDict(TypedFuncHelper):
         return annotations
 
     @classmethod
-    def resolve_dict_name(cls, func: t.Callable) -> str:
-        qualname = getattr(func, "__qualname__", "")
-        parts = qualname.split(".")
-        if len(parts) > 1 and "<locals>" not in qualname:
-            class_name = parts[-2]
-            dict_name = f"{class_name}_{func.__name__.capitalize()}_TypedDict"
-        else:
-            dict_name = f"{func.__name__.capitalize()}_TypedDict"
-        return dict_name
-
-    @classmethod
     def format_annotation(cls, annotation) -> str:
         """Convert a type annotation to Python 3.10+ syntax (PEP 604)."""
 
@@ -163,15 +132,15 @@ class FuncToTypedDict(TypedFuncHelper):
         if annotation is type(None):
             return "None"
 
-        # Handle string annotations
-        if isinstance(annotation, str):
-            return annotation
+        # NEW - CORRECT
+        if isinstance(annotation, (str, int, float, bool)):
+            return repr(annotation)  # Handles all literal types
 
         origin = get_origin(annotation)
         args = get_args(annotation)
 
         # Handle Union types -> use | syntax
-        if origin is Union:
+        if origin is Union or origin is UnionType:
             return " | ".join(cls.format_annotation(arg) for arg in args)
 
         # Handle Optional types -> convert to | None
