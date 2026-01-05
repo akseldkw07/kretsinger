@@ -1,21 +1,29 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import typing as t
 from abc import ABC, abstractmethod
 
 import lightning as L
 import torch
+import torch.nn as nn
 
 
 class ABCLM(ABC, L.LightningModule):
-    nickname: str = "v000"  # eg. 'v001', 'L2reg-v000', ' Dropout-0.2v000'
+    version: str = "v000"  # eg. 'v001'
+    __call__: t.Callable[..., torch.Tensor]
+    _criterion: nn.Module
 
+    @property
     @abstractmethod
-    def forward(self, *args, **kwargs) -> t.Any:
-        """
-        Note - don't call .to(device) here; bad for memory
-        """
-        ...
+    def name(self) -> str: ...
+
+    # @abstractmethod
+    # def forward(self, *args, **kwargs) -> t.Any:
+    #     """
+    #     Note - don't call .to(device) here; bad for memory
+    #     """
+    #     ...
 
     @abstractmethod
     def configure_optimizers(self, *args, **kwargs) -> t.Any:
@@ -25,14 +33,22 @@ class ABCLM(ABC, L.LightningModule):
         """
 
     @abstractmethod
-    def training_step(self, batch: t.Any, batch_idx: int) -> torch.Tensor:
+    def get_loss(self, outputs: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         """
         loss = ...
         return loss
         """
 
     @abstractmethod
-    def validation_step(self, batch: t.Any, batch_idx: int) -> None:
+    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
+        """
+
+        loss = ...
+        return loss
+        """
+
+    @abstractmethod
+    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         """
         val_loss = ...
         self.log('val_loss', val_loss)

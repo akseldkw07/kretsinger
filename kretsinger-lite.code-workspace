@@ -1,21 +1,12 @@
 {
     "folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../ONLINE-REPOS"
-		},
-		{
-			"path": "../../Desktop/Aksel/vault"
-		},
-		{
-			"path": "../Columbia/PMML-Project"
-		},
-		{
-			"path": "../Columbia/RL-Project"
-		}
-	],
+        {
+            "path": "."
+        },
+        {
+            "path": "../Columbia/PMML-Project"
+        }
+    ],
     "settings": {
         "files.exclude": {
             "/Users/Akseldkw/.zshrc": false,
