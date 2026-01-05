@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from pathlib import Path
 import typing as t
 from abc import ABC, abstractmethod
 
@@ -10,13 +10,22 @@ import torch.nn as nn
 
 
 class ABCLM(ABC, L.LightningModule):
-    version: str = "v000"  # eg. 'v001'
+    version: str = "v_000"  # eg. 'v_001'
     __call__: t.Callable[..., torch.Tensor]
     _criterion: nn.Module
+    _load_dir_override: str | Path | None = None
 
     @property
     @abstractmethod
     def name(self) -> str: ...
+
+    @property
+    @abstractmethod
+    def root_dir(self) -> Path: ...
+
+    @property
+    @abstractmethod
+    def hparams_str(self) -> str: ...
 
     # @abstractmethod
     # def forward(self, *args, **kwargs) -> t.Any:

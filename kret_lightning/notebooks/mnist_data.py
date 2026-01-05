@@ -1,11 +1,10 @@
 import lightning as L
-from torch.utils.data import random_split, DataLoader
+import torch
+from torch.utils.data import DataLoader, random_split
+from torchvision import transforms
 
 # Note - you must have torchvision installed for this example
 from torchvision.datasets import MNIST
-from torchvision import transforms
-
-import torch
 
 
 class MNISTDataModule(L.LightningDataModule):

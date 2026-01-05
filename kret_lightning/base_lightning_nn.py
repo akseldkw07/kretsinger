@@ -1,10 +1,17 @@
-from dataclasses import dataclass, asdict
-from .abc_lightning import ABCLM
-import torch
+from __future__ import annotations
+
+from pathlib import Path
 import typing as t
+
+import torch
 import torch.nn as nn
 from lightning.fabric.utilities.data import AttributeDict
+
+from kret_lightning.constants_lightning import LightningConstants
+from kret_lightning.utils import LightningModuleAssert
 from kret_torch_utils.priors import PriorLosses
+
+from .abc_lightning import ABCLM
 
 
 class HPDict(AttributeDict):  # type: ignore
@@ -48,16 +55,13 @@ class BaseLightningNN(ABCLM):
         """
         NOTE: don't call .to(device) here; Lightning handles device placement
         """
+        LightningModuleAssert.assert_version_fmt(self.version)
         super().__init__()
         self.save_hyperparameters()
 
     @property
     def criterion(self):
         return self._criterion.to(self.device)
-
-    @property
-    def name(self) -> str:
-        return f"{self.__class__.__name__}_{self.nickname}"
 
     def configure_optimizers(self, *args, **kwargs):
         """
@@ -70,6 +74,33 @@ class BaseLightningNN(ABCLM):
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hp.stepsize, gamma=hp.gamma)
 
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
+
+    # endregion
+
+    # region Naming
+
+    @property
+    def name(self) -> str:
+        return f"{self.__class__.__name__}__{self.hparams_str}__{self.version}"
+
+    @property
+    def root_dir(self) -> Path:
+        val = self._load_dir_override if self._load_dir_override is not None else LightningConstants.LIGHTNING_LOG_DIR
+        return Path(val)
+
+    @property
+    def hparams_str(self) -> str:
+        hp = t.cast(HPDict, self.hparams_initial)
+        parts = [
+            f"lr{hp.lr:g}",
+            f"g{hp.gamma:g}",
+            f"step{hp.stepsize}",
+        ]
+        if hp.l1_lambda > 0.0:
+            parts.append(f"L1-{hp.l1_lambda:g}")
+        if hp.l2_lambda > 0.0:
+            parts.append(f"L2-{hp.l2_lambda:g}")
+        return "-".join(parts)
 
     # endregion
 
