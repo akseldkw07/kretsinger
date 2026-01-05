@@ -32,20 +32,59 @@ class FuncToTypedDict(TypedFuncHelper):
         - Import from as highest level possible (e.g. `from pandas import DataFrame` instead of `from pandas.core.frame import DataFrame`).
         """
         sig = inspect.signature(func)
-        imports = set()
+        imports = {}  # {module: set(names)}
 
+        def extract_imports_from_annotation(annotation):
+            """Recursively extract import statements from an annotation."""
+            if annotation is inspect.Parameter.empty or annotation is type(None):
+                return
+
+            # Handle string annotations
+            if isinstance(annotation, str):
+                return
+
+            origin = get_origin(annotation)
+            args = get_args(annotation)
+
+            # Process the origin type
+            if origin is not None:
+                type_to_process = origin
+            else:
+                type_to_process = annotation
+
+            # Skip builtin types
+            if isinstance(type_to_process, type) and type_to_process.__module__ == "builtins":
+                pass
+            elif hasattr(type_to_process, "__module__") and hasattr(type_to_process, "__name__"):
+                module = type_to_process.__module__
+                name = type_to_process.__name__
+
+                if module not in imports:
+                    imports[module] = set()
+                imports[module].add(name)
+
+            # Recursively process generic arguments
+            for arg in args:
+                extract_imports_from_annotation(arg)
+
+        # Extract imports from parameters
         for param in sig.parameters.values():
-            arg_type = param.annotation
-            str_argtype = str(arg_type)
-            # imports.add(str_argtype)
-            # if "<class" in str_argtype:
-            #     str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
-            # for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-            #     str_argtype = str_argtype.replace(to_replace, replacement)
-            # TypedFuncHelper.collect_imports(str_argtype, imports)
+            extract_imports_from_annotation(param.annotation)
 
-        for imp in sorted(imports):
-            print(imp)
+        # Extract imports from return annotation
+        extract_imports_from_annotation(sig.return_annotation)
+
+        # Always import TypedDict from typing
+        if imports.get("typing"):
+            imports["typing"].add("TypedDict")
+        else:
+            imports["typing"] = {"TypedDict"}
+
+        # Print imports in sorted order
+        for module in sorted(imports.keys()):
+            names = sorted(imports[module])
+            for name in names:
+                print(f"from {module} import {name}")
 
     @classmethod
     def print_typed_dict_from_callable(
