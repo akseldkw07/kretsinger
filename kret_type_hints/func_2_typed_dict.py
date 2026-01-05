@@ -81,47 +81,6 @@ class FuncToTypedDict(TypedFuncHelper):
                         i += lookahead - 1
             i += 1
 
-        def _split_unionish(s: str) -> list[str]:
-            """
-            Split a type-ish string into parts for unions.
-
-            Handles:
-              - 'A | B | None'
-              - 'A, B'
-              - 'A / B'
-              - 'A or B'
-              - 'Union[A, B]'
-              - 'Optional[T]'
-            """
-            s = s.strip()
-
-            # Normalize typing.Optional / typing.Union textual forms
-            m_opt = re.match(r"^(?:typing\.)?Optional\[(.*)\]$", s)
-            if m_opt:
-                inner = m_opt.group(1).strip()
-                # Optional[T] == T | None
-                return _split_unionish(inner) + ["None"]
-
-            m_union = re.match(r"^(?:typing\.)?Union\[(.*)\]$", s)
-            if m_union:
-                inner = m_union.group(1).strip()
-                # Split Union[...] on commas at top-level (not inside brackets)
-                parts = _split_top_level_commas(inner)
-                return [p.strip() for p in parts if p.strip()]
-
-            # If already pipe unions
-            if " | " in s or "|" in s:
-                parts = [p.strip() for p in s.split("|")]
-                return [p for p in parts if p]
-
-            # Other union-ish separators
-            if any(x in s for x in [" or ", ",", "/"]):
-                parts = re.split(r",|/|\s+or\s+", s)
-                parts = [p.strip() for p in parts if p.strip()]
-                return parts
-
-            return [s]
-
         def _split_top_level_commas(s: str) -> list[str]:
             """
             Split a string on commas not nested inside [] or ().
@@ -150,6 +109,55 @@ class FuncToTypedDict(TypedFuncHelper):
                 out.append(tail)
             return out
 
+        def _expand_typing_syntax(s: str) -> str:
+            """
+            Expand textual Optional[...] / Union[...] (even when nested) into pipe unions.
+            This is the key fix for cases like:
+              - Optional[bool] | None
+              - list[Union[A, B]]
+              - dict[str, Optional[int]]
+            """
+            s = s.strip()
+
+            def _find_matching_bracket(text: str, open_pos: int) -> int:
+                depth = 0
+                for j in range(open_pos, len(text)):
+                    ch = text[j]
+                    if ch == "[":
+                        depth += 1
+                    elif ch == "]":
+                        depth -= 1
+                        if depth == 0:
+                            return j
+                raise ValueError(f"Unmatched '[' in type string: {text!r}")
+
+            changed = True
+            while changed:
+                changed = False
+                # prefer Optional before Union
+                for kw in ("Optional[", "typing.Optional[", "Union[", "typing.Union["):
+                    start = s.find(kw)
+                    if start == -1:
+                        continue
+
+                    open_br = start + len(kw) - 1  # points at '['
+                    close_br = _find_matching_bracket(s, open_br)
+                    inner = s[open_br + 1 : close_br].strip()
+
+                    if "Optional" in kw:
+                        inner_expanded = _expand_typing_syntax(inner)
+                        repl = f"{inner_expanded} | None"
+                    else:
+                        inner_expanded = _expand_typing_syntax(inner)
+                        parts = [p.strip() for p in _split_top_level_commas(inner_expanded) if p.strip()]
+                        repl = " | ".join(parts) if parts else "t.Any"
+
+                    s = s[:start] + repl + s[close_br + 1 :]
+                    changed = True
+                    break
+
+            return s
+
         def _dedupe_keep_order(parts: list[str]) -> list[str]:
             seen: set[str] = set()
             out: list[str] = []
@@ -161,42 +169,90 @@ class FuncToTypedDict(TypedFuncHelper):
 
         def _normalize_none(parts: list[str]) -> list[str]:
             """
-            Convert any 'NoneType' mentions to 'None' and remove imports for NoneType later.
+            Convert any 'NoneType' mentions to 'None'.
             """
             norm: list[str] = []
             for p in parts:
                 p2 = p.strip()
-                # Handle both 'NoneType' and qualified versions
-                if p2.endswith("NoneType") or p2 == "NoneType":
+                if p2 in {"NoneType", "nonetype.NoneType"}:
+                    norm.append("None")
+                elif p2.endswith(".NoneType") or p2.endswith("NoneType"):
+                    # last-ditch cleanup
                     norm.append("None")
                 else:
                     norm.append(p2)
             return norm
+
+        def _split_unionish(s: str) -> list[str]:
+            """
+            Split a type-ish string into parts for unions.
+
+            Handles:
+              - 'A | B | None'
+              - 'A, B'
+              - 'A / B'
+              - 'A or B'
+              - 'Union[A, B]'
+              - 'Optional[T]'
+            """
+            s = s.strip()
+
+            # Expand Optional[...] / Union[...] anywhere (including nested)
+            s = _expand_typing_syntax(s)
+
+            # If already pipe unions, split first and recursively normalize each part
+            if "|" in s:
+                parts = [p.strip() for p in s.split("|") if p.strip()]
+                out: list[str] = []
+                for p in parts:
+                    out.extend(_split_unionish(p))
+                return [p for p in out if p]
+
+            # Still useful for edge cases where text is exactly Optional[...] / Union[...]
+            m_opt = re.match(r"^(?:typing\.)?Optional\[(.*)\]$", s)
+            if m_opt:
+                inner = m_opt.group(1).strip()
+                return _split_unionish(inner) + ["None"]
+
+            m_union = re.match(r"^(?:typing\.)?Union\[(.*)\]$", s)
+            if m_union:
+                inner = m_union.group(1).strip()
+                parts = _split_top_level_commas(inner)
+                return [p.strip() for p in parts if p.strip()]
+
+            # Other union-ish separators (docstrings etc.)
+            if any(x in s for x in [" or ", ",", "/"]):
+                parts = re.split(r",|/|\s+or\s+", s)
+                parts = [p.strip() for p in parts if p.strip()]
+                return parts
+
+            return [s]
 
         def _normalize_optional_union_string(s: str) -> str:
             """
             Ensure we output unions only as 'A | B | None' (no Union/Optional),
             and never mention NoneType.
             """
+            s = _expand_typing_syntax(s)
+
             parts = _split_unionish(s)
             parts = _normalize_none(parts)
             parts = _dedupe_keep_order(parts)
-            # Ensure 'None' is present only once; keep it at end if present
+
             has_none = "None" in parts
             parts_wo_none = [p for p in parts if p != "None"]
             if has_none:
                 parts = parts_wo_none + ["None"]
             else:
                 parts = parts_wo_none
+
             return " | ".join(parts) if parts else "t.Any"
 
         def doc_type_to_hint(ptype: str, literals: list[str] | None = None) -> str:
-            # Try to convert docstring type to python type hint (pipe-unions only)
             ptype = ptype.strip()
             if literals:
                 return f"t.Literal[{', '.join([repr(v) for v in literals])}]"
 
-            # Handle common cases
             if ptype in {"str", "string"}:
                 return "str"
             if ptype in {"int", "integer"}:
@@ -210,47 +266,41 @@ class FuncToTypedDict(TypedFuncHelper):
             if ptype in {"dict", "mapping"}:
                 return "dict"
 
-            # Handle some common union-ish doc patterns
             if ptype == "str, list":
                 return "str | list[str]"
 
-            # If ptype itself encodes unions with commas/slashes/or
             if any(x in ptype for x in [" or ", ",", "/"]):
                 parts = _split_unionish(ptype)
                 return _normalize_optional_union_string(" | ".join(parts))
 
             return ptype
 
-        # We'll store imports as fully-qualified names (for full import tree printing)
+        # We'll store imports as fully-qualified names (full import tree printing)
         extra_imports: set[str] = set()
 
         def _collect_imports_full(type_str: str) -> None:
             """
             Collect imports but keep them fully-qualified for easier copy/paste.
 
-            Also ensure:
+            Rules:
               - never import NoneType
-              - do not import Optional/Union
+              - never print Optional/Union
+              - types are normalized to pipe unions
             """
-            # First apply replacements to match your house style
             s = type_str
             for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
                 s = s.replace(to_replace, replacement)
 
-            # Normalize Union/Optional/NoneType into pipe unions and None
+            s = _expand_typing_syntax(s)
             s = _normalize_optional_union_string(s)
 
-            # Now scan for tokens that look like fully qualified names
-            # We'll keep fully qualified modules (e.g. lightning.pytorch.X.Y)
-            # and generate imports as: `import lightning.pytorch.X.Y`
-            # rather than local `from Y import X`.
+            # Collect fully-qualified tokens
             tokens = re.findall(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+", s)
-
             for tok in tokens:
-                # Skip typing module artifacts we never want to import
                 if tok.startswith("typing."):
                     continue
-                # Skip NoneType anywhere
+                if tok in {"NoneType", "nonetype.NoneType"}:
+                    continue
                 if tok.endswith(".NoneType") or tok.endswith("NoneType"):
                     continue
                 extra_imports.add(tok)
@@ -283,14 +333,14 @@ class FuncToTypedDict(TypedFuncHelper):
             if param.default is None and "None" not in str_argtype and "NoneType" not in str_argtype:
                 str_argtype = f"{str_argtype} | None"
 
-            # Enforce pipe union style + squash NoneType
+            # Enforce pipe union style + squash NoneType + expand nested Optional/Union
             str_argtype = _normalize_optional_union_string(str_argtype)
 
             _collect_imports_full(str_argtype)
             param_types_from_doc[param_name] = str_argtype
 
         # Return type
-        str_return_type = None
+        str_return_type: str | None = None
         if include_ret and sig.return_annotation is not inspect.Parameter.empty:
             return_type = sig.return_annotation
             str_return_type = str(return_type)
@@ -298,16 +348,19 @@ class FuncToTypedDict(TypedFuncHelper):
                 str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
             for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
                 str_return_type = str_return_type.replace(to_replace, replacement)
+
             str_return_type = _normalize_optional_union_string(str_return_type)
             _collect_imports_full(str_return_type)
 
         def _print_full_import_tree(imports: set[str]) -> None:
             """
-            Print imports as full module paths, one per line:
+            Print imports as full module paths, one per line.
+            Example:
               import lightning.pytorch.callbacks.callback
             """
             for imp in sorted(imports):
-                # Guard: never print NoneType imports
+                if imp in {"NoneType", "nonetype.NoneType"}:
+                    continue
                 if imp.endswith(".NoneType") or imp.endswith("NoneType"):
                     continue
                 print(f"import {imp}")
@@ -326,7 +379,6 @@ class FuncToTypedDict(TypedFuncHelper):
                 ):
                     continue
                 str_argtype = param_types_from_doc.get(param_name, "t.Any")
-                # Ensure we never show NoneType and never show Union/Optional
                 str_argtype = _normalize_optional_union_string(str_argtype)
                 print(f"    {param_name}: {str_argtype}")
 
