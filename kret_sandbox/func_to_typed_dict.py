@@ -23,35 +23,48 @@ class FuncToTypedDict(TypedFuncHelper):
 
     @classmethod
     def print_imports(cls, func: t.Callable):
-        """Print necessary imports based on function annotations."""
+        """
+        Print necessary imports based on function annotations.
+
+        Rules:
+        - Always use python builtin types when possible. (E.g., use 'list' instead of 'typing.List', type1 | type2 instead of 'typing.Union[type1, type2]')
+        - Extract true import statement from Optional[], Callable[], Union[], etc. We want to print copy-pastable code for Python 3.10+ (PEP 604).
+        - Import from as highest level possible (e.g. `from pandas import DataFrame` instead of `from pandas.core.frame import DataFrame`).
+        """
         sig = inspect.signature(func)
         imports = set()
 
         for param in sig.parameters.values():
             arg_type = param.annotation
             str_argtype = str(arg_type)
-            if "<class" in str_argtype:
-                str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
-            for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                str_argtype = str_argtype.replace(to_replace, replacement)
-            TypedFuncHelper.collect_imports(str_argtype, imports)
+            # imports.add(str_argtype)
+            # if "<class" in str_argtype:
+            #     str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
+            # for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
+            #     str_argtype = str_argtype.replace(to_replace, replacement)
+            # TypedFuncHelper.collect_imports(str_argtype, imports)
 
         for imp in sorted(imports):
             print(imp)
 
     @classmethod
     def print_typed_dict_from_callable(
-        cls, callable_obj: t.Callable, dict_name: str | None = None, include_ret: bool = False
+        cls, callable: t.Callable, dict_name: str | None = None, include_ret: bool = False
     ):
-        """Print a TypedDict definition from a callable's annotations."""
-        annotations = getattr(callable_obj, "__annotations__", {})
+        """
+
+        Print a TypedDict definition from a callable's annotations.
+
+
+        """
+        annotations = getattr(callable, "__annotations__", {})
 
         if not annotations:
-            print(f"No annotations found on {callable_obj}")
+            print(f"No annotations found on {callable}")
             return
 
-        if dict_name is None:
-            dict_name = f"{callable_obj.__name__.capitalize()}_TypedDict"  # TODO if class method, include class name
+        dict_name = dict_name or cls.resolve_dict_name(callable)
+
         print(f"class {dict_name}(TypedDict):")
         for param_name, annotation in annotations.items():
             if not include_ret and param_name == "return":
@@ -60,6 +73,17 @@ class FuncToTypedDict(TypedFuncHelper):
             print(f"    {param_name}: {formatted}")
 
         return annotations
+
+    @classmethod
+    def resolve_dict_name(cls, func: t.Callable) -> str:
+        qualname = getattr(func, "__qualname__", "")
+        parts = qualname.split(".")
+        if len(parts) > 1 and "<locals>" not in qualname:
+            class_name = parts[-2]
+            dict_name = f"{class_name}_{func.__name__.capitalize()}_TypedDict"
+        else:
+            dict_name = f"{func.__name__.capitalize()}_TypedDict"
+        return dict_name
 
     @classmethod
     def format_annotation(cls, annotation) -> str:
