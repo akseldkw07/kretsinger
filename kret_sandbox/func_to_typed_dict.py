@@ -22,6 +22,35 @@ class FuncToTypedDict(TypedFuncHelper):
         cls.print_typed_dict_from_callable(func, include_ret=include_ret)
 
     @classmethod
+    def _get_top_level_module(cls, module_path: str) -> str:
+        """Resolve a module path to its top-level package (e.g. 'pandas.core.frame' -> 'pandas')."""
+        return module_path.split(".")[0]
+
+    @classmethod
+    def _resolve_import_location(cls, type_obj, name: str) -> tuple[str, str]:
+        """
+        Resolve the best import location for a type.
+
+        Returns (module, name) where module is the highest-level import possible.
+        E.g. (pandas, DataFrame) instead of (pandas.core.frame, DataFrame)
+        """
+        module = type_obj.__module__
+
+        # Try to import from the top-level package
+        if "." in module:
+            top_level = cls._get_top_level_module(module)
+            try:
+                top_module = __import__(top_level)
+                # Check if name is available at the top level
+                if hasattr(top_module, name):
+                    return (top_level, name)
+            except (ImportError, AttributeError):
+                pass
+
+        # Fall back to the original module
+        return (module, name)
+
+    @classmethod
     def print_imports(cls, func: t.Callable):
         """
         Print necessary imports based on function annotations.
@@ -56,16 +85,21 @@ class FuncToTypedDict(TypedFuncHelper):
             if isinstance(type_to_process, type) and type_to_process.__module__ == "builtins":
                 pass
             elif hasattr(type_to_process, "__module__") and hasattr(type_to_process, "__name__"):
-                module = type_to_process.__module__
+                module_path = type_to_process.__module__
                 name = type_to_process.__name__
+
+                # Resolve to highest-level import
+                module, resolved_name = cls._resolve_import_location(type_to_process, name)
 
                 if module not in imports:
                     imports[module] = set()
-                imports[module].add(name)
+                imports[module].add(resolved_name)
 
-            # Recursively process generic arguments
+            # Recursively process generic arguments (but skip Literal string values)
             for arg in args:
-                extract_imports_from_annotation(arg)
+                # Don't try to extract imports from literal values (strings, ints, etc)
+                if not isinstance(arg, (str, int, float, bool, type(None))):
+                    extract_imports_from_annotation(arg)
 
         # Extract imports from parameters
         for param in sig.parameters.values():
@@ -91,10 +125,7 @@ class FuncToTypedDict(TypedFuncHelper):
         cls, callable: t.Callable, dict_name: str | None = None, include_ret: bool = False
     ):
         """
-
         Print a TypedDict definition from a callable's annotations.
-
-
         """
         annotations = getattr(callable, "__annotations__", {})
 
