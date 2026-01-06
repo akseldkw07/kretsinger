@@ -21,6 +21,7 @@ def pick_device() -> DEVICE_LITERAL:
 
 
 class TorchConstants:
-    TORCH_MODEL_WEIGHT_DIR = KretConstants.DATA_DIR / "pytorch"
+    TORCH_MODEL_WEIGHT_DIR = KretConstants.DATA_DIR / "pytorch_weights"
     DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
     DEVICE = torch.device(DEVICE_TORCH_STR)
+    HUGGING_FACE_DIR = KretConstants.DATA_DIR / "hugging_face"
