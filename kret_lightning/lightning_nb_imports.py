@@ -4,9 +4,10 @@ import time
 start_time = time.time()
 
 import lightning as L
+from lightning.fabric.utilities.data import AttributeDict
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger, WandbLogger
 
-from .abc_lightning import ABCLM
+from .abc_lightning import ABCLM, HPasKwargs, HPDict
 from .base_lightning_nn import BaseLightningNN
 from .constants_lightning import LightningConstants as UKS_LIGHTNING_CONSTANTS
 from .custom_callbacks import CallbackConfig

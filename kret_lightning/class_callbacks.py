@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import typing as t
 
+from lightning import Callback
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
-from lightning.pytorch.callbacks.callback import Callback
 
 from kret_lightning.constants_lightning import LightningConstants  # type: ignore
 
@@ -29,4 +29,5 @@ class CallbackMixin(ABCLM):
         return EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=hp.patience, verbose=True, mode="min")
 
     def configure_callbacks(self) -> t.Sequence[Callback] | Callback:
-        return super().configure_callbacks()
+        ret: list[Callback] = [self.model_checkpoint, self.early_stopping]
+        return ret

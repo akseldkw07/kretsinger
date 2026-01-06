@@ -8,6 +8,9 @@ from typing import get_type_hints
 import lightning as L
 import torch
 import torch.nn as nn
+from lightning.fabric.utilities.data import AttributeDict
+
+from kret_lightning.constants_lightning import LightningConstants
 
 
 class ABCLM(ABC, L.LightningModule):
@@ -18,6 +21,7 @@ class ABCLM(ABC, L.LightningModule):
     __call__: t.Callable[..., torch.Tensor]
     _criterion: nn.Module
     _load_dir_override: str | Path | None = None
+    _root_dir = LightningConstants.LIGHTNING_LOG_DIR
 
     @abstractmethod
     def configure_optimizers(self, *args, **kwargs) -> t.Any:

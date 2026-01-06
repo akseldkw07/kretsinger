@@ -66,11 +66,11 @@ class BaseLightningNN(ABCLM):
 
     @property
     def name(self) -> str:
-        return f"{self.__class__.__name__}__{self.hparams_str}"
+        return f"{self.__name__}__{self.hparams_str}"
 
     @property
     def root_dir(self) -> Path:
-        val = self._load_dir_override if self._load_dir_override is not None else LightningConstants.LIGHTNING_LOG_DIR
+        val = self._load_dir_override if self._load_dir_override is not None else self._root_dir
         return Path(val)
 
     @property
@@ -80,12 +80,21 @@ class BaseLightningNN(ABCLM):
 
     @property
     def save_load_logging_dict(self) -> SaveLoadLoggingDict:
-        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.__class__.__name__, "version": self.version}
+        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.__name__, "version": self.version}
         return ret
 
     @property
     def ckpt_path(self) -> Path:
-        return self.root_dir / self.name / self.version
+        return self.root_dir / self.__name__ / self.version
+
+    @classmethod
+    def ckpt_file_name(cls):
+        folder = cls._root_dir / cls.__name__ / cls.version / "checkpoints"
+        # use os to search folder for best checkpoint file
+        for file in folder.iterdir():
+            if file.name.startswith("best"):
+                return file
+        raise FileNotFoundError(f"No best checkpoint found in {folder}")
 
     # endregion
 
