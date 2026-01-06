@@ -1,3 +1,4 @@
+# from __future__ import annotations
 import typing as t
 from pathlib import Path
 
@@ -6,6 +7,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
+from kret_lightning.utils_lightning import LightningDataModuleAssert
 from kret_sklearn.custom_transformers import MissingValueRemover
 from kret_sklearn.pd_pipeline import PipelinePD
 from kret_torch_utils.torch_defaults import TorchDefaults
@@ -16,6 +18,9 @@ if t.TYPE_CHECKING:
 
 class DataModuleABC(L.LightningDataModule):
     data_dir: Path
+    data_split: "SplitTuple"
+    ignore_hparams: tuple[str, ...] = ("pipeline_pd",)
+
     _train: torch.utils.data.Dataset
     _val: torch.utils.data.Dataset
     _test: torch.utils.data.Dataset
@@ -28,19 +33,31 @@ class DataModuleABC(L.LightningDataModule):
     _pipeline_pd_y: PipelinePD | None = None
 
 
+class SplitTuple(t.NamedTuple):
+    train: float
+    val: float
+    test: float = 0.0
+    predict: float = 0.0
+
+
 class CustomDataModule(DataModuleABC):
 
     def __init__(
         self,
         data_dir: Path | str,
+        split: SplitTuple | None = None,
         pipeline_pd: tuple[PipelinePD, PipelinePD] | None = None,
-        **dataloader_kwargs: t.Unpack["DataLoader___init___TypedDict"],
     ) -> None:
         super().__init__()
 
         self.data_dir = Path(data_dir)
-        self._dataloader_passed_kwargs = dataloader_kwargs
+        self.data_split = split if split is not None else SplitTuple(train=0.8, val=0.2)
         self._pipeline_pd_x, self._pipeline_pd_y = pipeline_pd if pipeline_pd is not None else (None, None)
+        self.save_hyperparameters(ignore=self.ignore_hparams)
+        LightningDataModuleAssert.initialization_check(self)
+
+    def post_init(self, **dataloader_kwargs: t.Unpack["DataLoader___init___TypedDict"]):
+        self._dataloader_passed_kwargs = dataloader_kwargs
 
     @property
     def DataLoaderKwargs(self) -> "DataLoader___init___TypedDict":
@@ -134,3 +151,16 @@ class PandasInputMixin(DataModuleABC):
         self.x_y_no_nans = LoadedDfTuple(X=X_clean, y=y_clean)
 
         return LoadedDfTuple(X=X_clean, y=y_clean)
+
+    def load_and_strip_nans(self) -> LoadedDfTuple:
+        """
+        Load DataFrame inputs and remove NaN values.
+
+        Sets self.x_y_raw and self.x_y_no_nans.
+        """
+        df_tuple = self.load_df()
+        self.x_y_raw = df_tuple
+        df_no_nans = self.df_remove_nans(df_tuple)
+        self.x_y_no_nans = df_no_nans
+
+        return df_no_nans

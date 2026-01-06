@@ -92,6 +92,9 @@ instance/
 media/
 static_collected/
 
+# lib
+lib/
+
 # Temporary files (often hidden)
 *~
 *.bak

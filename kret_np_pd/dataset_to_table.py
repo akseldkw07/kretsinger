@@ -100,7 +100,7 @@ DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols":
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
 ViewHow = t.Literal["sample", "head", "tail"]
-VectorMatrixType = pd.DataFrame | Styler | pd.Series | np.ndarray | torch.Tensor | torch.utils.data.Dataset
+VectorMatrixType = pd.DataFrame | Styler | pd.Series | np.ndarray | torch.Tensor | torch.utils.data.TensorDataset
 
 
 class PD_Display_Utils:

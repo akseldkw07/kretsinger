@@ -1,13 +1,10 @@
 import os
 import typing as t
 from datetime import datetime
-from pathlib import Path
 
 import wandb
 
-WANDB_TEAM_NAME = "akseldkw07"
-WANDB_PROJECT_NAME = "MISC"
-DATA_DIR = Path("/Users/Akseldkw/coding/kretsinger/data")
+from .constants_wandb import WandbConstants
 
 
 class WandB_Utils:
@@ -15,8 +12,8 @@ class WandB_Utils:
     def start_wandb_run(
         cls,
         group: str,  # your nn.Module with BaseModel.name()
-        entity: str = WANDB_TEAM_NAME,  # your team/org slug
-        project: str | None = WANDB_PROJECT_NAME,  # the shared project
+        entity: str = WandbConstants.WANDB_TEAM_NAME,  # your team/org slug
+        project: str | None = WandbConstants.WANDB_PROJECT_NAME,  # the shared project
         mode: t.Literal["online", "offline", "disabled"] = "online",  # "online" | "offline" | "disabled"
         job_type: str = "train",  # "train" | "eval" | etc.
         tags: list[str] | None = None,
@@ -26,7 +23,7 @@ class WandB_Utils:
         TODO fix DATA_DIR
         """
         run_name = f"{group}__{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-        wandb_dir = os.getenv("WANDB_OUTPUT_DIR") or DATA_DIR / "wandb_logs"
+        wandb_dir = os.getenv("WANDB_OUTPUT_DIR") or WandbConstants.WANDB_LOG_DIR
         # config = {"model_summary": model._summary()} if config is None else config
 
         run = wandb.init(

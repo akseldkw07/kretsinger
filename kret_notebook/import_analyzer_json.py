@@ -3,9 +3,10 @@ Analyze import dependencies in a Python repo.
 Usage: python import_analyzer.py /path/to/repo
 """
 
-from dotenv import load_dotenv
 import os
 import sys
+
+from dotenv import load_dotenv
 
 # Load .env file from kretsinger directory
 load_dotenv("/Users/Akseldkw/coding/kretsinger/.env")
@@ -24,11 +25,10 @@ Usage: python import_analyzer.py /path/to/repo
 """
 
 import ast
-import os
-from pathlib import Path
-from collections import defaultdict
 import json
-from typing import Set, Dict, List
+import os
+from collections import defaultdict
+from pathlib import Path
 
 
 class ImportAnalyzer(ast.NodeVisitor):
@@ -56,7 +56,7 @@ class ImportAnalyzer(ast.NodeVisitor):
 def analyze_file(filepath: str) -> ImportAnalyzer:
     """Analyze a single Python file."""
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             tree = ast.parse(f.read())
         analyzer = ImportAnalyzer(filepath)
         analyzer.visit(tree)
@@ -71,7 +71,7 @@ def analyze_file(filepath: str) -> ImportAnalyzer:
         return analyzer
 
 
-def analyze_repo(repo_path: str | Path) -> Dict:
+def analyze_repo(repo_path: str | Path) -> dict:
     """Analyze entire repository."""
     repo_path = Path(repo_path)
 

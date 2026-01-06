@@ -3,9 +3,10 @@ Analyze import dependencies in a Python repo and generate SVG visualization.
 Usage: python import_graph_viz.py /path/to/repo
 """
 
-from dotenv import load_dotenv
 import os
 import sys
+
+from dotenv import load_dotenv
 
 # Load .env file from kretsinger directory
 load_dotenv("/Users/Akseldkw/coding/kretsinger/.env")
@@ -16,16 +17,15 @@ if pythonpath:
     for path in pythonpath.split(":"):
         sys.path.insert(0, path)
 
-from kret_utils.constants_kret import KretConstants
 import ast
-from pathlib import Path
 from collections import defaultdict
-from typing import Dict, Set, List, Tuple
-import json
+from pathlib import Path
+
+from kret_utils.constants_kret import KretConstants
 
 try:
-    import networkx as nx
     import matplotlib.pyplot as plt
+    import networkx as nx
 
     GRAPHVIZ_AVAILABLE = False
     NETWORKX_AVAILABLE = True
@@ -64,7 +64,7 @@ class ImportAnalyzer(ast.NodeVisitor):
 def analyze_file(filepath: str) -> ImportAnalyzer:
     """Analyze a single Python file."""
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             tree = ast.parse(f.read())
         analyzer = ImportAnalyzer(filepath)
         analyzer.visit(tree)
@@ -79,7 +79,7 @@ def analyze_file(filepath: str) -> ImportAnalyzer:
         return analyzer
 
 
-def analyze_repo(repo_path: str | Path) -> Dict:
+def analyze_repo(repo_path: str | Path) -> dict:
     """Analyze entire repository."""
     repo_path = Path(repo_path)
 
@@ -121,7 +121,7 @@ def analyze_repo(repo_path: str | Path) -> Dict:
     return results
 
 
-def create_graphviz_visualization(results: Dict, output_file: str | Path = "import_dependencies.svg"):
+def create_graphviz_visualization(results: dict, output_file: str | Path = "import_dependencies.svg"):
     """Create SVG using Graphviz."""
     if graphviz is None:
         print("ERROR: graphviz not installed. Install with: pip install graphviz")
@@ -132,9 +132,9 @@ def create_graphviz_visualization(results: Dict, output_file: str | Path = "impo
     dot.attr("node", shape="box", style="rounded,filled", fillcolor="lightblue")
 
     # Add nodes for top imports
-    all_imports = results["summary"]["total_imports"]
+    results["summary"]["total_imports"]
     internal = results["summary"]["internal"]
-    third_party = results["summary"]["third_party"]
+    results["summary"]["third_party"]
 
     # Limit to most common imports to avoid too crowded graph
     import_counts = defaultdict(int)
@@ -162,13 +162,13 @@ def create_graphviz_visualization(results: Dict, output_file: str | Path = "impo
                 edge_count += 1
 
     # Save
-    output_path = output_file.replace(".svg", "")
+    output_path = (output_file if isinstance(output_file, str) else str(output_file)).replace(".svg", "")
     dot.render(output_path, cleanup=True)
     print(f"✓ SVG saved to: {output_file}")
     return True
 
 
-def create_matplotlib_visualization(results: Dict, output_file: str | Path = "import_dependencies.png"):
+def create_matplotlib_visualization(results: dict, output_file: str | Path = "import_dependencies.png"):
     """Create PNG using matplotlib and networkx."""
     if not nx or not plt:
         print("ERROR: networkx/matplotlib not installed. Install with: pip install networkx matplotlib")
@@ -227,7 +227,7 @@ def create_matplotlib_visualization(results: Dict, output_file: str | Path = "im
     return True
 
 
-def create_html_interactive(results: Dict, output_file: str | Path = "import_dependencies.html"):
+def create_html_interactive(results: dict, output_file: str | Path = "import_dependencies.html"):
     """Create interactive HTML visualization."""
     try:
         import pyvis.network as net
@@ -267,14 +267,15 @@ def create_html_interactive(results: Dict, output_file: str | Path = "import_dep
                 G.add_edge(module, imp)
 
     # Create pyvis network
-    net_graph = net.Network(height="750px", width="100%", directed=True, physics=True)
+    net_graph = net.Network(height="750px", width="100%", directed=True)
     net_graph.from_nx(G)
 
-    # Customize physics
-    net_graph.physics(enabled=True, barnesHut={"gravitationalConstant": -10000, "centralGravity": 0.1})
+    # Customize physics using the correct API
+    net_graph.toggle_physics(True)
+    net_graph.show_buttons(filter_=["physics"])
 
     # Save
-    net_graph.show(str(output_file))
+    net_graph.show(str(output_file), notebook=False)
     print(f"✓ Interactive HTML saved to: {output_file}")
     return True
 
