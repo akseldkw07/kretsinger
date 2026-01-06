@@ -69,13 +69,13 @@ class DTTParams(t.TypedDict, total=False):
 
 class To_html_TypedDict(t.TypedDict, total=False):
     buf: None
-    columns: ListLike | None
-    col_space: ColspaceArgType | None
+    columns: "ListLike | None"
+    col_space: "ColspaceArgType | None"
     header: bool
     index: bool
     na_rep: str
-    formatters: FormattersType | None
-    float_format: FloatFormatType | None
+    formatters: "FormattersType | None"
+    float_format: "FloatFormatType | None"
     sparsify: bool | None
     index_names: bool
     justify: str | None

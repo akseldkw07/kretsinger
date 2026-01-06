@@ -49,29 +49,31 @@ class Enriched_DF(pd.DataFrame):
 T = t.TypeVar("T", bound=pd.DataFrame)
 
 
-def validate_typed_df_keys(
-    df: pd.DataFrame | dict, df_type: type[T], action: t.Literal["warn", "raise"] = "raise"
-) -> bool:
-    """
-    Validate that a pandas DataFrame conforms to the specified typed DataFrame structure.
-    TODO convert down to warning instead of raising
-    """
-    base_class_attrs = set(vars(Enriched_DF).keys())
-    exp_cols = df_type.target_dtypes.keys() if isinstance(df_type, Enriched_DF) else df_type.__annotations__.keys()
-    expected_columns = set(exp_cols) - base_class_attrs
-    actual_columns = set(df.keys()) - base_class_attrs
+class EnrichedDFUtils:
+    @classmethod
+    def validate_typed_df_keys(
+        cls, df: pd.DataFrame | dict, df_type: type[T], action: t.Literal["warn", "raise"] = "raise"
+    ) -> bool:
+        """
+        Validate that a pandas DataFrame conforms to the specified typed DataFrame structure.
+        TODO convert down to warning instead of raising
+        """
+        base_class_attrs = set(vars(Enriched_DF).keys())
+        exp_cols = df_type.target_dtypes.keys() if isinstance(df_type, Enriched_DF) else df_type.__annotations__.keys()
+        expected_columns = set(exp_cols) - base_class_attrs
+        actual_columns = set(df.keys()) - base_class_attrs
 
-    missing = expected_columns - actual_columns
-    extra = actual_columns - expected_columns
+        missing = expected_columns - actual_columns
+        extra = actual_columns - expected_columns
 
-    if action == "raise":
-        assert (
-            not missing and not extra
-        ), f"DataFrame columns do not match expected structure. Missing: {missing}, Extra: {extra}"
+        if action == "raise":
+            assert (
+                not missing and not extra
+            ), f"DataFrame columns do not match expected structure. Missing: {missing}, Extra: {extra}"
 
-    if missing:
-        print(f"WARNING: Missing columns in DataFrame: {missing}")
-    if extra:
-        print(f"WARNING: Extra columns in DataFrame: {extra}")
+        if missing:
+            print(f"WARNING: Missing columns in DataFrame: {missing}")
+        if extra:
+            print(f"WARNING: Extra columns in DataFrame: {extra}")
 
-    return not missing and not extra
+        return not missing and not extra

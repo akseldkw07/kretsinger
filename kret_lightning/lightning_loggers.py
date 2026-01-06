@@ -25,7 +25,7 @@ class WandbLogger___init___TypedDict(TypedDict, total=False):
     anonymous: bool | None
     project: str | None
     log_model: Literal["all"] | bool
-    experiment: Run | RunDisabled | None
+    experiment: "Run | RunDisabled | None"
     prefix: str
     checkpoint_name: str | None
     add_file_policy: Literal["mutable", "immutable"]

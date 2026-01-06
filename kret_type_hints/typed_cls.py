@@ -30,8 +30,8 @@ class Background_gradient_TypedDict(t.TypedDict, total=False):
     cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.Colormap
     low: float
     high: float
-    axis: Axis | None
-    subset: Subset | None
+    axis: "Axis | None"
+    subset: "Subset | None"
     text_color_threshold: float
     vmin: float | None
     vmax: float | None
@@ -40,7 +40,7 @@ class Background_gradient_TypedDict(t.TypedDict, total=False):
 
 class Format_TypedDict(t.TypedDict, total=False):
     formatter: str
-    subset: Subset | None
+    subset: "Subset | None"
     na_rep: str | None
     precision: int | None
     decimal: str
@@ -118,7 +118,7 @@ class LBGMRegressor__init___TypedDict(t.TypedDict, total=False):
         ]
         | None
     )
-    class_weight: t.Dict | str | None
+    class_weight: dict | str | None
     min_split_gain: float
     min_child_weight: float
     min_child_samples: int
