@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import lightning as L
 import torch
 from torch.utils.data import DataLoader, random_split
@@ -8,9 +10,9 @@ from torchvision.datasets import MNIST
 
 
 class MNISTDataModule(L.LightningDataModule):
-    def __init__(self, data_dir, batch_size: int = 64, num_workers: int = 4):
+    def __init__(self, data_dir: Path | str, batch_size: int = 64, num_workers: int = 4):
         super().__init__()
-        self.data_dir = data_dir
+        self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
