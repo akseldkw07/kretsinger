@@ -1,6 +1,8 @@
-from kret_utils.dir_util import DirUtils
+from kret_utils.constants_kret import KretConstants
+from kret_utils.filename_utils import FilenameUtils
 from kret_utils.float_utils import FloatPrecisionUtils
+from kret_utils.obj_dir_util import DirUtils
 
 
-class KRET_UTILS(FloatPrecisionUtils, DirUtils):
+class KRET_UTILS(FloatPrecisionUtils, DirUtils, KretConstants, FilenameUtils):
     pass

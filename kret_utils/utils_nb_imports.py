@@ -21,6 +21,7 @@ from pprint import pformat, pprint
 from urllib.request import urlretrieve
 
 from IPython.display import HTML, Markdown, display
+from pathvalidate import is_valid_filename, sanitize_filename, validate_filename
 
 from .UTILS_kret_generic import KRET_UTILS as UKS_UTILS
 

@@ -10,6 +10,10 @@ YTYPE = pd.Series | np.ndarray | torch.Tensor
 
 
 class TorchLoadUtils:
+    """
+    NOTE probably should use L.LightningDataModule instead of this class
+    """
+
     @classmethod
     def make_loader_from_xy(cls, X: XTYPE, y: YTYPE, batch_size: int = 128, shuffle: bool = True) -> DataLoader:
         """

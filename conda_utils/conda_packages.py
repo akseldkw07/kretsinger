@@ -29,6 +29,7 @@ class CondaUtils:
         "ipykernel",
         "jax",  # high-performance numerical computing. Like numpy but faster. Vectorized
         "pytest",
+        "pathvalidate",
     ]
     FINANCE = [
         "yfinance",
@@ -91,7 +92,7 @@ class CondaUtils:
         "tensorflow",
         "keras",  # tensorflow wrapper
         "pytorch",
-        "pytorch-lightning",
+        "lightning",
         "optuna-dashboard",
         # 'MLFlow',
         "fastai",  # pytorch wrapper, more configurable than keras

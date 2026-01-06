@@ -1,180 +1,160 @@
 from __future__ import annotations
 
 import inspect
-import re
 import typing as t
+from collections import defaultdict
+from types import UnionType
+from typing import Union, get_args, get_origin
 
 from .typed_func_helper import TypedFuncHelper
 
 
 class FuncToTypedDict(TypedFuncHelper):
+
     @classmethod
-    def func_to_typed_dict(cls, func: t.Callable, include_ret: bool = False):
-        """Convert function signature / annotations to a typed dict of accepted types."""
+    def func_to_typed_dict(cls, func: t.Callable, include_defaults: bool = True, include_ret: bool = False):
+        """
+        1. Print required imports
+        2. Print TypedDict class definition based on function annotations
+
+        Args:
+            func: The callable to convert
+            include_ret: Include return type annotation
+            include_defaults: Include default values as comments
+        """
+        cls.print_imports(func)
+        print()  # Blank line between imports and class definition
+        cls.print_typed_dict_from_callable(func, include_ret=include_ret, include_defaults=include_defaults)
+
+    @classmethod
+    def print_imports(cls, func: t.Callable):
+        """
+        Print necessary imports based on function annotations.
+
+        Rules:
+        - Always use python builtin types when possible. (E.g., use 'list' instead of 'typing.List', type1 | type2 instead of 'typing.Union[type1, type2]')
+        - Extract true import statement from Optional[], Callable[], Union[], etc. We want to print copy-pastable code for Python 3.10+ (PEP 604).
+        - Import from as highest level possible (e.g. `from pandas import DataFrame` instead of `from pandas.core.frame import DataFrame`).
+        """
 
         sig = inspect.signature(func)
-        func.__name__
-        doc = func.__doc__ or ""
+        imports = defaultdict(set[str])  # {module: set(names)}
 
-        # Parse docstring for :Parameters: section
-        param_types_from_doc = {}
-        param_descs = {}
-        param_literals = {}
-        param_section = False
-        doc_lines = doc.splitlines()
-        i = 0
-        while i < len(doc_lines):
-            line = doc_lines[i].strip()
-            if line.lower().startswith(":parameters:"):
-                param_section = True
-                i += 1
+        # Extract imports from parameters
+        for param in sig.parameters.values():
+            cls.extract_imports_from_annotation(imports, param.annotation)
+
+        # Extract imports from return annotation
+        cls.extract_imports_from_annotation(imports, sig.return_annotation)
+
+        # Always import TypedDict from typing
+        if imports.get("typing"):
+            imports["typing"].add("TypedDict")
+        else:
+            imports["typing"] = {"TypedDict"}
+
+        # Print imports in sorted order
+        for module in sorted(imports.keys()):
+            names = sorted(imports[module])
+            for name in names:
+                print(f"from {module} import {name}")
+
+    @classmethod
+    def print_typed_dict_from_callable(
+        cls, callable: t.Callable, include_defaults: bool = True, include_ret: bool = False
+    ):
+        """
+        Print a TypedDict definition from a callable's annotations.
+
+        Args:
+            callable: The callable to convert
+            include_defaults: Include default values as comments
+            include_ret: Include return type annotation
+        """
+        annotations = getattr(callable, "__annotations__", {})
+
+        if not annotations:
+            print(f"No annotations found on {callable}")
+            return
+
+        dict_name = cls.resolve_dict_name(callable)
+        sig = inspect.signature(callable) if include_defaults else None
+
+        print(f"class {dict_name}(TypedDict, total=False):")
+        for param_name, annotation in annotations.items():
+            if not include_ret and param_name == "return":
                 continue
-            if param_section:
-                if not line or line.startswith(":"):
-                    break
-                # Try to parse lines like: name : type
-                m = re.match(r"([\w*]+)\s*:\s*([^#]+)", line)
-                if m:
-                    pname, ptype = m.group(1).strip(), m.group(2).strip()
-                    desc = line
-                    # Look ahead for valid values/intervals/periods in next lines
-                    lookahead = 1
-                    while i + lookahead < len(doc_lines):
-                        next_line = doc_lines[i + lookahead].strip()
-                        if not next_line or next_line.startswith(":") or re.match(r"^[\w*]+\s*:\s*", next_line):
-                            break
-                        valid_match = re.search(
-                            r"Valid (?:values|periods|intervals): ([^\n]+)", next_line, re.IGNORECASE
-                        )
-                        if valid_match:
-                            vals = [v.strip() for v in valid_match.group(1).replace(" ", "").split(",") if v.strip()]
-                            param_literals[pname] = vals
-                            desc += " " + next_line
-                        lookahead += 1
-                    param_types_from_doc[pname] = ptype
-                    param_descs[pname] = desc
-                    i += lookahead - 1
+            formatted = cls.format_annotation(annotation)
+
+            # Add default value as comment if requested
+            if include_defaults and sig and param_name in sig.parameters:
+                param = sig.parameters[param_name]
+                if param.default is not inspect.Parameter.empty:
+                    default_repr = cls._format_default_value(param.default)
+                    print(f"    {param_name}: {formatted}  # = {default_repr}")
                 else:
-                    # Try to parse lines like: name : type, description
-                    m = re.match(r"([\w*]+)\s*:\s*([^,]+),?\s*(.*)", line)
-                    if m:
-                        pname, ptype, desc = m.group(1).strip(), m.group(2).strip(), m.group(3).strip()
-                        # Look ahead for valid values/intervals/periods in next lines
-                        lookahead = 1
-                        while i + lookahead < len(doc_lines):
-                            next_line = doc_lines[i + lookahead].strip()
-                            if not next_line or next_line.startswith(":") or re.match(r"^[\w*]+\s*:\s*", next_line):
-                                break
-                            valid_match = re.search(
-                                r"Valid (?:values|periods|intervals): ([^\n]+)",
-                                next_line,
-                                re.IGNORECASE,
-                            )
-                            if valid_match:
-                                vals = [
-                                    v.strip() for v in valid_match.group(1).replace(" ", "").split(",") if v.strip()
-                                ]
-                                param_literals[pname] = vals
-                                desc += " " + next_line
-                            lookahead += 1
-                        param_types_from_doc[pname] = ptype
-                        param_descs[pname] = desc
-                        i += lookahead - 1
-            i += 1
-
-        def doc_type_to_hint(ptype: str, literals: t.Optional[list[str]] = None) -> str:
-            # Try to convert docstring type to python type hint
-            ptype = ptype.strip()
-            if literals:
-                return f"t.Literal[{', '.join([repr(v) for v in literals])}]"
-            # Handle common cases
-            if ptype in {"str", "string"}:
-                return "str"
-            if ptype in {"int", "integer"}:
-                return "int"
-            if ptype in {"float"}:
-                return "float"
-            if ptype in {"bool", "boolean"}:
-                return "bool"
-            if ptype in {"list", "array", "sequence"}:
-                return "list"
-            if ptype in {"dict", "mapping"}:
-                return "dict"
-            if ptype == "str, list":
-                return "str | list[str]"
-            # Try to extract from ptype itself
-            if any(x in ptype for x in [" or ", ",", "/"]):
-                # e.g. "str, list" or "bool / int"
-                parts = re.split(r",|/| or ", ptype)
-                parts = [p.strip() for p in parts if p.strip()]
-                return " | ".join(parts)
-            return ptype
-
-        extra_imports = set()
-
-        # First pass: collect all types
-        for param_name, param in sig.parameters.items():
-            if param.kind in (
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.VAR_KEYWORD,
-                inspect.Parameter.VAR_POSITIONAL,
-            ):
-                continue
-            if param_name in param_types_from_doc:
-                doc_type = param_types_from_doc[param_name]
-                literals = param_literals.get(param_name)
-                str_argtype = doc_type_to_hint(doc_type, literals)
+                    print(f"    {param_name}: {formatted}")
             else:
-                arg_type = param.annotation
-                if arg_type is inspect.Parameter.empty:
-                    str_argtype = "t.Any"
-                else:
-                    str_argtype = str(arg_type)
-                    if "<class" in str_argtype:
-                        str_argtype = str_argtype.replace("<class '", "").replace(">", "").replace("'", "")
-                    for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                        str_argtype = str_argtype.replace(to_replace, replacement)
-            # Only add None if not already present and param.default is None
-            if param.default is None and "None" not in str_argtype:
-                str_argtype = f"{str_argtype} | None"
-            TypedFuncHelper.collect_imports(str_argtype, extra_imports)
-            # Store the resolved type for printing
-            param_types_from_doc[param_name] = str_argtype
-        # Return type
-        if include_ret and sig.return_annotation is not inspect.Parameter.empty:
-            return_type = sig.return_annotation
-            str_return_type = str(return_type)
-            if "<class" in str_return_type:
-                str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
-            for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                str_return_type = str_return_type.replace(to_replace, replacement)
-            TypedFuncHelper.collect_imports(str_return_type, extra_imports)
+                print(f"    {param_name}: {formatted}")
 
-        # Print import statements if needed
+        return annotations
 
-        # Print using the resolved types (prefer docstring, fallback to annotation)
-        def print_with_resolved_types():
-            name = func.__name__
-            for imp in sorted(extra_imports):
-                print(imp)
-            print(f"class {name.capitalize()}_TypedDict(t.TypedDict, total=False):")
-            for param_name, param in sig.parameters.items():
-                if param.kind in (
-                    inspect.Parameter.POSITIONAL_ONLY,
-                    inspect.Parameter.VAR_KEYWORD,
-                    inspect.Parameter.VAR_POSITIONAL,
-                ):
-                    continue
-                str_argtype = param_types_from_doc.get(param_name, "t.Any")
-                print(f"    {param_name}: {str_argtype}")
-            if include_ret and sig.return_annotation is not inspect.Parameter.empty:
-                return_type = sig.return_annotation
-                str_return_type = str(return_type)
-                if "<class" in str_return_type:
-                    str_return_type = str_return_type.replace("<class '", "").replace(">", "").replace("'", "")
-                for to_replace, replacement in TypedFuncHelper.import_replace_dict.items():
-                    str_return_type = str_return_type.replace(to_replace, replacement)
-                print(f"    # return: {str_return_type}")
+    @classmethod
+    def _format_default_value(cls, value) -> str:
+        """Format a default value for display in a comment."""
+        if isinstance(value, str):
+            return repr(value)
+        elif isinstance(value, (list, dict, tuple)):
+            # For mutable defaults, show a summary
+            if isinstance(value, (list, dict)) and len(str(value)) > 50:
+                type_name = type(value).__name__
+                return f"{type_name}(...)"
+            return repr(value)
+        elif value is None:
+            return "None"
+        elif isinstance(value, bool):
+            return str(value)
+        elif isinstance(value, (int, float)):
+            return str(value)
+        else:
+            # For complex objects, just show the type
+            return f"{type(value).__name__}(...)"
 
-        print_with_resolved_types()
-        return sig.parameters
+    @classmethod
+    def format_annotation(cls, annotation) -> str:
+        """Convert a type annotation to Python 3.10+ syntax (PEP 604)."""
+
+        # Handle None type
+        if annotation is type(None):
+            return "None"
+
+        # NEW - CORRECT
+        if isinstance(annotation, (str, int, float, bool)):
+            return repr(annotation)  # Handles all literal types
+
+        origin = get_origin(annotation)
+        args = get_args(annotation)
+
+        # Handle Union types -> use | syntax
+        if origin is Union or origin is UnionType:
+            return " | ".join(cls.format_annotation(arg) for arg in args)
+
+        # Handle Optional types -> convert to | None
+        if origin is Union and type(None) in args:
+            non_none_args = [arg for arg in args if arg is not type(None)]
+            if len(non_none_args) == 1:
+                return f"{cls.format_annotation(non_none_args[0])} | None"
+
+        # Handle generic types like List, Dict, etc.
+        if origin is not None:
+            origin_name = getattr(origin, "__name__", str(origin))
+            if args:
+                formatted_args = ", ".join(cls.format_annotation(arg) for arg in args)
+                return f"{origin_name}[{formatted_args}]"
+            return origin_name
+
+        # Handle regular types
+        if hasattr(annotation, "__name__"):
+            return annotation.__name__
+
+        return str(annotation)
