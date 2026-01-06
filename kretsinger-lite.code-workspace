@@ -5,6 +5,12 @@
         },
         {
             "path": "../Columbia/PMML-Project"
+        },
+        {
+            "path": "../data_kretsinger"
+        },
+        {
+            "path": "../projects_kretsinger"
         }
     ],
     "settings": {
