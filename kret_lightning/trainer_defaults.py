@@ -14,7 +14,6 @@ from lightning.pytorch.profilers import Profiler
 from lightning.pytorch.strategies import Strategy
 
 from kret_lightning.abc_lightning import ABCLM
-from kret_lightning.custom_callbacks import CallbackConfig
 
 
 class TrainerStaticDefaults:
@@ -38,7 +37,7 @@ class TrainerStaticDefaults:
         "max_epochs": 5,
         "check_val_every_n_epoch": 1,
         "log_every_n_steps": 10,
-        "limit_train_batches": 0.1,
+        # "limit_train_batches": 0.1,
         "limit_val_batches": 0.1,
         "limit_test_batches": 0.1,
     }
@@ -63,8 +62,8 @@ class TrainerDynamicDefaults:
     def trainer_dynamic_defaults(cls, nn: ABCLM, datamodule: LightningDataModule):
 
         logger = CSVLogger(**nn.save_load_logging_dict)
-        checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
-        ret: Trainer___init___TypedDict = {"logger": logger, "callbacks": checkpoints, "default_root_dir": nn.ckpt_path}
+        # checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
+        ret: Trainer___init___TypedDict = {"logger": logger, "default_root_dir": nn.ckpt_path}
         return ret
 
 

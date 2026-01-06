@@ -66,7 +66,7 @@ class BaseLightningNN(ABCLM):
 
     @property
     def name(self) -> str:
-        return f"{self.__name__}__{self.hparams_str}"
+        return f"{self.__class__.__name__}__{self.hparams_str}"
 
     @property
     def root_dir(self) -> Path:
@@ -80,12 +80,12 @@ class BaseLightningNN(ABCLM):
 
     @property
     def save_load_logging_dict(self) -> SaveLoadLoggingDict:
-        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.__name__, "version": self.version}
+        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.__class__.__name__, "version": self.version}
         return ret
 
     @property
     def ckpt_path(self) -> Path:
-        return self.root_dir / self.__name__ / self.version
+        return self.root_dir / self.__class__.__name__ / self.version
 
     @classmethod
     def ckpt_file_name(cls):

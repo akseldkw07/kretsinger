@@ -8,17 +8,15 @@ from torchvision.datasets import MNIST
 
 
 class MNISTDataModule(L.LightningDataModule):
-    def __init__(self, data_dir, batch_size: int = 64, shuffle: bool = True, num_workers: int = 4):
+    def __init__(self, data_dir, batch_size: int = 64, num_workers: int = 4):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
-        self.shuffle = shuffle
         self.num_workers = num_workers
         self.transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
         self.data_loader_args = {
             "batch_size": self.batch_size,
-            "shuffle": self.shuffle,
             "num_workers": self.num_workers,
             "persistent_workers": True,
         }
@@ -44,7 +42,7 @@ class MNISTDataModule(L.LightningDataModule):
             self.mnist_predict = MNIST(self.data_dir, train=False, transform=self.transform)
 
     def train_dataloader(self):
-        return DataLoader(self.mnist_train, **self.data_loader_args)
+        return DataLoader(self.mnist_train, **self.data_loader_args, shuffle=True)
 
     def val_dataloader(self):
         return DataLoader(self.mnist_val, **self.data_loader_args)
