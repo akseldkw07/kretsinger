@@ -34,11 +34,10 @@ class TrainerStaticDefaults:
 
     # for fast dev run testing
     TRAINER_QUICK_ITER: Trainer___init___TypedDict = {
-        "min_epochs": 1,
+        "min_epochs": 5,
         "max_epochs": 5,
         "check_val_every_n_epoch": 1,
         "log_every_n_steps": 10,
-        "fast_dev_run": True,
         "limit_train_batches": 0.1,
         "limit_val_batches": 0.1,
         "limit_test_batches": 0.1,
@@ -51,7 +50,10 @@ class TrainerStaticDefaults:
     TRAINER_OVERNIGHT_FULL_RUN: Trainer___init___TypedDict = {}
 
     # for debugging
-    TRAINER_DEBUG: Trainer___init___TypedDict = {"detect_anomaly": True}
+    TRAINER_DEBUG: Trainer___init___TypedDict = {
+        "detect_anomaly": True,
+        # "fast_dev_run": True,
+    }
 
     TRAINER_FIT: Trainer_Fit_TypedDict = {"ckpt_path": "best", "weights_only": False}
 
@@ -59,9 +61,10 @@ class TrainerStaticDefaults:
 class TrainerDynamicDefaults:
     @classmethod
     def trainer_dynamic_defaults(cls, nn: ABCLM, datamodule: LightningDataModule):
-        logger = CSVLogger(**nn.save_load_logging_dict)
 
-        ret: Trainer___init___TypedDict = {"callbacks": CallbackConfig.CALLBACKS_DEFAULT, "logger": logger}
+        logger = CSVLogger(**nn.save_load_logging_dict)
+        checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
+        ret: Trainer___init___TypedDict = {"logger": logger, "callbacks": checkpoints, "default_root_dir": nn.ckpt_path}
         return ret
 
 

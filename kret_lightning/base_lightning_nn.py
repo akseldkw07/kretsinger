@@ -2,60 +2,15 @@ from __future__ import annotations
 
 import typing as t
 from pathlib import Path
-from typing import get_type_hints
 
 import torch
 import torch.nn as nn
-from lightning.fabric.utilities.data import AttributeDict
 
 from kret_lightning.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
 from kret_torch_utils.priors import PriorLosses
 
-from .abc_lightning import ABCLM, SaveLoadLoggingDict
-
-
-class HPDict(AttributeDict):  # type: ignore
-    lr: float
-    gamma: float
-    stepsize: int
-    l1_penalty: float
-    l2_penalty: float
-
-    def as_str_safe(self, sanitize: bool = True) -> str:
-        parts = [
-            f"lr={self.lr:g}",
-            f"gamma={self.gamma:g}",
-            f"stepsize={self.stepsize}",
-        ]
-        if self.l1_penalty > 0.0:
-            parts.append(f"L1={self.l1_penalty:g}")
-        if self.l2_penalty > 0.0:
-            parts.append(f"L2={self.l2_penalty:g}")
-
-        for key in self.keys():
-            if key not in get_type_hints(HPDict).keys():
-                parts.append(f"{key}={self[key]}")
-
-        ret = "--".join(parts)
-
-        if sanitize:
-            try:
-                from pathvalidate import sanitize_filename  # lazy import in case others don't have
-            except ImportError:
-                raise ImportError("Please install 'pathvalidate' to use sanitize option, or set sanitize=False.")
-
-            ret = ret.replace(" ", "")
-            ret = sanitize_filename(ret, replacement_text="_")
-        return ret
-
-
-class HPasKwargs(t.TypedDict, total=False):
-    lr: float
-    gamma: float
-    stepsize: int
-    l1_penalty: float
-    l2_penalty: float
+from .abc_lightning import ABCLM, HPDict, SaveLoadLoggingDict
 
 
 class BaseLightningNN(ABCLM):
@@ -79,6 +34,7 @@ class BaseLightningNN(ABCLM):
         stepsize: int = 12,
         l1_penalty: float = 0.0,
         l2_penalty: float = 0.0,
+        patience: int = 10,
         **kwargs,
     ):
         """
@@ -106,7 +62,7 @@ class BaseLightningNN(ABCLM):
 
     # endregion
 
-    # region Naming
+    # region Naming & Saving
 
     @property
     def name(self) -> str:
@@ -124,8 +80,12 @@ class BaseLightningNN(ABCLM):
 
     @property
     def save_load_logging_dict(self) -> SaveLoadLoggingDict:
-        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.name, "version": self.version}
+        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.__class__.__name__, "version": self.version}
         return ret
+
+    @property
+    def ckpt_path(self) -> Path:
+        return self.root_dir / self.name / self.version
 
     # endregion
 

@@ -1,0 +1,32 @@
+from __future__ import annotations
+
+import typing as t
+
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.callbacks.callback import Callback
+
+from kret_lightning.constants_lightning import LightningConstants  # type: ignore
+
+from .abc_lightning import ABCLM, HPDict
+
+
+class CallbackMixin(ABCLM):
+    @property
+    def model_checkpoint(self):
+        return ModelCheckpoint(
+            dirpath=self.ckpt_path,
+            filename="best-{epoch:02d}-{val_loss:.2f}",
+            monitor="val_loss",
+            mode="min",
+            save_top_k=1,
+            verbose=True,
+            save_weights_only=False,
+        )
+
+    @property
+    def early_stopping(self):
+        hp = t.cast(HPDict, self.hparams_initial)
+        return EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=hp.patience, verbose=True, mode="min")
+
+    def configure_callbacks(self) -> t.Sequence[Callback] | Callback:
+        return super().configure_callbacks()
