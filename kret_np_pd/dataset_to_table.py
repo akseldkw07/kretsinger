@@ -10,7 +10,7 @@ from IPython.display import display_html
 from pandas.api.types import is_bool_dtype
 from pandas.io.formats.style import Styler
 
-from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
+from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 if t.TYPE_CHECKING:
     from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
@@ -129,7 +129,7 @@ class PD_Display_Utils:
             arg = arg.numpy(force=True) if isinstance(arg, torch.Tensor) else arg
             if not isinstance(arg, Styler):
                 df = arg[filter] if (filter is not None) else arg
-                df = PD_NP_Torch_Translation.coerce_to_df(df)
+                df = UTILS_rosetta.coerce_to_df(df)
             else:
                 df = arg
             args.append(df)
@@ -213,7 +213,7 @@ class PD_Display_Utils:
 
     @classmethod
     def process_filter(cls, filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
-        ret = PD_NP_Torch_Translation.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
+        ret = UTILS_rosetta.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
         assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
 
         return ret

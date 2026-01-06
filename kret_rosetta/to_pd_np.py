@@ -1,5 +1,5 @@
 """
-Utility class to hop between pandas, numpy, and pytorch
+Utility class to convert to pandas and numpy
 """
 
 import numpy as np
@@ -8,7 +8,7 @@ import torch
 from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 
 
-class PD_NP_Torch_Translation:
+class To_NP_PD:
     @classmethod
     def coerce_to_df(
         cls,

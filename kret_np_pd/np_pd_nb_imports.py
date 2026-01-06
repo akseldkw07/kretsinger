@@ -8,6 +8,7 @@ from pandas.api.types import is_bool_dtype, is_datetime64_any_dtype, is_timedelt
 from pandas.io.formats.style import Styler
 
 from .UTILS_np_pd import NP_PD_Utils as UKS_NP_PD
+from .single_ret_ndarray import SingleReturnArray as UKS_Typed_NDArray
 
 dtt = UKS_NP_PD.dtt
 
