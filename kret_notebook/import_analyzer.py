@@ -15,13 +15,20 @@ pythonpath = os.getenv("PYTHONPATH")
 if pythonpath:
     for path in pythonpath.split(":"):
         sys.path.insert(0, path)
-import ast
 
+from kret_utils.constants_kret import KretConstants
+
+"""
+Analyze import dependencies in a Python repo.
+Usage: python import_analyzer.py /path/to/repo
+"""
+
+import ast
+import os
 from pathlib import Path
 from collections import defaultdict
 import json
 from typing import Set, Dict, List
-from kret_utils.constants_kret import KretConstants
 
 
 class ImportAnalyzer(ast.NodeVisitor):
@@ -136,14 +143,22 @@ if __name__ == "__main__":
     # Save detailed results to JSON
     output_file = KretConstants.DATA_DIR / "import_analysis.json"
 
-    # Convert sets to lists for JSON serialization
+    # Convert sets to sorted lists for JSON serialization
+    # Also fix the file imports which are still sets
+    files_dict = {}
+    for filepath, data in results["files"].items():
+        files_dict[filepath] = {
+            "imports": {k: sorted(v) if isinstance(v, set) else v for k, v in data["imports"].items()},
+            "errors": data["errors"],
+        }
+
     json_results = {
-        "files": results["files"],
+        "files": files_dict,
         "summary": {
             "total_files": results["summary"]["total_files"],
-            "total_imports": sorted(results["summary"]["total_imports"]),
-            "third_party": sorted(results["summary"]["third_party"]),
-            "internal": sorted(results["summary"]["internal"]),
+            "total_imports": sorted(list(results["summary"]["total_imports"])),
+            "third_party": sorted(list(results["summary"]["third_party"])),
+            "internal": sorted(list(results["summary"]["internal"])),
         },
     }
 
