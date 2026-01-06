@@ -2,7 +2,7 @@ from collections.abc import Callable, Iterable
 from typing import Any, TypedDict, TypeVar
 
 import torch
-from torch.utils.data import Dataset, Sampler
+from torch.utils.data import Sampler
 
 _T = TypeVar("_T")
 
@@ -11,7 +11,7 @@ _worker_init_fn_t = Callable[[int], None]
 
 
 class DataLoader___init___TypedDict(TypedDict, total=False):
-    dataset: Dataset
+    # dataset: Dataset
     batch_size: int | None  # = 1
     shuffle: bool | None  # = None
     sampler: Sampler | Iterable | None  # = None

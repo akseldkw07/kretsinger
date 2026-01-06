@@ -2,8 +2,6 @@
 Utility class to hop between pandas, numpy, and pytorch
 """
 
-from __future__ import annotations
-
 import numpy as np
 import pandas as pd
 import torch
@@ -14,7 +12,7 @@ class PD_NP_Torch_Translation:
     @classmethod
     def coerce_to_df(
         cls,
-        obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor,
+        obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor | torch.utils.data.Dataset,
         cols: list[str] | None = None,
     ):
         if isinstance(obj, pd.DataFrame):
@@ -28,6 +26,10 @@ class PD_NP_Torch_Translation:
             ret = pd.DataFrame(obj)
         elif isinstance(obj, torch.Tensor):
             ret = pd.DataFrame(obj.numpy(force=True))
+        elif isinstance(obj, torch.utils.data.Dataset):
+            data_list = [obj[i] for i in range(len(obj))]
+            ret = pd.DataFrame(data_list)
+
         else:
             ret = pd.DataFrame([obj])
 

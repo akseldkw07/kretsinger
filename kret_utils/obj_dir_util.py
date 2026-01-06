@@ -7,7 +7,7 @@ class DirUtils:
     """
 
     @classmethod
-    def dir(cls, obj: t.Any):
+    def dir_enrich(cls, obj: t.Any):
         """
         Print the attributes and methods of an object in a readable format.
         """

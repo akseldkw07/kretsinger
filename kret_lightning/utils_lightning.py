@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import get_type_hints
 
 from kret_lightning.abc_lightning import ABCLM, HPasKwargs, HPDict
