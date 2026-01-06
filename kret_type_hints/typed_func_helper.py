@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import typing as t
-
 import inspect
-
+import typing as t
 from typing import get_args, get_origin
 
 # Types from typing module that we convert to PEP 604 syntax (don't import these)

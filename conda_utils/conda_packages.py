@@ -29,6 +29,7 @@ class CondaUtils:
         "ipykernel",
         "jax",  # high-performance numerical computing. Like numpy but faster. Vectorized
         "pytest",
+        "pathvalidate",
     ]
     FINANCE = [
         "yfinance",

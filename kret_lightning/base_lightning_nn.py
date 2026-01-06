@@ -1,33 +1,61 @@
 from __future__ import annotations
 
-from pathlib import Path
 import typing as t
+from pathlib import Path
+from typing import get_type_hints
 
 import torch
 import torch.nn as nn
 from lightning.fabric.utilities.data import AttributeDict
 
-from kret_lightning.constants_lightning import LightningConstants
-from kret_lightning.utils import LightningModuleAssert
+from kret_lightning.constants_lightning import LightningConstants  # type: ignore
+from kret_lightning.utils_lightning import LightningModuleAssert
 from kret_torch_utils.priors import PriorLosses
 
-from .abc_lightning import ABCLM
+from .abc_lightning import ABCLM, SaveLoadLoggingDict
 
 
 class HPDict(AttributeDict):  # type: ignore
     lr: float
     gamma: float
     stepsize: int
-    l1_lambda: float
-    l2_lambda: float
+    l1_penalty: float
+    l2_penalty: float
+
+    def as_str_safe(self, sanitize: bool = True) -> str:
+        parts = [
+            f"lr={self.lr:g}",
+            f"gamma={self.gamma:g}",
+            f"stepsize={self.stepsize}",
+        ]
+        if self.l1_penalty > 0.0:
+            parts.append(f"L1={self.l1_penalty:g}")
+        if self.l2_penalty > 0.0:
+            parts.append(f"L2={self.l2_penalty:g}")
+
+        for key in self.keys():
+            if key not in get_type_hints(HPDict).keys():
+                parts.append(f"{key}={self[key]}")
+
+        ret = "--".join(parts)
+
+        if sanitize:
+            try:
+                from pathvalidate import sanitize_filename  # lazy import in case others don't have
+            except ImportError:
+                raise ImportError("Please install 'pathvalidate' to use sanitize option, or set sanitize=False.")
+
+            ret = ret.replace(" ", "")
+            ret = sanitize_filename(ret, replacement_text="_")
+        return ret
 
 
 class HPasKwargs(t.TypedDict, total=False):
     lr: float
     gamma: float
     stepsize: int
-    l1_lambda: float
-    l2_lambda: float
+    l1_penalty: float
+    l2_penalty: float
 
 
 class BaseLightningNN(ABCLM):
@@ -38,6 +66,7 @@ class BaseLightningNN(ABCLM):
         how does load_from_checkpoint load hparams? how to save them?
     2- work on training loop defaults
     3- re-implement beijing nn with this base class
+    4- add callbacks to assert correct behavior (tensor size? early stopping?)
     """
 
     _criterion: nn.Module
@@ -48,16 +77,16 @@ class BaseLightningNN(ABCLM):
         lr: float = 1e-3,
         gamma: float = 0.5,
         stepsize: int = 12,
-        l1_lambda: float = 0.0,
-        l2_lambda: float = 0.0,
+        l1_penalty: float = 0.0,
+        l2_penalty: float = 0.0,
         **kwargs,
     ):
         """
         NOTE: don't call .to(device) here; Lightning handles device placement
         """
-        LightningModuleAssert.assert_version_fmt(self.version)
         super().__init__()
         self.save_hyperparameters()
+        LightningModuleAssert.initialization_check(self)
 
     @property
     def criterion(self):
@@ -81,7 +110,7 @@ class BaseLightningNN(ABCLM):
 
     @property
     def name(self) -> str:
-        return f"{self.__class__.__name__}__{self.hparams_str}__{self.version}"
+        return f"{self.__class__.__name__}__{self.hparams_str}"
 
     @property
     def root_dir(self) -> Path:
@@ -90,21 +119,23 @@ class BaseLightningNN(ABCLM):
 
     @property
     def hparams_str(self) -> str:
-        hp = t.cast(HPDict, self.hparams_initial)
-        parts = [
-            f"lr{hp.lr:g}",
-            f"g{hp.gamma:g}",
-            f"step{hp.stepsize}",
-        ]
-        if hp.l1_lambda > 0.0:
-            parts.append(f"L1-{hp.l1_lambda:g}")
-        if hp.l2_lambda > 0.0:
-            parts.append(f"L2-{hp.l2_lambda:g}")
-        return "-".join(parts)
+        hp = HPDict(self.hparams_initial)
+        return hp.as_str_safe()
+
+    @property
+    def save_load_logging_dict(self) -> SaveLoadLoggingDict:
+        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.name, "version": self.version}
+        return ret
 
     # endregion
 
     # region Loss
+
+    def forward(self, *args, **kwargs) -> t.Any:
+        """
+        Note - don't call .to(device) here; bad for memory
+        """
+        raise NotImplementedError("Subclasses must implement forward method.")
 
     def get_loss(self, outputs: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         """
@@ -123,12 +154,18 @@ class BaseLightningNN(ABCLM):
     def compute_prior_loss(
         self, inputs: torch.Tensor | None = None, outputs: torch.Tensor | None = None
     ) -> torch.Tensor:
+        """
+        Inputs and outputs are provided in case of more complex prior computations,
+        such as entropic priors that depend on model outputs.
+        """
         hp = t.cast(HPDict, self.hparams_initial)
         tot = torch.tensor(0.0, device=next(self.parameters()).device)
-        if hp.l1_lambda > 0.0:
-            tot += hp.l1_lambda * PriorLosses.compute_l1_loss(self)
-        if hp.l2_lambda > 0.0:
-            tot += hp.l2_lambda * PriorLosses.compute_l2_loss(self)
+
+        # Check that penalty is non-zero before computing to save time
+        if hp.l1_penalty > 0.0:
+            tot += hp.l1_penalty * PriorLosses.compute_l1_loss(self)
+        if hp.l2_penalty > 0.0:
+            tot += hp.l2_penalty * PriorLosses.compute_l2_loss(self)
         return tot
 
     # endregion

@@ -1,12 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
 import typing as t
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import lightning as L
 import torch
 import torch.nn as nn
+
+
+class SaveLoadLoggingDict(t.TypedDict):
+    save_dir: str | Path
+    name: str
+    version: str
 
 
 class ABCLM(ABC, L.LightningModule):
@@ -14,6 +20,13 @@ class ABCLM(ABC, L.LightningModule):
     __call__: t.Callable[..., torch.Tensor]
     _criterion: nn.Module
     _load_dir_override: str | Path | None = None
+
+    @abstractmethod
+    def configure_optimizers(self, *args, **kwargs) -> t.Any:
+        """
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        return optimizer
+        """
 
     @property
     @abstractmethod
@@ -27,19 +40,16 @@ class ABCLM(ABC, L.LightningModule):
     @abstractmethod
     def hparams_str(self) -> str: ...
 
-    # @abstractmethod
-    # def forward(self, *args, **kwargs) -> t.Any:
-    #     """
-    #     Note - don't call .to(device) here; bad for memory
-    #     """
-    #     ...
+    @property
+    @abstractmethod
+    def save_load_logging_dict(self) -> SaveLoadLoggingDict: ...
 
     @abstractmethod
-    def configure_optimizers(self, *args, **kwargs) -> t.Any:
+    def forward(self, *args, **kwargs) -> t.Any:
         """
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
+        Note - don't call .to(device) here; bad for memory
         """
+        ...
 
     @abstractmethod
     def get_loss(self, outputs: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:

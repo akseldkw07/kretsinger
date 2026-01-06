@@ -1,27 +1,30 @@
 from __future__ import annotations
-from collections import defaultdict
 
 import inspect
 import typing as t
+from collections import defaultdict
 from types import UnionType
+from typing import Union, get_args, get_origin
 
 from .typed_func_helper import TypedFuncHelper
-
-
-from typing import get_args, get_origin, Union
 
 
 class FuncToTypedDict(TypedFuncHelper):
 
     @classmethod
-    def func_to_typed_dict(cls, func: t.Callable, include_ret: bool = False):
+    def func_to_typed_dict(cls, func: t.Callable, include_defaults: bool = True, include_ret: bool = False):
         """
         1. Print required imports
         2. Print TypedDict class definition based on function annotations
+
+        Args:
+            func: The callable to convert
+            include_ret: Include return type annotation
+            include_defaults: Include default values as comments
         """
         cls.print_imports(func)
         print()  # Blank line between imports and class definition
-        cls.print_typed_dict_from_callable(func, include_ret=include_ret)
+        cls.print_typed_dict_from_callable(func, include_ret=include_ret, include_defaults=include_defaults)
 
     @classmethod
     def print_imports(cls, func: t.Callable):
@@ -58,10 +61,15 @@ class FuncToTypedDict(TypedFuncHelper):
 
     @classmethod
     def print_typed_dict_from_callable(
-        cls, callable: t.Callable, dict_name: str | None = None, include_ret: bool = False
+        cls, callable: t.Callable, include_defaults: bool = True, include_ret: bool = False
     ):
         """
         Print a TypedDict definition from a callable's annotations.
+
+        Args:
+            callable: The callable to convert
+            include_defaults: Include default values as comments
+            include_ret: Include return type annotation
         """
         annotations = getattr(callable, "__annotations__", {})
 
@@ -69,16 +77,48 @@ class FuncToTypedDict(TypedFuncHelper):
             print(f"No annotations found on {callable}")
             return
 
-        dict_name = dict_name or cls.resolve_dict_name(callable)
+        dict_name = cls.resolve_dict_name(callable)
+        sig = inspect.signature(callable) if include_defaults else None
 
-        print(f"class {dict_name}(TypedDict):")
+        print(f"class {dict_name}(TypedDict, total=False):")
         for param_name, annotation in annotations.items():
             if not include_ret and param_name == "return":
                 continue
             formatted = cls.format_annotation(annotation)
-            print(f"    {param_name}: {formatted}")
+
+            # Add default value as comment if requested
+            if include_defaults and sig and param_name in sig.parameters:
+                param = sig.parameters[param_name]
+                if param.default is not inspect.Parameter.empty:
+                    default_repr = cls._format_default_value(param.default)
+                    print(f"    {param_name}: {formatted}  # = {default_repr}")
+                else:
+                    print(f"    {param_name}: {formatted}")
+            else:
+                print(f"    {param_name}: {formatted}")
 
         return annotations
+
+    @classmethod
+    def _format_default_value(cls, value) -> str:
+        """Format a default value for display in a comment."""
+        if isinstance(value, str):
+            return repr(value)
+        elif isinstance(value, (list, dict, tuple)):
+            # For mutable defaults, show a summary
+            if isinstance(value, (list, dict)) and len(str(value)) > 50:
+                type_name = type(value).__name__
+                return f"{type_name}(...)"
+            return repr(value)
+        elif value is None:
+            return "None"
+        elif isinstance(value, bool):
+            return str(value)
+        elif isinstance(value, (int, float)):
+            return str(value)
+        else:
+            # For complex objects, just show the type
+            return f"{type(value).__name__}(...)"
 
     @classmethod
     def format_annotation(cls, annotation) -> str:
