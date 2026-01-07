@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader, Dataset, StackDataset, TensorDataset, r
 from torch.utils.data.dataset import Subset
 from torchmetrics.functional import accuracy, f1_score, precision, r2_score, recall
 
+from .tensor_ds_custom import TensorDatasetCustom
 from .UTILS_torch import KRET_TORCH_UTILS as UKS_TORCH_UTILS
 
 # from torchvision import datasets, transforms

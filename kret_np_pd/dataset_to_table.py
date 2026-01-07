@@ -15,6 +15,18 @@ from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 if t.TYPE_CHECKING:
     from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
 
+    from kret_torch_utils.tensor_ds_custom import TensorDatasetCustom
+
+    VectorMatrixType = (
+        pd.DataFrame
+        | Styler
+        | pd.Series
+        | np.ndarray
+        | torch.Tensor
+        | torch.utils.data.TensorDataset
+        | TensorDatasetCustom
+    )
+
 TITLE_FMT = '<div style="text-align: left; font-weight: bold; margin-left: 5px; font-size: 18px; margin-bottom: 8px;">{title}</div>'
 OUTER_STYLE_TABLE = "<div style='display: flex; flex-direction: column; gap: 20px; overflow-x: auto;'>"
 OUTER_STYLE_ROW = "<div style='display: flex; gap: 20px; overflow-x: auto;'>"
@@ -100,7 +112,6 @@ DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols":
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
 ViewHow = t.Literal["sample", "head", "tail"]
-VectorMatrixType = pd.DataFrame | Styler | pd.Series | np.ndarray | torch.Tensor | torch.utils.data.TensorDataset
 
 
 class PD_Display_Utils:
@@ -108,7 +119,7 @@ class PD_Display_Utils:
     @classmethod
     def dtt(
         cls,
-        input: list[VectorMatrixType] | VectorMatrixType,
+        input: "list[VectorMatrixType] | VectorMatrixType",
         n: int = 5,
         how: ViewHow = "sample",
         filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
