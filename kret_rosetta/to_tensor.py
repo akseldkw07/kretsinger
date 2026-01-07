@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import torch
+
 from .to_pd_np import To_NP_PD
 
 
-class To_Torch:
+class To_Tensor:
     @classmethod
     def coerce_to_tensor_ds(cls, obj: pd.DataFrame | np.ndarray | torch.Tensor | pd.Series, dtype=torch.float32):
         if isinstance(obj, torch.utils.data.TensorDataset):

@@ -7,6 +7,8 @@ import pandas as pd
 import torch
 from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 
+from .conversion_protocols import PandasConvertibleWithColumns
+
 
 class To_NP_PD:
     @classmethod
@@ -24,7 +26,10 @@ class To_NP_PD:
         ),
         cols: list[str] | None = None,
     ):
-        if isinstance(obj, pd.DataFrame):
+        if isinstance(obj, PandasConvertibleWithColumns):
+            # This covers TensorDatasetCustom and any other custom types implementing the protocol
+            ret = obj.to_pandas()
+        elif isinstance(obj, pd.DataFrame):
             ret = obj
         elif isinstance(obj, pd.Series):
             ret = obj.to_frame()

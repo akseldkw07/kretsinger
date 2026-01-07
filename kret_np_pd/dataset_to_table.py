@@ -104,6 +104,7 @@ VectorMatrixType = pd.DataFrame | Styler | pd.Series | np.ndarray | torch.Tensor
 
 
 class PD_Display_Utils:
+
     @classmethod
     def dtt(
         cls,
@@ -119,6 +120,7 @@ class PD_Display_Utils:
         TODO ability to view slice of rows
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
         """
+
         input = input if isinstance(input, (list)) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
@@ -213,6 +215,7 @@ class PD_Display_Utils:
 
     @classmethod
     def process_filter(cls, filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
+
         ret = UTILS_rosetta.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
         assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
 
