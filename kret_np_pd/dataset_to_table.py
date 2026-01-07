@@ -10,10 +10,22 @@ from IPython.display import display_html
 from pandas.api.types import is_bool_dtype
 from pandas.io.formats.style import Styler
 
-from kret_np_pd.translate_libraries import PD_NP_Torch_Translation
+from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 if t.TYPE_CHECKING:
     from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
+
+    from kret_torch_utils.tensor_ds_custom import TensorDatasetCustom
+
+    VectorMatrixType = (
+        pd.DataFrame
+        | Styler
+        | pd.Series
+        | np.ndarray
+        | torch.Tensor
+        | torch.utils.data.TensorDataset
+        | TensorDatasetCustom
+    )
 
 TITLE_FMT = '<div style="text-align: left; font-weight: bold; margin-left: 5px; font-size: 18px; margin-bottom: 8px;">{title}</div>'
 OUTER_STYLE_TABLE = "<div style='display: flex; flex-direction: column; gap: 20px; overflow-x: auto;'>"
@@ -100,14 +112,14 @@ DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols":
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
 ViewHow = t.Literal["sample", "head", "tail"]
-VectorMatrixType = pd.DataFrame | Styler | pd.Series | np.ndarray | torch.Tensor | torch.utils.data.TensorDataset
 
 
 class PD_Display_Utils:
+
     @classmethod
     def dtt(
         cls,
-        input: list[VectorMatrixType] | VectorMatrixType,
+        input: "list[VectorMatrixType] | VectorMatrixType",
         n: int = 5,
         how: ViewHow = "sample",
         filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
@@ -119,6 +131,7 @@ class PD_Display_Utils:
         TODO ability to view slice of rows
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
         """
+
         input = input if isinstance(input, (list)) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
@@ -129,7 +142,7 @@ class PD_Display_Utils:
             arg = arg.numpy(force=True) if isinstance(arg, torch.Tensor) else arg
             if not isinstance(arg, Styler):
                 df = arg[filter] if (filter is not None) else arg
-                df = PD_NP_Torch_Translation.coerce_to_df(df)
+                df = UTILS_rosetta.coerce_to_df(df)
             else:
                 df = arg
             args.append(df)
@@ -213,7 +226,8 @@ class PD_Display_Utils:
 
     @classmethod
     def process_filter(cls, filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
-        ret = PD_NP_Torch_Translation.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
+
+        ret = UTILS_rosetta.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
         assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
 
         return ret

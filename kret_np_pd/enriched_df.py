@@ -3,7 +3,7 @@ import typing as t
 import numpy as np
 import pandas as pd
 
-from .translate_libraries import PD_NP_Torch_Translation
+from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 
 class Enriched_DF(pd.DataFrame):
@@ -38,11 +38,12 @@ class Enriched_DF(pd.DataFrame):
                     f"{actual_dtype}, expected {target_dtype}."
                 )
 
-    def to_obs_numpy(self):
+    def to_numpy(self, *args, **kwargs):
         """Return a pure-numeric numpy array for model input (no datetime/timedelta/object)."""
+
         df: pd.DataFrame = self.copy()[self.column_order()]
 
-        ret = PD_NP_Torch_Translation.df_to_np_safe(df)
+        ret = UTILS_rosetta.df_to_np_safe(df)
         return ret
 
 
