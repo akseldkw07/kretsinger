@@ -23,6 +23,7 @@ class BaseLightningNN(ABCLM):
     """
 
     _criterion: nn.Module
+    ignore_hparams: tuple[str, ...] = ()
 
     # region Init
     def __init__(
@@ -39,6 +40,7 @@ class BaseLightningNN(ABCLM):
         NOTE: don't call .to(device) here; Lightning handles device placement
         """
         super().__init__()
+        print(f"Saving hparams, ignoring {self.ignore_hparams}")
         self.save_hyperparameters()
         LightningModuleAssert.initialization_check(self)
 

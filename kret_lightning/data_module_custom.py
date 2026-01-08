@@ -3,11 +3,14 @@ import typing as t
 from pathlib import Path
 
 import lightning as L
+import numpy as np
 import pandas as pd
 import torch
+from sklearn.utils.validation import check_is_fitted
 from torch.utils.data import DataLoader
 
 from kret_lightning.utils_lightning import LightningDataModuleAssert
+from kret_np_pd.np_pd_nb_imports import *
 from kret_sklearn.custom_transformers import MissingValueRemover
 from kret_sklearn.pd_pipeline import PipelinePD
 from kret_torch_utils.torch_defaults import TorchDefaults
@@ -38,6 +41,7 @@ class SplitTuple(t.NamedTuple):
     val: float
     test: float = 0.0
     predict: float = 0.0
+    contiguous: bool = True  # If True, splits are contiguous (for time series); if False, fully random
 
 
 class CustomDataModule(DataModuleABC):
@@ -47,12 +51,14 @@ class CustomDataModule(DataModuleABC):
         data_dir: Path | str,
         split: SplitTuple | None = None,
         pipeline_pd: tuple[PipelinePD, PipelinePD] | None = None,
+        **kwargs,  # save_hyperparameters
     ) -> None:
         super().__init__()
 
         self.data_dir = Path(data_dir)
         self.data_split = split if split is not None else SplitTuple(train=0.8, val=0.2)
         self._pipeline_pd_x, self._pipeline_pd_y = pipeline_pd if pipeline_pd is not None else (None, None)
+        print(f"Saving hparams, ignoring {self.ignore_hparams}")
         self.save_hyperparameters(ignore=self.ignore_hparams)
         LightningDataModuleAssert.initialization_check(self)
 
@@ -66,7 +72,7 @@ class CustomDataModule(DataModuleABC):
     def prepare_data(self) -> None:
         raise NotImplementedError("Implement in subclass")
 
-    def setup(self, stage: str) -> None:
+    def setup(self, stage: t.Literal["fit", "validate", "test", "predict"]) -> None:  # type: ignore[override]
         raise NotImplementedError("Implement in subclass")
 
     # region Dataloaders
@@ -102,13 +108,25 @@ class LoadedDfTuple(t.NamedTuple):
     y: pd.Series | pd.DataFrame
 
 
+class SplitIndexes(t.NamedTuple):
+    """Indexes for train/val/test/predict splits."""
+
+    train: np.ndarray
+    val: np.ndarray
+    test: np.ndarray | None = None
+    predict: np.ndarray | None = None
+
+
 class PandasInputMixin(DataModuleABC):
     """
     Mixin to load pandas DataFrame inputs into a LightningDataModule.
     """
 
-    x_y_raw: LoadedDfTuple | None = None
-    x_y_no_nans: LoadedDfTuple | None = None
+    col_order: dict[str, list[str]] = {"start": [], "end": []}
+    x_y_raw: LoadedDfTuple
+    x_y_no_nans: LoadedDfTuple
+    x_y_processed: LoadedDfTuple
+    SplitIdx: SplitIndexes
 
     @property
     def PipelineX(self) -> PipelinePD:
@@ -130,6 +148,35 @@ class PandasInputMixin(DataModuleABC):
         remove_nans_pipeline = PipelinePD(steps=[("remove_nans", missing_value_remover)])
         return remove_nans_pipeline
 
+    def data_preprocess(self):
+        """
+        Call once at the start of setup to load and preprocess the DataFrame inputs.
+
+        1- load data
+        2- remove NaNs
+        3- generate split indexes
+        4- fit pipelines on training data only
+
+        """
+        df_tuple = self.load_df()
+        self.x_y_raw = df_tuple
+        df_no_nans = self._df_remove_nans(df_tuple)
+        self.x_y_no_nans = df_no_nans
+
+        split_indexes = self._generate_split_indexes(len(df_no_nans.X))
+        self.SplitIdx = split_indexes
+
+        X_train_raw = df_no_nans.X.iloc[split_indexes.train]
+        y_train_raw = df_no_nans.y.iloc[split_indexes.train]
+
+        self.fit_pipelines_once(X_train_raw, y_train_raw)
+        self.x_y_processed = LoadedDfTuple(
+            X=UKS_NP_PD.move_columns(self.PipelineX.transform_df(df_no_nans.X), **self.col_order),
+            y=self.PipelineY.transform_df(df_no_nans.y),
+        )
+
+        return self.x_y_processed
+
     def load_df(self) -> LoadedDfTuple:
         """
         Load pandas DataFrame inputs and return as LoadedDfTuple.
@@ -138,29 +185,64 @@ class PandasInputMixin(DataModuleABC):
         """
         raise NotImplementedError("Implement in subclass to load pandas DataFrame inputs.")
 
-    def df_remove_nans(self, df_tuple: LoadedDfTuple) -> LoadedDfTuple:
+    def _df_remove_nans(self, df_tuple: LoadedDfTuple) -> LoadedDfTuple:
         """
         Remove NaN values from the DataFrame inputs using NanPipeline.
         """
-        X_clean = self.NanPipeline.fit_transform_df(df_tuple.X, df_tuple.y)
-        if isinstance(df_tuple.y, pd.DataFrame):
-            y_clean = df_tuple.y.loc[X_clean.index]
+        X_clean = self.NanPipeline.fit_transform_df(df_tuple.X, df_tuple.y)  # .reset_index(drop=True)
+        y_clean = df_tuple.y.loc[X_clean.index]  # .reset_index(drop=True)
+
+        x_y_no_nans = LoadedDfTuple(X=X_clean.reset_index(drop=True), y=y_clean.reset_index(drop=True))
+
+        return x_y_no_nans
+
+    def _generate_split_indexes(self, dataset_size: int) -> SplitIndexes:
+        """
+        Generate train/val/test/predict indexes based on the split ratios.
+
+        Args:
+            dataset_size: Total size of the dataset
+
+        Returns:
+            SplitIndexes with train/val/test/predict indexes
+        """
+        # Validate split ratios
+        total_ratio = self.data_split.train + self.data_split.val + self.data_split.test + self.data_split.predict
+        if not np.isclose(total_ratio, 1.0):
+            raise ValueError(f"Split ratios must sum to 1.0, got {total_ratio}")
+
+        # Calculate split sizes
+        train_size = int(self.data_split.train * dataset_size)
+        val_size = int(self.data_split.val * dataset_size)
+        test_size = int(self.data_split.test * dataset_size)
+        predict_size = dataset_size - train_size - val_size - test_size  # Remainder goes to predict
+
+        if self.data_split.contiguous:
+            # Contiguous splits (for time series)
+            train_idx = np.arange(0, train_size)
+            val_idx = np.arange(train_size, train_size + val_size)
+            test_idx = np.arange(train_size + val_size, train_size + val_size + test_size) if test_size > 0 else None
+            predict_idx = np.arange(train_size + val_size + test_size, dataset_size) if predict_size > 0 else None
         else:
-            y_clean = df_tuple.y.loc[X_clean.index]
+            # Random splits
+            rng = np.random.default_rng(seed=42)  # Use a fixed seed for reproducibility
+            shuffled_idx = rng.permutation(dataset_size)
 
-        self.x_y_no_nans = LoadedDfTuple(X=X_clean, y=y_clean)
+            train_idx = shuffled_idx[:train_size]
+            val_idx = shuffled_idx[train_size : train_size + val_size]
+            test_idx = (
+                shuffled_idx[train_size + val_size : train_size + val_size + test_size] if test_size > 0 else None
+            )
+            predict_idx = shuffled_idx[train_size + val_size + test_size :] if predict_size > 0 else None
 
-        return LoadedDfTuple(X=X_clean, y=y_clean)
+        return SplitIndexes(train=train_idx, val=val_idx, test=test_idx, predict=predict_idx)
 
-    def load_and_strip_nans(self) -> LoadedDfTuple:
-        """
-        Load DataFrame inputs and remove NaN values.
+    def fit_pipelines_once(self, X_train: pd.DataFrame, y_train: pd.Series | pd.DataFrame):
 
-        Sets self.x_y_raw and self.x_y_no_nans.
-        """
-        df_tuple = self.load_df()
-        self.x_y_raw = df_tuple
-        df_no_nans = self.df_remove_nans(df_tuple)
-        self.x_y_no_nans = df_no_nans
-
-        return df_no_nans
+        try:
+            check_is_fitted(self.PipelineX)
+            check_is_fitted(self.PipelineY)
+        except:
+            # If pipelines are not fitted, fit them
+            self.PipelineX.fit(X_train, y_train)
+            self.PipelineY.fit(y_train)

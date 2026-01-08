@@ -1,0 +1,31 @@
+{
+  "env": {
+    "PYTHONPATH": "/Users/Akseldkw/coding/kretsinger",
+    "PYTHONUNBUFFERED": "1"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "eval \"$(micromamba shell hook --shell bash)\" && micromamba activate kret_312",
+            "type": "command"
+          }
+        ],
+        "matcher": "startup"
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read(//Users/Akseldkw/coding/kretsinger/**)",
+      "Read(//Users/Akseldkw/coding/Columbia/**)",
+      "Edit(//Users/Akseldkw/coding/Columbia/**)",
+      "Read(//Users/Akseldkw/Desktop/Columbia/**)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pip:*)",
+      "Bash(micromamba:*)"
+    ]
+  }
+}

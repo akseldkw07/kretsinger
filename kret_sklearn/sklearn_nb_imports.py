@@ -14,7 +14,14 @@ from sklearn.linear_model import ElasticNet, HuberRegressor, Lasso, LinearRegres
 from sklearn.metrics import f1_score, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import FeatureUnion, Pipeline
-from sklearn.preprocessing import FunctionTransformer, LabelEncoder, OneHotEncoder, PowerTransformer, StandardScaler
+from sklearn.preprocessing import (
+    FunctionTransformer,
+    LabelEncoder,
+    OneHotEncoder,
+    OrdinalEncoder,
+    PowerTransformer,
+    StandardScaler,
+)
 
 from .custom_transformers import DateTimeSinCosNormalizer, MissingValueRemover, PandasColumnOrderBase
 from .pd_pipeline import PipelinePD

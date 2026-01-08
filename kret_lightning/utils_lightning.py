@@ -12,7 +12,7 @@ class LightningModuleAssert:
     @classmethod
     def initialization_check(cls, lm: ABCLM) -> None:
         cls.assert_version_fmt(lm.version)
-        cls.assert_filename_safe(lm.name)
+        cls.assert_filename_safe(lm)
 
     @classmethod
     def assert_version_fmt(cls, version: str) -> None:
@@ -20,8 +20,10 @@ class LightningModuleAssert:
             raise ValueError(f"Version '{version}' is not in the correct format 'v_XXX' where XXX are digits.")
 
     @classmethod
-    def assert_filename_safe(cls, name: str) -> None:
-        assert FilenameUtils.is_safe_filename_pathvalidate(name), f"Filename '{name}' is not safe for filesystems."
+    def assert_filename_safe(cls, lm: ABCLM) -> None:
+        assert FilenameUtils.is_safe_filename_basic(
+            lm.ckpt_path
+        ), f"Filename '{lm.ckpt_path}' is not safe for filesystems."
 
     @classmethod
     def assert_dict_keys_consistency(cls):
@@ -45,5 +47,5 @@ class LightningDataModuleAssert:
     @classmethod
     def assert_split_distribution(cls, datamodule: "DataModuleABC"):
         split = datamodule.data_split
-        total = sum(split)
+        total = sum([split for split in split if isinstance(split, float)])
         assert total == 1.0, f"Data split proportions must sum to 1.0; got total {total} from split {split}"
