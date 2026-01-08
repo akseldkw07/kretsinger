@@ -117,27 +117,3 @@ class TensorDatasetCustom(TensorDataset):
             data.append(df_part)
 
         return pd.concat(data, axis=1)
-
-    def get_feature_tensor(self, col_name: str) -> torch.Tensor:
-        """
-        Get a specific column as a tensor.
-
-        Args:
-            col_name: Column name
-
-        Returns:
-            Tensor for that column
-
-        Example:
-            >>> ages = dataset.get_feature_tensor('age')
-        """
-        try:
-            idx = self.columns.index(col_name)
-            return self.tensors[idx]
-        except ValueError:
-            raise KeyError(f"Column '{col_name}' not found. Available: {self.columns}")
-
-    def get_column_dtype(self, col_name: str) -> torch.dtype:
-        """Get dtype of a specific column."""
-        tensor = self.get_feature_tensor(col_name)
-        return tensor.dtype
