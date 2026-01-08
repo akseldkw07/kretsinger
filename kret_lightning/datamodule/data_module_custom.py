@@ -18,6 +18,8 @@ from kret_torch_utils.torch_defaults import TorchDefaults
 if t.TYPE_CHECKING:
     from kret_torch_utils.torch_typehints import DataLoader___init___TypedDict
 
+STAGE_LITERAL = t.Literal["fit", "validate", "predict", "test"]
+
 
 class DataModuleABC(L.LightningDataModule):
     data_dir: Path
@@ -72,7 +74,7 @@ class CustomDataModule(DataModuleABC):
     def prepare_data(self) -> None:
         raise NotImplementedError("Implement in subclass")
 
-    def setup(self, stage: t.Literal["fit", "validate", "test", "predict"]) -> None:  # type: ignore[override]
+    def setup(self, stage: STAGE_LITERAL) -> None:  # type: ignore[override]
         raise NotImplementedError("Implement in subclass")
 
     # region Dataloaders

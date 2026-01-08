@@ -12,6 +12,8 @@ from lightning.fabric.utilities.data import AttributeDict
 
 from kret_lightning.constants_lightning import LightningConstants
 
+from .datamodule.data_module_custom import STAGE_LITERAL
+
 
 class ABCLM(ABC, L.LightningModule):
     version: str = "v_000"  # eg. 'v_001'
@@ -77,6 +79,13 @@ class ABCLM(ABC, L.LightningModule):
         """
         val_loss = ...
         self.log('val_loss', val_loss)
+        """
+
+    @abstractmethod
+    def log_extra_metrics(self, y_hat: torch.Tensor, y: torch.Tensor, stage: STAGE_LITERAL) -> None:
+        """
+        Log any extra metrics beyond loss here.
+        E.g., accuracy, F1, etc.
         """
 
     """
