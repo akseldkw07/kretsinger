@@ -122,38 +122,34 @@ def analyze_repo(repo_path: str | Path) -> dict:
 
 
 def create_graphviz_visualization(results: dict, output_file: str | Path = "import_dependencies.svg"):
-    """Create SVG using Graphviz."""
+    """Create SVG using Graphviz - local packages only."""
     if graphviz is None:
         print("ERROR: graphviz not installed. Install with: pip install graphviz")
         return False
 
-    dot = graphviz.Digraph(comment="Import Dependencies", format="svg")
+    dot = graphviz.Digraph(comment="Import Dependencies (Local Only)", format="svg")
     dot.attr(rankdir="LR")
     dot.attr("node", shape="box", style="rounded,filled", fillcolor="lightblue")
 
-    # Add nodes for top imports
-    results["summary"]["total_imports"]
+    # Only use internal imports
     internal = results["summary"]["internal"]
-    results["summary"]["third_party"]
 
-    # Limit to most common imports to avoid too crowded graph
+    # Count only internal imports
     import_counts = defaultdict(int)
     for imports in results["imports"].values():
         for imp in imports:
-            import_counts[imp] += 1
+            if imp in internal:  # Only count local packages
+                import_counts[imp] += 1
 
-    # Get top 50 most imported modules
+    # Get top 50 most imported local modules
     top_imports = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)[:50]
     top_import_names = {imp for imp, _ in top_imports}
 
-    # Add nodes
+    # Add nodes - all are internal/local
     for imp, count in top_imports:
-        if imp in internal:
-            dot.node(imp, f"{imp}\n({count})", fillcolor="lightgreen")
-        else:
-            dot.node(imp, f"{imp}\n({count})", fillcolor="lightcoral")
+        dot.node(imp, f"{imp}\n({count})", fillcolor="lightgreen")
 
-    # Add edges
+    # Add edges - only for local packages
     edge_count = 0
     for module, imports in results["imports"].items():
         for imp in imports:
@@ -161,15 +157,25 @@ def create_graphviz_visualization(results: dict, output_file: str | Path = "impo
                 dot.edge(module, imp, weight=str(import_counts[imp]))
                 edge_count += 1
 
-    # Save
-    output_path = (output_file if isinstance(output_file, str) else str(output_file)).replace(".svg", "")
-    dot.render(output_path, cleanup=True)
-    print(f"✓ SVG saved to: {output_file}")
+    # Save - ensure we're in the output directory so /lib gets created there
+    output_path = Path(output_file) if not isinstance(output_file, Path) else output_file
+    output_dir = output_path.parent
+    output_name = str(output_path.stem)
+
+    # Change to output directory before rendering
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(output_dir)
+        dot.render(output_name, cleanup=True)
+    finally:
+        os.chdir(original_cwd)
+
+    print(f"✓ SVG saved to: {output_file} (local packages only)")
     return True
 
 
 def create_matplotlib_visualization(results: dict, output_file: str | Path = "import_dependencies.png"):
-    """Create PNG using matplotlib and networkx."""
+    """Create PNG using matplotlib and networkx - local packages only."""
     if not nx or not plt:
         print("ERROR: networkx/matplotlib not installed. Install with: pip install networkx matplotlib")
         return False
@@ -177,22 +183,25 @@ def create_matplotlib_visualization(results: dict, output_file: str | Path = "im
     # Build graph
     G = nx.DiGraph()
 
-    # Count imports
+    # Only use internal imports
+    internal = results["summary"]["internal"]
+
+    # Count only internal imports
     import_counts = defaultdict(int)
     for imports in results["imports"].values():
         for imp in imports:
-            import_counts[imp] += 1
+            if imp in internal:  # Only count local packages
+                import_counts[imp] += 1
 
-    # Get top 30 imports
+    # Get top 30 local imports
     top_imports = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)[:30]
     top_import_names = {imp for imp, _ in top_imports}
 
-    # Add nodes
-    internal = results["summary"]["internal"]
+    # Add nodes - all are local
     for imp, count in top_imports:
         G.add_node(imp, count=count)
 
-    # Add edges
+    # Add edges - only for local packages
     edge_count = 0
     for module, imports in results["imports"].items():
         for imp in imports:
@@ -204,13 +213,8 @@ def create_matplotlib_visualization(results: dict, output_file: str | Path = "im
     plt.figure(figsize=(20, 16))
     pos = nx.spring_layout(G, k=2, iterations=50, seed=42)
 
-    # Color nodes based on internal/external
-    node_colors = []
-    for node in G.nodes():
-        if node in internal:
-            node_colors.append("lightgreen")
-        else:
-            node_colors.append("lightcoral")
+    # All nodes are internal (green)
+    node_colors = ["lightgreen" for _ in G.nodes()]
 
     # Node sizes based on import count
     node_sizes = [import_counts.get(node, 1) * 50 for node in G.nodes()]
@@ -219,16 +223,16 @@ def create_matplotlib_visualization(results: dict, output_file: str | Path = "im
     nx.draw_networkx_edges(G, pos, edge_color="gray", arrows=True, arrowsize=20, width=0.5, alpha=0.6)
     nx.draw_networkx_labels(G, pos, font_size=8, font_weight="bold")
 
-    plt.title("Python Import Dependency Graph\n(Green = Internal, Red = Third-party)", fontsize=16, fontweight="bold")
+    plt.title("Python Import Dependency Graph\n(Local Packages Only)", fontsize=16, fontweight="bold")
     plt.axis("off")
     plt.tight_layout()
     plt.savefig(output_file, dpi=150, bbox_inches="tight")
-    print(f"✓ PNG saved to: {output_file}")
+    print(f"✓ PNG saved to: {output_file} (local packages only)")
     return True
 
 
 def create_html_interactive(results: dict, output_file: str | Path = "import_dependencies.html"):
-    """Create interactive HTML visualization."""
+    """Create interactive HTML visualization - local packages only."""
     try:
         import pyvis.network as net
 
@@ -243,40 +247,74 @@ def create_html_interactive(results: dict, output_file: str | Path = "import_dep
     # Build graph
     G = nx.DiGraph()
 
-    # Count imports
+    # Only use internal imports
+    internal = results["summary"]["internal"]
+
+    # Count only internal imports
     import_counts = defaultdict(int)
     for imports in results["imports"].values():
         for imp in imports:
-            import_counts[imp] += 1
+            if imp in internal:  # Only count local packages
+                import_counts[imp] += 1
 
-    # Get top imports
+    # Get top local imports
     top_imports = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)[:40]
     top_import_names = {imp for imp, _ in top_imports}
 
-    internal = results["summary"]["internal"]
-
-    # Add nodes
+    # Add nodes - all are local (green)
     for imp, count in top_imports:
-        color = "#90EE90" if imp in internal else "#FFB6C6"  # Green for internal, pink for external
-        G.add_node(imp, title=f"{imp} (imported {count} times)", color=color, size=min(count * 3, 50))
+        G.add_node(imp, title=f"{imp} (imported {count} times)", color="#90EE90", size=min(count * 3, 50))
 
-    # Add edges
+    # Add edges - reversed direction (imp -> module) to show what depends on what
     for module, imports in results["imports"].items():
         for imp in imports:
             if imp in top_import_names:
-                G.add_edge(module, imp)
+                G.add_edge(imp, module)  # Reversed: now shows imp -> module
 
-    # Create pyvis network
-    net_graph = net.Network(height="750px", width="100%", directed=True)
+    # Create pyvis network with more height for the graph
+    net_graph = net.Network(height="80vh", width="100%", directed=True)
     net_graph.from_nx(G)
 
     # Customize physics using the correct API
     net_graph.toggle_physics(True)
     net_graph.show_buttons(filter_=["physics"])
 
-    # Save
-    net_graph.show(str(output_file), notebook=False)
-    print(f"✓ Interactive HTML saved to: {output_file}")
+    # Save - ensure we're in the output directory so /lib gets created there
+    output_path = Path(output_file) if not isinstance(output_file, Path) else output_file
+    output_dir = output_path.parent
+
+    # Change to output directory before saving (pyvis creates /lib folder in cwd)
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(output_dir)
+        net_graph.show(str(output_path.name), notebook=False)
+
+        # Post-process HTML to adjust layout and make it resizable
+        html_path = output_dir / output_path.name
+        with open(html_path) as f:
+            html_content = f.read()
+
+        # Add custom CSS for better proportions and resizable divider
+        custom_css = """
+             body { margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+             #mynetwork { flex: 1; min-height: 60vh; border: 1px solid lightgray; position: relative; }
+             #config { height: auto; max-height: 35vh; overflow-y: auto; border-top: 3px solid #ccc;
+                       resize: vertical; padding: 10px; background: #f5f5f5; }
+        """
+        # Find the last </style> tag and insert custom CSS before it
+        last_style_end = html_content.rfind("</style>")
+        if last_style_end != -1:
+            html_content = html_content[:last_style_end] + custom_css + html_content[last_style_end:]
+
+        with open(html_path, "w") as f:
+            f.write(html_content)
+
+    finally:
+        os.chdir(original_cwd)
+
+    print(f"✓ Interactive HTML saved to: {output_file} (local packages only)")
+    print("  - Arrows reversed: now show what each module depends on")
+    print("  - Config panel is resizable (drag the top border)")
     return True
 
 
