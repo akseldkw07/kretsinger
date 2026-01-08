@@ -12,13 +12,13 @@ from .base_lightning_nn import BaseLightningNN
 from .class_callbacks import CallbackMixin
 from .constants_lightning import LightningConstants as UKS_LIGHTNING_CONSTANTS
 from .custom_callbacks import CallbackConfig
-from .data_module_custom import CustomDataModule
-from .lightning_loggers import (
+from .datamodule.data_module_custom import CustomDataModule
+from .trainer_defaults import TrainerDynamicDefaults, TrainerStaticDefaults
+from .typehints import (
     CSVLogger___init___TypedDict,
     TensorBoardLogger___init___TypedDict,
     WandbLogger___init___TypedDict,
 )
-from .trainer_defaults import TrainerDynamicDefaults, TrainerStaticDefaults
 from .utils_lightning import LightningModuleAssert
 
 # from torchvision import datasets, transforms

@@ -10,6 +10,7 @@ from sklearn.utils.validation import check_is_fitted
 from torch.utils.data import DataLoader
 
 from kret_lightning.utils_lightning import LightningDataModuleAssert
+from kret_lightning.constants_lightning import STAGE_LITERAL
 from kret_np_pd.np_pd_nb_imports import *
 from kret_sklearn.custom_transformers import MissingValueRemover
 from kret_sklearn.pd_pipeline import PipelinePD
@@ -72,7 +73,7 @@ class CustomDataModule(DataModuleABC):
     def prepare_data(self) -> None:
         raise NotImplementedError("Implement in subclass")
 
-    def setup(self, stage: t.Literal["fit", "validate", "test", "predict"]) -> None:  # type: ignore[override]
+    def setup(self, stage: STAGE_LITERAL) -> None:  # type: ignore[override]
         raise NotImplementedError("Implement in subclass")
 
     # region Dataloaders

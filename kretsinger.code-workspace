@@ -1,19 +1,24 @@
 {
     "folders": [
         {
+            "name": "kretsinger",
             "path": "."
         },
         {
-            "path": "/Users/Akseldkw/.claude"
+            "name": ".claude",
+            "path": "../../.claude"
         },
         {
-            "path": "../Columbia/PMML-Project"
-        },
-        {
+            "name": "data_kretsinger",
             "path": "../data_kretsinger"
         },
         {
+            "name": "projects_kretsinger",
             "path": "../projects_kretsinger"
+        },
+        {
+            "name": "PMML-Project",
+            "path": "../Columbia/PMML-Project"
         }
     ],
     "settings": {

@@ -3,8 +3,6 @@ import typing as t
 from lightning import Callback
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
-from kret_lightning.constants_lightning import LightningConstants  # type: ignore
-
 from .abc_lightning import ABCLM, HPDict
 
 

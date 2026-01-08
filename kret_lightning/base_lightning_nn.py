@@ -33,7 +33,7 @@ class BaseLightningNN(ABCLM):
         stepsize: int = 12,
         l1_penalty: float = 0.0,
         l2_penalty: float = 0.0,
-        patience: int = 10,
+        patience: int = 10,  # passed to class_callbacks.CallbackMixin.early_stopping
         **kwargs,
     ):
         """
@@ -89,7 +89,7 @@ class BaseLightningNN(ABCLM):
 
     @classmethod
     def ckpt_file_name(cls):
-        folder = cls._root_dir / cls.__name__ / cls.version / "checkpoints"
+        folder = cls._root_dir / cls.__name__ / cls.version  # / "checkpoints"
         # use os to search folder for best checkpoint file
         for file in folder.iterdir():
             if file.name.startswith("best"):
@@ -160,5 +160,6 @@ class BaseLightningNN(ABCLM):
         outputs = self(x)
         val_loss = self.get_loss(outputs, y)
         self.log("val_loss", val_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log_extra_metrics(outputs, y, stage="validate")
 
     # endregion
