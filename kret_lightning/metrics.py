@@ -1,10 +1,12 @@
-from torch import Tensor
-from .abc_lightning import ABCLM
-from .datamodule.data_module_custom import STAGE_LITERAL
+import typing as t
+
 import torch
 import torch.nn as nn
-import typing as t
+from torch import Tensor
 from torchmetrics.regression import R2Score
+
+from .abc_lightning import ABCLM
+from .datamodule.data_module_custom import STAGE_LITERAL
 
 PREDICT_TYPE = t.Literal["Regression", "Classification"]
 

@@ -7,6 +7,7 @@ import pandas as pd
 import torch
 from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 from torch.utils.data import TensorDataset
+
 from .conversion_protocols import PandasConvertibleWithColumns
 
 TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor | list | tuple
@@ -57,13 +58,14 @@ class To_NP_PD:
         """
         Convert to np.ndarray, with optional dimensionality check
         """
+        from kret_np_pd.categoricals import CategoricalUtils
 
         if isinstance(arr, torch.Tensor):
             ret = arr.numpy(force=True)
         elif isinstance(arr, pd.DataFrame):
             ret = cls.df_to_np_safe(arr)
         elif isinstance(arr, pd.Series):
-            ret = arr.to_numpy()
+            ret = CategoricalUtils.to_numpy_cat(arr)
         elif isinstance(arr, (list, tuple)):
             ret = np.array(arr)
         else:
