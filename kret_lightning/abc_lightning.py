@@ -12,7 +12,7 @@ from lightning.fabric.utilities.data import AttributeDict
 
 from kret_lightning.constants_lightning import LightningConstants
 
-from .datamodule.data_module_custom import STAGE_LITERAL
+from .constants_lightning import STAGE_LITERAL
 
 
 class ABCLM(ABC, L.LightningModule):

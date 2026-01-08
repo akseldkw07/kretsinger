@@ -89,7 +89,7 @@ class BaseLightningNN(ABCLM):
 
     @classmethod
     def ckpt_file_name(cls):
-        folder = cls._root_dir / cls.__name__ / cls.version / "checkpoints"
+        folder = cls._root_dir / cls.__name__ / cls.version  # / "checkpoints"
         # use os to search folder for best checkpoint file
         for file in folder.iterdir():
             if file.name.startswith("best"):
