@@ -1,23 +1,35 @@
 """
-Utility class to hop between pandas, numpy, and pytorch
+Utility class to convert to pandas and numpy
 """
-
-from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import torch
 from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 
+from .conversion_protocols import PandasConvertibleWithColumns
 
-class PD_NP_Torch_Translation:
+
+class To_NP_PD:
     @classmethod
     def coerce_to_df(
         cls,
-        obj: pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor,
+        obj: (
+            pd.DataFrame
+            | pd.Series
+            | np.ndarray
+            | list
+            | tuple
+            | object
+            | torch.Tensor
+            | torch.utils.data.TensorDataset
+        ),
         cols: list[str] | None = None,
     ):
-        if isinstance(obj, pd.DataFrame):
+        if isinstance(obj, PandasConvertibleWithColumns):
+            # This covers TensorDatasetCustom and any other custom types implementing the protocol
+            ret = obj.to_pandas()
+        elif isinstance(obj, pd.DataFrame):
             ret = obj
         elif isinstance(obj, pd.Series):
             ret = obj.to_frame()
@@ -28,6 +40,10 @@ class PD_NP_Torch_Translation:
             ret = pd.DataFrame(obj)
         elif isinstance(obj, torch.Tensor):
             ret = pd.DataFrame(obj.numpy(force=True))
+        elif isinstance(obj, torch.utils.data.TensorDataset):
+            data_list = [obj[i] for i in range(len(obj))]
+            ret = pd.DataFrame(data_list)
+
         else:
             ret = pd.DataFrame([obj])
 
@@ -73,3 +89,21 @@ class PD_NP_Torch_Translation:
 
         assert not assert_1dim or ret.ndim == 1, f"Expected 1-dim ndarray output, got{ret.shape}"
         return ret
+
+    @classmethod
+    def coerce_to_tensor_ds(cls, obj: pd.DataFrame | np.ndarray | torch.Tensor | pd.Series, dtype=torch.float32):
+        if isinstance(obj, torch.utils.data.TensorDataset):
+            return obj
+        elif isinstance(obj, torch.Tensor):
+            tensor = obj
+        elif isinstance(obj, pd.DataFrame):
+            tensor = torch.tensor(cls.df_to_np_safe(obj), dtype=dtype)
+        elif isinstance(obj, pd.Series):
+            tensor = torch.tensor(obj.to_numpy(), dtype=dtype)
+        elif isinstance(obj, np.ndarray):
+            tensor = torch.tensor(obj, dtype=dtype)
+        else:
+            raise ValueError(f"Type {type(obj)} not accepted")
+
+        dataset = torch.utils.data.TensorDataset(tensor)
+        return dataset

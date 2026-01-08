@@ -56,3 +56,11 @@ class PipelinePD(Pipeline):
         error_msg = f"Expected DataFrame output; got {type(out)!r}. Did set_output(transform='pandas') stick?"
         assert isinstance(out, pd.DataFrame), error_msg
         return out
+
+    def fit_transform(self, *args, **kwargs):
+        raise NotImplementedError("Use fit_transform_df instead")
+        return super().fit_transform(*args, **kwargs)
+
+    def transform(self, *args, **kwargs):
+        raise NotImplementedError("Use transform_df instead")
+        return super().transform(*args, **kwargs)

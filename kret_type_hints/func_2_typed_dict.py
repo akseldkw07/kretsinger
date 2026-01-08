@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import inspect
 import typing as t
 from collections import defaultdict
@@ -21,6 +19,10 @@ class FuncToTypedDict(TypedFuncHelper):
             func: The callable to convert
             include_ret: Include return type annotation
             include_defaults: Include default values as comments
+
+        TODO define special cases where we want to be extra specific with imports
+            1. E.g. instead of from pandas import DataFrame, do import pandas as pd; pd.DataFrame
+                > this helps avoid name conflicts with polars DataFrame (for example)
         """
         cls.print_imports(func)
         print()  # Blank line between imports and class definition

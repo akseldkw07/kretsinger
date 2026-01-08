@@ -1,9 +1,6 @@
-from __future__ import annotations
+# autoflake: skip_file
 
-import os
-from pathlib import Path
-
-from kret_utils.constants_kret import KretConstants
+from .constants_FINAL import KretNotebookPaths as UKS_PATHS, KretNotebookConstants as UKS_CONSTANTS_FINAL
 
 from .nb_setup import NBSetupUtils
 
@@ -11,4 +8,5 @@ from .nb_setup import NBSetupUtils
 # source env variables
 NBSetupUtils.load_dotenv_file()
 NBSetupUtils.source_zsh_env()
-DATA_DIR = KretConstants.DATA_DIR
+
+DATA_DIR = UKS_PATHS.DATA_DIR

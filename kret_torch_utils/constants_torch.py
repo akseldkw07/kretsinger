@@ -1,12 +1,8 @@
-import os
 import typing as t
-from pathlib import Path
 
 import torch
 
-# PATHS
-PYTORCH_DIR = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parent.parent.parent))
-MODEL_WEIGHT_DIR = PYTORCH_DIR / "pytorch"
+from kret_utils.constants_kret import KretConstants
 
 # DEVICE
 DEVICE_LITERAL = t.Literal["cuda", "mps", "xpu", "cpu"]  # extend to include "xla", "xpu" if needed
@@ -24,5 +20,8 @@ def pick_device() -> DEVICE_LITERAL:
     return "cpu"
 
 
-DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
-DEVICE = torch.device(DEVICE_TORCH_STR)
+class TorchConstants:
+    TORCH_MODEL_WEIGHT_DIR = KretConstants.DATA_DIR / "pytorch_weights"
+    DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
+    DEVICE = torch.device(DEVICE_TORCH_STR)
+    HUGGING_FACE_DIR = KretConstants.DATA_DIR / "hugging_face"
