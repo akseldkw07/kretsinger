@@ -13,6 +13,7 @@ from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_rosetta.to_pd_np import TO_NP_TYPE
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
+from kret_type_hints.typed_cls import Subplots_TypedDict
 
 REG_FUNC = t.Literal["OLS", "Huber"]
 
@@ -118,9 +119,14 @@ class GroupScatter(DataFrameMixin):
     Take in y and y_hat, optional categorical column, optional filter, # centroids=25, downsample=False, and regression funcion (OLS, Huber, etc)=OLS
 
     TODO - add option for 10,25,75,90 percentiles as error bars around centroids
+    TODO - don't recalculate models if already calculated
     """
 
     model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression]
+    subplot_args: Subplots_TypedDict = {
+        "sharex": True,
+        "sharey": True,
+    }
     centroid_scatter_kwargs: dict[t.Any, t.Any] = dict(
         s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
     )
@@ -181,8 +187,8 @@ class GroupScatter(DataFrameMixin):
         categories = centroids.category.cat.categories
 
         if isinstance(ax, str):
-            rows, cols = Plotting_Utils.subplots_smart_dims(len(categories))
-            fig, ax_ = Plotting_Utils.subplots(1, 1) if shared else Plotting_Utils.subplots(rows, cols)
+            rows, cols = Plotting_Utils.subplots_smart_dims(len(categories)) if not shared else (1, 1)
+            fig, ax_ = Plotting_Utils.subplots(rows, cols, **self.subplot_args)
             ax = ax_ if isinstance(ax_, Axes) else ax_.ravel()
         else:
             fig = plt.gcf()

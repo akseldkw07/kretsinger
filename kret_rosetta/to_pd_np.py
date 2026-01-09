@@ -43,6 +43,9 @@ class To_NP_PD:
 
     @classmethod
     def df_to_np_safe(cls, df: pd.DataFrame):
+        """
+        Convert a DataFrame to a numpy ndarray, safely handling datetime and timedelta types.
+        """
         for col in df.columns:
             arr = df[col]
             if is_datetime64_any_dtype(arr):
