@@ -10,7 +10,7 @@ from torch.utils.data import TensorDataset
 
 from .conversion_protocols import PandasConvertibleWithColumns
 
-TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | torch.Tensor | list | tuple
+TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | pd.Categorical | torch.Tensor | list | tuple
 TO_PD_TYPE = pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor | TensorDataset
 
 
@@ -58,14 +58,16 @@ class To_NP_PD:
         """
         Convert to np.ndarray, with optional dimensionality check
         """
-        from kret_np_pd.categoricals import CategoricalUtils
-
-        if isinstance(arr, torch.Tensor):
+        if isinstance(arr, np.ndarray):
+            ret = arr
+        elif isinstance(arr, torch.Tensor):
             ret = arr.numpy(force=True)
         elif isinstance(arr, pd.DataFrame):
             ret = cls.df_to_np_safe(arr)
+        elif isinstance(arr, pd.Categorical):
+            ret = arr.codes
         elif isinstance(arr, pd.Series):
-            ret = CategoricalUtils.to_numpy_cat(arr)
+            ret = arr.to_numpy()
         elif isinstance(arr, (list, tuple)):
             ret = np.array(arr)
         else:

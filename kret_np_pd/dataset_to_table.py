@@ -9,7 +9,7 @@ import torch
 from IPython.display import display_html
 from pandas.io.formats.style import Styler
 
-from kret_np_pd.filters import FilterUtils
+from kret_np_pd.filters import FilterSampleUtils
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 if t.TYPE_CHECKING:
@@ -135,7 +135,7 @@ class PD_Display_Utils:
         input = input if isinstance(input, (list)) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
-        filter = FilterUtils.process_filter(filter) if filter is not None else None
+        filter = FilterSampleUtils.process_filter(filter) if filter is not None else None
 
         args: list[pd.DataFrame | Styler] = []
         for arg in input:
@@ -230,11 +230,9 @@ def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
     # print(n)
     if hot == -1:
         return np.full(n, True, dtype=bool)
-    rng = np.random.default_rng(seed)
+
     if display_method == "sample":
-        mask = np.zeros(n, dtype=bool)
-        hot_indices = rng.choice(n, size=hot, replace=False)
-        mask[hot_indices] = True
+        mask = FilterSampleUtils.gen_sample_filter(hot, n, seed=seed)
     elif display_method == "head":
         mask = np.zeros(n, dtype=bool)
         mask[:hot] = True

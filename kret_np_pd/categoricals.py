@@ -11,12 +11,22 @@ class CategoricalUtils:
         return isinstance(ser.dtype, pd.CategoricalDtype)
 
     @classmethod
-    def to_numpy_cat(cls, ser: pd.Series) -> np.ndarray:
+    def to_categorical(
+        cls,
+        ser: pd.Series | np.ndarray | pd.Categorical,
+        categories: list | None = None,
+        ordered: bool = False,
+    ) -> pd.Categorical:
         """
-        Convert a pandas Series of categorical dtype to a numpy ndarray of integer codes.
-        If the Series is not categorical, it is returned as a numpy array as is.
+        Convert a pandas Series or numpy ndarray to a pandas Categorical.
+        If categories are provided, they are used to define the categorical levels.
         """
-        if cls.is_categorical(ser):
-            return ser.cat.codes.to_numpy()
-        else:
-            return ser.to_numpy()
+        if isinstance(ser, pd.Categorical):
+            return ser
+
+        cat = pd.Categorical(ser)
+
+        if categories is not None:
+            cat = cat.set_categories(categories, ordered=ordered)
+
+        return cat
