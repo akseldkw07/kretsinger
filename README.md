@@ -18,17 +18,6 @@ dtt - use torch.tensor.cols_pd?
 3-
 
 kretsinger/
-    example_notebooks/
-        notebooks downloaded from (Kaggle, etc)
-    kret_utils/
-        **Every other submodule will import from here**
-        ~stuff/~
-        ~dtt/~
-        ~dir/ (print class attributes better)~
-        ~wandb/~
-        typehint_utils/
-            func_to_typehint/
-            single-return-array/
     kret_sklearn/
         ~sklearn_pipelines/ (PMML examples)~
         sklearn.datasets.make_* # for generating datasets

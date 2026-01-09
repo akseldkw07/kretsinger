@@ -9,6 +9,7 @@ import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+from .groupscatter import GroupScatter as GroupScatterKRET
 from .UTILS_Matplotlib import Plotting_Utils as UKS_MPL
 
 sns.set_theme()

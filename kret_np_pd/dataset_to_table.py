@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display_html
-from pandas.api.types import is_bool_dtype
 from pandas.io.formats.style import Styler
 
+from kret_np_pd.filters import FilterSampleUtils
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 if t.TYPE_CHECKING:
@@ -135,7 +135,7 @@ class PD_Display_Utils:
         input = input if isinstance(input, (list)) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
-        filter = cls.process_filter(filter) if filter is not None else None
+        filter = FilterSampleUtils.process_filter(filter) if filter is not None else None
 
         args: list[pd.DataFrame | Styler] = []
         for arg in input:
@@ -224,25 +224,15 @@ class PD_Display_Utils:
             html_str += TABLE_FMT.format(max_col_width=max_col_width)
         return html_str
 
-    @classmethod
-    def process_filter(cls, filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame):
-
-        ret = UTILS_rosetta.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
-        assert is_bool_dtype(ret), f"Expected boolean filter type, got {ret.dtype}"
-
-        return ret
-
 
 @cache
 def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
     # print(n)
     if hot == -1:
         return np.full(n, True, dtype=bool)
-    rng = np.random.default_rng(seed)
+
     if display_method == "sample":
-        mask = np.zeros(n, dtype=bool)
-        hot_indices = rng.choice(n, size=hot, replace=False)
-        mask[hot_indices] = True
+        mask = FilterSampleUtils.gen_sample_filter(hot, n, seed=seed)
     elif display_method == "head":
         mask = np.zeros(n, dtype=bool)
         mask[:hot] = True

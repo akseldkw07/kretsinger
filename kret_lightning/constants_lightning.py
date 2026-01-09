@@ -1,5 +1,6 @@
-from kret_utils.constants_kret import KretConstants
 import typing as t
+
+from kret_utils.constants_kret import KretConstants
 
 STAGE_LITERAL = t.Literal["fit", "validate", "predict", "test"]
 
