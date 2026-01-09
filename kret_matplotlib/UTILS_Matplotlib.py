@@ -144,6 +144,16 @@ class Plotting_Utils(KretMatplotHelper):
     # endregion
     # region SUBPLOTS
 
+    @classmethod
+    def subplots_smart_dims(cls, nplots: int, max_cols: int = 5) -> tuple[int, int]:
+        rows = int(np.ceil(np.sqrt(nplots)))
+        cols = int(np.ceil(nplots / rows))
+
+        if cols > max_cols:
+            cols = max_cols
+            rows = int(np.ceil(nplots / cols))
+        return rows, cols
+
     @t.overload
     @classmethod
     def subplots(  # type: ignore[override]

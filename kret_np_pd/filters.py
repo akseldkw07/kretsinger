@@ -1,14 +1,13 @@
+import typing as t
 from functools import cache
+
 import numpy as np
 import pandas as pd
 import torch
 from pandas.api.types import is_bool_dtype
 
-
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
-
-import typing as t
 
 FILT_TYPE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame
 

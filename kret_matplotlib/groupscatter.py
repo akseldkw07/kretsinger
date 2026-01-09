@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import typing as t
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from sklearn.linear_model import HuberRegressor, LinearRegression
 
+from kret_matplotlib.UTILS_Matplotlib import Plotting_Utils
 from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
-from kret_rosetta.UTILS_rosetta import UTILS_rosetta
+from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_rosetta.to_pd_np import TO_NP_TYPE
+from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 REG_FUNC = t.Literal["OLS", "Huber"]
 
@@ -27,6 +32,12 @@ class StateDF(pd.DataFrame):
     filt: pd.Series
 
 
+class RichDF(StateDF):
+    y_true_centroid: pd.Series
+    y_pred_centroid: pd.Series
+    centroid_bin: pd.Categorical
+
+
 class AttrBase:
     _df_input: StateDF
     _df_sorted: pd.DataFrame
@@ -43,7 +54,8 @@ class AttrBase:
 
 class FilterCalcMixin(AttrBase):
     def calc_filter_mask(self):
-        filt = self._df_input.filt.to_numpy()
+
+        filt = NP_PD_Utils.mask_and(self._df_input.filt.to_numpy(), ~self._df_input.isna())
         if self.downsample is not None:
             filt = FilterSampleUtils.downsample_bool(filt, k=self.downsample, seed=self.seed)
         return filt
@@ -103,6 +115,8 @@ class GroupScatter(DataFrameMixin):
     Take in y and y_hat, optional categorical column, optional filter, # centroids=25, downsample=False, and regression funcion (OLS, Huber, etc)=OLS
     """
 
+    model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression]
+
     def __init__(
         self,
         y: TO_NP_TYPE,
@@ -134,3 +148,81 @@ class GroupScatter(DataFrameMixin):
         self.regression_func = regression_func
 
         self.seed = 0
+
+    @staticmethod
+    def fit_line(x: np.ndarray, y: np.ndarray, kind: REG_FUNC):
+        x2 = x.reshape(-1, 1)
+        if kind == "OLS":
+            model = LinearRegression().fit(x2, y)
+            return model
+        if kind == "Huber":
+            model = HuberRegressor().fit(x2, y)
+            return model
+        raise ValueError(kind)
+
+    def plot(
+        self,
+        ax: Axes | t.Iterable[Axes] | t.Literal["shared", "separate"] = "shared",
+        scatters: tuple[t.Literal["raw", "centroids"], ...] = ("centroids",),
+        fit_on: t.Literal["raw", "centroids"] = "raw",
+    ):
+        """
+        Plot the group scatter with regression line.
+        """
+        shared = ax == "shared" or isinstance(ax, Axes)
+        if isinstance(ax, str):
+            rows, cols = Plotting_Utils.subplots_smart_dims(len(self.category.categories))
+            fig, ax_ = Plotting_Utils.subplots(1, 1) if shared else Plotting_Utils.subplots(rows, cols)
+            ax = ax_ if isinstance(ax_, Axes) else ax_.ravel()
+        else:
+            fig = plt.gcf()
+
+        centroids = self.DfFull.drop_duplicates(subset=["category", "centroid_bin"])
+        model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression] = {}
+
+        for i, cat in enumerate(centroids.category.cat.categories):
+            # TODO ensure color consistency between scatter and line
+            color = plt.get_cmap("tab10")(i % 10)
+            ax_curr = ax if isinstance(ax, Axes) else ax[i]  # type: ignore[index]
+            df: RichDF = self.DfFull[self.DfFull.category == cat]
+            cent_cat: RichDF = centroids[centroids.category == cat]
+
+            if "raw" in scatters:
+                scatter_kwargs: dict[t.Any, t.Any] = dict(s=10, alpha=0.2, marker="o", edgecolor="none", zorder=2)
+                ax_curr.scatter(
+                    df["y_true"].to_numpy(),
+                    df["y_pred"].to_numpy(),
+                    color=color,
+                    label=f"{cat} Raw",
+                    **scatter_kwargs,
+                )
+            if "centroids" in scatters:
+                scatter_kwargs: dict[t.Any, t.Any] = dict(
+                    s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
+                )
+                ax_curr.scatter(
+                    cent_cat["y_true_centroid"].to_numpy(),
+                    cent_cat["y_pred_centroid"].to_numpy(),
+                    color=color,
+                    label=f"{cat} Centroids",
+                    **scatter_kwargs,
+                )
+
+            # Fit regression line
+            x = df["y_true"].to_numpy() if fit_on == "raw" else cent_cat["y_true_centroid"].to_numpy()
+            y = df["y_pred"].to_numpy() if fit_on == "raw" else cent_cat["y_pred_centroid"].to_numpy()
+
+            model = self.fit_line(x, y, self.regression_func)
+            x_line: np.ndarray = np.linspace(x.min(), x.max())
+            y_line = model.predict(x_line.reshape(-1, 1))
+            ax_curr.plot(x_line, y_line, linewidth=2)
+
+            model_dict[(cat, self.seed)] = model
+
+            ax_curr.set_title(f"Group: {cat}")
+            ax_curr.set_xlabel("True Values")
+            ax_curr.set_ylabel("Predicted Values")
+            ax_curr.legend()
+
+        self.model_dict = model_dict
+        return fig
