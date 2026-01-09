@@ -40,14 +40,11 @@ class RichDF(StateDF):
 
 class AttrBase:
     _df_input: StateDF
-    _df_sorted: pd.DataFrame
-    _df_enriched: pd.DataFrame
+    _df_sorted: StateDF
+    _df_enriched: RichDF
     downsample: int
     seed: int
 
-    # y_true: np.ndarray
-    # y_pred: np.ndarray
-    # category: np.ndarray
     n_centroids: int
     regression_func: REG_FUNC
 
@@ -71,7 +68,10 @@ class FilterCalcMixin(AttrBase):
 class DataFrameMixin(FilterCalcMixin):
 
     @property
-    def DfBaseSorted(self) -> pd.DataFrame:
+    def DfBaseSorted(self) -> StateDF:
+        """
+        Returns the base DataFrame sorted by y_true after applying the effective filter mask.
+        """
         try:
             self._df_sorted
         except AttributeError:
@@ -86,7 +86,10 @@ class DataFrameMixin(FilterCalcMixin):
         self._df_sorted = df
 
     @property
-    def DfFull(self) -> pd.DataFrame:
+    def DfFull(self) -> RichDF:
+        """
+        Returns the enriched DataFrame with centroid calculations.
+        """
         try:
             self._df_enriched
         except AttributeError:
@@ -102,7 +105,7 @@ class DataFrameMixin(FilterCalcMixin):
         df["y_true_centroid"] = df.groupby(["category", "centroid_bin"], observed=False)["y_true"].transform("mean")
         df["y_pred_centroid"] = df.groupby(["category", "centroid_bin"], observed=False)["y_pred"].transform("mean")
 
-        self._df_enriched = df
+        self._df_enriched = RichDF(df)
 
 
 # ==============================================================================================
@@ -113,9 +116,15 @@ class GroupScatter(DataFrameMixin):
     Plot a group scatter with regression line. Helpful for visualizing model performance, especially when there are thousands or millions of points.
 
     Take in y and y_hat, optional categorical column, optional filter, # centroids=25, downsample=False, and regression funcion (OLS, Huber, etc)=OLS
+
+    TODO - add option for 10,25,75,90 percentiles as error bars around centroids
     """
 
     model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression]
+    centroid_scatter_kwargs: dict[t.Any, t.Any] = dict(
+        s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
+    )
+    raw_scatter_kwargs: dict[t.Any, t.Any] = dict(s=10, alpha=0.2, marker="o", edgecolor="none", zorder=2)
 
     def __init__(
         self,
@@ -131,17 +140,15 @@ class GroupScatter(DataFrameMixin):
         y_pred = UTILS_rosetta.coerce_to_ndarray(y_hat, assert_1dim=True, attempt_flatten_1d=True)
 
         if category is None:
-            self.category = pd.Categorical(np.zeros_like(y_true))
+            category = pd.Categorical(np.zeros_like(y_true))
         elif isinstance(category, pd.Categorical):
-            self.category = category
+            category = category
         else:
             arr = UTILS_rosetta.coerce_to_ndarray(category, assert_1dim=True, attempt_flatten_1d=True)
-            self.category = pd.Categorical(arr)
+            category = pd.Categorical(arr)
 
         _filter_mask_input = FilterSampleUtils.process_filter(filter, shape=y_true.shape[0])
-        self._df_input = StateDF(
-            {"y_true": y_true, "y_pred": y_pred, "category": self.category, "filt": _filter_mask_input}
-        )
+        self._df_input = StateDF({"y_true": y_true, "y_pred": y_pred, "category": category, "filt": _filter_mask_input})
 
         self.n_centroids = n_centroids
         self.downsample = downsample if downsample is not None else len(y)
@@ -170,8 +177,11 @@ class GroupScatter(DataFrameMixin):
         Plot the group scatter with regression line.
         """
         shared = ax == "shared" or isinstance(ax, Axes)
+        centroids = self.DfFull.drop_duplicates(subset=["category", "centroid_bin"])
+        categories = centroids.category.cat.categories
+
         if isinstance(ax, str):
-            rows, cols = Plotting_Utils.subplots_smart_dims(len(self.category.categories))
+            rows, cols = Plotting_Utils.subplots_smart_dims(len(categories))
             fig, ax_ = Plotting_Utils.subplots(1, 1) if shared else Plotting_Utils.subplots(rows, cols)
             ax = ax_ if isinstance(ax_, Axes) else ax_.ravel()
         else:
@@ -180,32 +190,27 @@ class GroupScatter(DataFrameMixin):
         centroids = self.DfFull.drop_duplicates(subset=["category", "centroid_bin"])
         model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression] = {}
 
-        for i, cat in enumerate(centroids.category.cat.categories):
-            # TODO ensure color consistency between scatter and line
+        for i, cat in enumerate(categories):
             color = plt.get_cmap("tab10")(i % 10)
-            ax_curr = ax if isinstance(ax, Axes) else ax[i]  # type: ignore[index]
+            ax_curr: Axes = ax if isinstance(ax, Axes) else ax[i]  # type: ignore[index]
             df: RichDF = self.DfFull[self.DfFull.category == cat]
             cent_cat: RichDF = centroids[centroids.category == cat]
 
             if "raw" in scatters:
-                scatter_kwargs: dict[t.Any, t.Any] = dict(s=10, alpha=0.2, marker="o", edgecolor="none", zorder=2)
                 ax_curr.scatter(
                     df["y_true"].to_numpy(),
                     df["y_pred"].to_numpy(),
                     color=color,
                     label=f"{cat} Raw",
-                    **scatter_kwargs,
+                    **self.raw_scatter_kwargs,
                 )
             if "centroids" in scatters:
-                scatter_kwargs: dict[t.Any, t.Any] = dict(
-                    s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
-                )
                 ax_curr.scatter(
                     cent_cat["y_true_centroid"].to_numpy(),
                     cent_cat["y_pred_centroid"].to_numpy(),
                     color=color,
                     label=f"{cat} Centroids",
-                    **scatter_kwargs,
+                    **self.centroid_scatter_kwargs,
                 )
 
             # Fit regression line
@@ -224,5 +229,18 @@ class GroupScatter(DataFrameMixin):
             ax_curr.set_ylabel("Predicted Values")
             ax_curr.legend()
 
+        df = self.DfFull
+        for ax_curr in ax if not isinstance(ax, Axes) else [ax]:
+            lo = min(df["y_true"].min(), df["y_pred"].min())
+            hi = max(df["y_true"].max(), df["y_pred"].max())
+            ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=1)
         self.model_dict = model_dict
+
+        if isinstance(ax, Axes):
+            """
+            If shared:
+
+                ax.set_title("Group Scatter")
+            """
+            ax.set_title(f"Group Scatter. Groups: {', '.join(map(str, categories))}")
         return fig
