@@ -19,11 +19,8 @@ dtt - use torch.tensor.cols_pd?
 
 kretsinger/
     kret_sklearn/
-        ~sklearn_pipelines/ (PMML examples)~
         sklearn.datasets.make_* # for generating datasets
     kret_torch/
-        models/
-            mixin/ (PMML mixins) (use pytorch lightning modules)
         optuna/
             RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
             https://optuna.readthedocs.io/en/stable/tutorial/index.html
