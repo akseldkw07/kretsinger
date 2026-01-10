@@ -1,6 +1,6 @@
 # autoflake: skip_file
 
-from .constants_FINAL import KretNotebookPaths as UKS_PATHS, KretNotebookConstants as UKS_CONSTANTS_FINAL
+from .constants_FINAL import KretConstantsNB as UKS_CONSTANTS, KretDefaultsNB as UKS_DEFAULTS
 
 from .nb_setup import NBSetupUtils
 
@@ -9,4 +9,4 @@ from .nb_setup import NBSetupUtils
 NBSetupUtils.load_dotenv_file()
 NBSetupUtils.source_zsh_env()
 
-DATA_DIR = UKS_PATHS.DATA_DIR
+DATA_DIR = UKS_CONSTANTS.DATA_DIR

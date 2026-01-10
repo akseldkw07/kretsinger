@@ -39,7 +39,7 @@ class MakeClassification_Params_TypedDict(t.TypedDict, total=False):
     scale: float  # = 1.0
     shuffle: bool  # = True
     random_state: int | np.random.RandomState | None  # = None
-    return_X_y: bool  # = True
+    # return_X_y: bool  # = True
 
 
 class MakeMultilabelClassification_Params_TypedDict(t.TypedDict, total=False):

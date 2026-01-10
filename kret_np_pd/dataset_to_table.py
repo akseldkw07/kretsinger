@@ -84,7 +84,7 @@ class PD_Display_Utils:
     @classmethod
     def dtt(
         cls,
-        input: "list[VectorMatrixType] | VectorMatrixType",
+        input: "list[VectorMatrixType] | tuple[VectorMatrixType] | VectorMatrixType",
         n: int = 5,
         how: ViewHow = "sample",
         filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
@@ -97,7 +97,7 @@ class PD_Display_Utils:
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
         """
 
-        input = input if isinstance(input, (list)) else [input]
+        input = input if isinstance(input, (list)) else [*input] if isinstance(input, tuple) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
         filter = FilterSampleUtils.process_filter(filter) if filter is not None else None

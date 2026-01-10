@@ -1,25 +1,39 @@
-import sys
-import typing as t
-from dataclasses import dataclass
-from types import ModuleType
-
-from kret_utils.resettable_dataclass_mixin import ResettableDataclassMixin
-
-
-@dataclass
-class SklearnDefaults(ResettableDataclassMixin):
-    VERB_FEAT_NAMES_OUT: bool = False
-    VERB_PIPELINE: bool = True
-
-
-# ====== Global singleton instance ======
-
-_state_mod: ModuleType = sys.modules.setdefault(
-    "kret_sklearn._global_state",
-    ModuleType("kret_sklearn._global_state"),
+from .typed_cls_sklean import (
+    MakeClassification_Params_TypedDict,
+    MakeMultilabelClassification_Params_TypedDict,
+    MakeRegression_Params_TypedDict,
 )
 
-if not hasattr(_state_mod, "SKLEARN_DEFAULTS"):
-    setattr(_state_mod, "SKLEARN_DEFAULTS", SklearnDefaults())
 
-SKLEARN_DEFAULTS = t.cast(SklearnDefaults, getattr(_state_mod, "SKLEARN_DEFAULTS"))
+class SklearnDefaults:
+    MAKE_REGRESSION_PARAMS_SKLEARN: MakeRegression_Params_TypedDict = {
+        "n_samples": 10_000,
+        "n_features": 12,
+        "n_informative": 8,
+        "n_targets": 1,
+        "noise": 0.2,
+        "shuffle": True,
+        "coef": True,
+        "random_state": 0,
+    }
+
+    MAKE_CLASSIFICATION_PARAMS_SKLEARN: MakeClassification_Params_TypedDict = {
+        "n_samples": 10_000,
+        "n_features": 16,
+        "n_informative": 10,
+        "n_redundant": 3,
+        "n_classes": 5,
+        "shuffle": False,
+        "random_state": 0,
+        # "return_X_y": False,
+    }
+
+    MAKE_MULTILABEL_CLASSIFICATION_PARAMS_SKLEARN: MakeMultilabelClassification_Params_TypedDict = {
+        "n_samples": 10_000,
+        "n_features": 16,
+        "n_classes": 5,
+        "n_labels": 2,
+        "allow_unlabeled": False,
+        "random_state": 0,
+        "return_distributions": True,
+    }
