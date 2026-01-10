@@ -145,7 +145,6 @@ class GroupScatter(DataFrameMixin):
 
     Take in y and y_hat, optional categorical column, optional filter, # centroids=25, downsample=False, and regression funcion (OLS, Huber, etc)=OLS
 
-    TODO - add option for 10,25,75,90 percentiles as error bars around centroids
     TODO - don't recalculate models if already calculated
     """
 
@@ -153,7 +152,7 @@ class GroupScatter(DataFrameMixin):
     centroid_scatter_kwargs: dict[t.Any, t.Any] = dict(
         s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
     )
-    raw_scatter_kwargs: dict[t.Any, t.Any] = dict(s=3, alpha=0.1, marker="o", edgecolor="none", zorder=2)
+    raw_scatter_kwargs: dict[t.Any, t.Any] = dict(s=2, alpha=0.1, marker="o", edgecolor="none", zorder=2)
 
     def __init__(
         self,
