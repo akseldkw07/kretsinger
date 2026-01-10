@@ -104,7 +104,7 @@ class DataFrameMixin(FilterCalcMixin):
 
     def df_enrich(self):
         df = self.DfBaseSorted.copy()
-        centroid_bin = df.y_pred.groupby(df.category, observed=False).transform(
+        centroid_bin = df.y_true.groupby(df.category, observed=False).transform(
             lambda s: pd.qcut(s, q=self.n_centroids, labels=False, duplicates="drop")
         )
         df["centroid_bin"] = pd.Categorical(centroid_bin)
@@ -150,14 +150,14 @@ class GroupScatter(DataFrameMixin):
     """
 
     subplot_args: Subplots_TypedDict = {"sharex": True, "sharey": True}
-    centroid_scatter_kwargs: dict[t.Any, t.Any] = dict(
-        s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
+    centroid_scatter_kwargs: dict[str, t.Any] = dict(
+        s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=1
     )
-    raw_scatter_kwargs: dict[t.Any, t.Any] = dict(s=2, alpha=0.1, marker="o", edgecolor="none", zorder=2)
+    raw_scatter_kwargs: dict[str, t.Any] = dict(s=3, alpha=0.2, marker="o", edgecolor="none", zorder=0)
 
     def __init__(
         self,
-        y: TO_NP_TYPE,
+        y_true: TO_NP_TYPE,
         y_hat: TO_NP_TYPE,
         category: np.ndarray | pd.Series | pd.Categorical | None = None,
         filter: FILT_TYPE | None = None,
@@ -165,11 +165,11 @@ class GroupScatter(DataFrameMixin):
         n_samples: int | None = None,
         regression_func: REG_FUNC = "OLS",
     ):
-        y_true = UTILS_rosetta.coerce_to_ndarray(y, assert_1dim=True, attempt_flatten_1d=True)
+        y_true = UTILS_rosetta.coerce_to_ndarray(y_true, assert_1dim=True, attempt_flatten_1d=True)
         y_pred = UTILS_rosetta.coerce_to_ndarray(y_hat, assert_1dim=True, attempt_flatten_1d=True)
 
         if category is None:
-            category = pd.Categorical(np.zeros_like(y_true))
+            category = pd.Categorical(np.full(y_true.shape, "All"))
         elif isinstance(category, pd.Categorical):
             category = category
         else:
@@ -180,7 +180,7 @@ class GroupScatter(DataFrameMixin):
         self._df_input = StateDF({"y_true": y_true, "y_pred": y_pred, "category": category, "filt": _filter_mask_input})
 
         self.n_centroids = n_centroids
-        self.n_samples = n_samples if n_samples is not None else len(y)
+        self.n_samples = n_samples if n_samples is not None else len(y_true)
         self.regression_func = regression_func
         self.model_dict = {}
 
@@ -196,6 +196,16 @@ class GroupScatter(DataFrameMixin):
             model = HuberRegressor().fit(x2, y)
             return model
         raise ValueError(kind)
+
+    def scatter_args_dynamic(self, which: t.Literal["raw", "centroids"], df: RichDF):
+        """ """
+        if which == "centroids":
+            return self.centroid_scatter_kwargs
+        elif which == "raw":
+            alpha = np.clip((2_000 / len(df)), a_min=0.1, a_max=0.4)
+            size = np.clip((5e3 / len(df)), a_min=2, a_max=20)
+
+            return self.raw_scatter_kwargs | {"alpha": alpha, "s": size}
 
     def plot(
         self,
@@ -234,8 +244,10 @@ class GroupScatter(DataFrameMixin):
             # scatters
 
             if "raw" in scatters:
-                ax_curr.scatter(df["y_true"], df["y_pred"], color=color, label=f"{cat} Raw", **self.raw_scatter_kwargs)
+                args = self.scatter_args_dynamic("raw", df)
+                ax_curr.scatter(df["y_true"], df["y_pred"], color=color, label=f"{cat} Raw", **args)
             if "centroids" in scatters:
+                args = self.scatter_args_dynamic("centroids", df)
                 ax_curr.scatter(
                     cent_cat["y_true_centroid"],
                     cent_cat["y_pred_centroid"],
@@ -253,7 +265,12 @@ class GroupScatter(DataFrameMixin):
             x_line: np.ndarray = np.linspace(x.min(), x.max())
             y_line = model.predict(x_line.reshape(-1, 1))
             ax_curr.plot(
-                x_line, y_line, linewidth=2, color=color, label=f"{self.regression_func} best fit. r2={r2:.3f}"
+                x_line,
+                y_line,
+                linewidth=2,
+                color=color,
+                label=f"{self.regression_func} best fit. r2={r2:.3f}",
+                zorder=10,
             )
 
             model_dict[(cat, self.seed)] = model
@@ -274,7 +291,7 @@ class GroupScatter(DataFrameMixin):
         for ax_curr in ax if not isinstance(ax, Axes) else [ax]:
             lo = min(df["y_true"].min(), df["y_pred"].min())
             hi = max(df["y_true"].max(), df["y_pred"].max())
-            ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=1, label="Identity")
+            ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=2, label="Identity")
         self.model_dict = model_dict
 
         if isinstance(ax, Axes):

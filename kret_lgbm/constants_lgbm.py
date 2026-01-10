@@ -18,14 +18,17 @@ class LGBM_Defaults:
         "objective": "regression",
         "num_leaves": 31,
         "max_depth": 7,
-        "learning_rate": 0.01,
-        "reg_alpha": 1e-3,  # L1 regularization
-        "reg_lambda": 1e-3,  # L2 regularization
+        "learning_rate": 0.1,
+        # "reg_alpha": 1e-3,  # L1 regularization
+        # "reg_lambda": 1e-3,  # L2 regularization
         "n_jobs": -2,  # everything except one core
-        "bagging_fraction": 0.85,
-        "feature_fraction": 0.85,
-        "min_data_in_leaf": 10,
+        # "bagging_fraction": 0.85,
+        # "feature_fraction": 0.85,
+        # "min_data_in_leaf": 10,
     }
     CALLBACK_FIT_LGBM = [early_stopping(stopping_rounds=50), log_evaluation(period=100)]
 
-    LGBM_FIT_DEFAULTS: LGBMRegressor_Fit_TypedDict = {"eval_metric": "rmse", "callbacks": CALLBACK_FIT_LGBM}
+    LGBM_FIT_DEFAULTS: LGBMRegressor_Fit_TypedDict = {
+        "eval_metric": "l2",
+        "callbacks": CALLBACK_FIT_LGBM,
+    }

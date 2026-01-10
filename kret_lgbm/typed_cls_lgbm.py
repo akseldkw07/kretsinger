@@ -38,11 +38,11 @@ class LGBMRegressor_Fit_TypedDict(TypedDict, total=False):
     init_score: _LGBM_InitScoreType | None  # = None
     # eval_set: _LGBM_ScikitValidSet | None  # = None
     # eval_names: list[str] | None  # = None
-    eval_sample_weight: _LGBM_WeightType | None  # = None
-    eval_init_score: _LGBM_InitScoreType | None  # = None
+    eval_sample_weight: list[_LGBM_WeightType] | None  # = None
+    eval_init_score: list[_LGBM_InitScoreType] | None  # = None
     eval_metric: EVAL_METRIC_LITERAL | None  # = None
     feature_name: list[str] | t.Literal["auto"]  # = 'auto'
-    categorical_feature: list[str] | list[int] | t.Literal["auto"]  # = 'auto'
+    # categorical_feature: list[str] | list[int] | t.Literal["auto"]  # = 'auto'
     callbacks: list[Callable] | None  # = None
     init_model: str | Path | Booster | LGBMModel | None  # = None
 
