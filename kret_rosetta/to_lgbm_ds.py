@@ -7,3 +7,4 @@ class ToLGBM:
         """
         TODO Implement
         """
+        raise NotImplementedError("")

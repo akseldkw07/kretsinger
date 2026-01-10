@@ -54,7 +54,8 @@ class PD_Cleanup:
         Modifies the DataFrame in-place. Returns None.
         """
         for col in df.columns:
-            if "id" in col.lower()[2:]:
+            name = col.lower()
+            if name.startswith("id") or name.endswith("id") or "category" in name or "cat" in name:
                 df[col] = df[col].astype("category")
                 continue
 

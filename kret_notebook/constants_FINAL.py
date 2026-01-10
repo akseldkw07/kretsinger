@@ -1,3 +1,4 @@
+from kret_lgbm.constants_lgbm import LGBM_Constants, LGBM_Defaults
 from kret_lightning.constants_lightning import LightningConstants
 from kret_matplotlib.constants_mpl import MPLConstants, MPLDefaults
 from kret_polars.constants_polars import PolarsConstants
@@ -16,7 +17,8 @@ class KretConstantsNB(
     PolarsConstants,
     RosettaConstants,
     MPLConstants,
+    LGBM_Constants,
 ): ...
 
 
-class KretDefaultsNB(MPLDefaults, SklearnDefaults): ...
+class KretDefaultsNB(MPLDefaults, SklearnDefaults, LGBM_Defaults): ...
