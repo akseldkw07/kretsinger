@@ -10,6 +10,10 @@ class DirUtils:
     def dir_enrich(cls, obj: t.Any):
         """
         Print the attributes and methods of an object in a readable format.
+
+        TODO separate into callable, attributes, properties, etc.
+        TODO print instead of return
+
         """
         attrs = dir(obj)
         attrs.sort(key=lambda s: s.lower())

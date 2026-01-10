@@ -3,7 +3,7 @@ import typing as t
 from dataclasses import dataclass
 from types import ModuleType
 
-from kret_utils.dataclass import ResettableDataclassMixin
+from kret_utils.resettable_dataclass_mixin import ResettableDataclassMixin
 
 
 @dataclass

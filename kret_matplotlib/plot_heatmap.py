@@ -4,6 +4,9 @@ import pandas as pd
 import seaborn as sns
 from pandas.io.formats.style import Styler
 
+from kret_type_hints.typed_dict_utils import TypedDictUtils
+
+from .constants_mpl import MPLDefaults as C
 from .matplot_helper import KretMatplotHelper
 from .typed_cls_mpl import (
     Background_gradient_TypedDict,
@@ -11,9 +14,6 @@ from .typed_cls_mpl import (
     Pandas_Styler_TypedDict,
     Sns_Heatmap_TypedDict,
 )
-from kret_type_hints.typed_dict_utils import TypedDictUtils
-
-from .constants_mpl import MPLConstants as C
 
 
 class HeatmapUtils(KretMatplotHelper):

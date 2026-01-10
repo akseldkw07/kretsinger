@@ -9,12 +9,13 @@ from matplotlib.axes import Axes
 from sklearn.linear_model import HuberRegressor, LinearRegression
 from sklearn.metrics import r2_score
 
-from .UTILS_Matplotlib import UTILS_Plotting
 from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_rosetta.to_pd_np import TO_NP_TYPE
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
+
 from .typed_cls_mpl import Subplots_TypedDict
+from .UTILS_Matplotlib import UTILS_Plotting
 
 REG_FUNC = t.Literal["OLS", "Huber"]
 
