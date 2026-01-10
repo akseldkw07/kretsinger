@@ -7,8 +7,9 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
 from sklearn.linear_model import HuberRegressor, LinearRegression
+from sklearn.metrics import r2_score
 
-from kret_matplotlib.UTILS_Matplotlib import Plotting_Utils
+from kret_matplotlib.UTILS_Matplotlib import UTILS_Plotting
 from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_rosetta.to_pd_np import TO_NP_TYPE
@@ -16,9 +17,6 @@ from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 from kret_type_hints.typed_cls import Subplots_TypedDict
 
 REG_FUNC = t.Literal["OLS", "Huber"]
-
-if t.TYPE_CHECKING:
-    pass
 
 
 # ==============================================================================================
@@ -43,26 +41,32 @@ class AttrBase:
     _df_input: StateDF
     _df_sorted: StateDF
     _df_enriched: RichDF
-    downsample: int
+    n_samples: int
     seed: int
 
     n_centroids: int
     regression_func: REG_FUNC
+    model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression]  # (catval, seed) | Model
 
 
 class FilterCalcMixin(AttrBase):
     def calc_filter_mask(self):
 
         filt = NP_PD_Utils.mask_and(self._df_input.filt.to_numpy(), ~self._df_input.isna())
-        if self.downsample is not None:
-            filt = FilterSampleUtils.downsample_bool(filt, k=self.downsample, seed=self.seed)
+        if self.n_samples is not None:
+            filt = FilterSampleUtils.downsample_bool(filt, k=self.n_samples, seed=self.seed)
         return filt
 
-    def reset(self):
+    def reset(self, n_samples: int | None = None, new_filter: np.ndarray | None = None, new_seed: int | None = None):
         for attr in ("_df_enriched", "_df_sorted"):
             if hasattr(self, attr):
                 delattr(self, attr)
-        self.seed += 1
+        if new_filter is not None:
+            FilterSampleUtils.assert_bool_dtype(new_filter)
+            self._df_input.filt = pd.Series(new_filter, dtype=bool)
+
+        self.seed = (self.seed + 1) if new_seed is None else new_seed
+        self.n_samples = n_samples if n_samples is not None else self.n_samples
         self.calc_filter_mask()
 
 
@@ -108,6 +112,29 @@ class DataFrameMixin(FilterCalcMixin):
 
         self._df_enriched = RichDF(df)
 
+    def add_percentiles(self, percentiles: tuple[int, ...], recompute: bool = True):
+        """
+        Add percentile columns to the enriched DataFrame.
+        """
+        assert not any(
+            perc < 0 or perc > 100 for perc in percentiles
+        ), f"Percentiles must be between 0 and 100, passed {percentiles}"
+
+        percentile_invert = {100 - perc for perc in percentiles}
+        perc_symmetric = set(percentiles).union(percentile_invert)
+        df = self.DfFull
+
+        for perc in perc_symmetric:
+            col_name = f"y_pred_perc_{perc}"
+            if not recompute and col_name in df.columns:
+                continue
+            df[col_name] = df.groupby(["category", "centroid_bin"], observed=False)["y_pred"].transform(
+                lambda s: np.percentile(s, perc)
+            )
+
+        self._df_enriched = df
+        return perc_symmetric
+
 
 # ==============================================================================================
 # Main Class
@@ -122,15 +149,11 @@ class GroupScatter(DataFrameMixin):
     TODO - don't recalculate models if already calculated
     """
 
-    model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression]
-    subplot_args: Subplots_TypedDict = {
-        "sharex": True,
-        "sharey": True,
-    }
+    subplot_args: Subplots_TypedDict = {"sharex": True, "sharey": True}
     centroid_scatter_kwargs: dict[t.Any, t.Any] = dict(
         s=60, alpha=0.6, marker="D", edgecolor="black", linewidth=0.5, zorder=3
     )
-    raw_scatter_kwargs: dict[t.Any, t.Any] = dict(s=10, alpha=0.2, marker="o", edgecolor="none", zorder=2)
+    raw_scatter_kwargs: dict[t.Any, t.Any] = dict(s=3, alpha=0.1, marker="o", edgecolor="none", zorder=2)
 
     def __init__(
         self,
@@ -139,7 +162,7 @@ class GroupScatter(DataFrameMixin):
         category: np.ndarray | pd.Series | pd.Categorical | None = None,
         filter: FILT_TYPE | None = None,
         n_centroids: int = 25,
-        downsample: int | None = None,
+        n_samples: int | None = None,
         regression_func: REG_FUNC = "OLS",
     ):
         y_true = UTILS_rosetta.coerce_to_ndarray(y, assert_1dim=True, attempt_flatten_1d=True)
@@ -157,8 +180,9 @@ class GroupScatter(DataFrameMixin):
         self._df_input = StateDF({"y_true": y_true, "y_pred": y_pred, "category": category, "filt": _filter_mask_input})
 
         self.n_centroids = n_centroids
-        self.downsample = downsample if downsample is not None else len(y)
+        self.n_samples = n_samples if n_samples is not None else len(y)
         self.regression_func = regression_func
+        self.model_dict = {}
 
         self.seed = 0
 
@@ -176,8 +200,9 @@ class GroupScatter(DataFrameMixin):
     def plot(
         self,
         ax: Axes | t.Iterable[Axes] | t.Literal["shared", "separate"] = "shared",
-        scatters: tuple[t.Literal["raw", "centroids"], ...] = ("centroids",),
+        scatters: tuple[t.Literal["raw", "centroids"], ...] | t.Literal["raw", "centroids"] = "centroids",
         fit_on: t.Literal["raw", "centroids"] = "raw",
+        percentiles: tuple[int, ...] = (),
     ):
         """
         Plot the group scatter with regression line.
@@ -185,16 +210,20 @@ class GroupScatter(DataFrameMixin):
         shared = ax == "shared" or isinstance(ax, Axes)
         centroids = self.DfFull.drop_duplicates(subset=["category", "centroid_bin"])
         categories = centroids.category.cat.categories
+        if isinstance(scatters, str):
+            scatters = (scatters,)
+
+        perc_symmetric = self.add_percentiles(percentiles)
 
         if isinstance(ax, str):
-            rows, cols = Plotting_Utils.subplots_smart_dims(len(categories)) if not shared else (1, 1)
-            fig, ax_ = Plotting_Utils.subplots(rows, cols, **self.subplot_args)
+            rows, cols = UTILS_Plotting.subplots_smart_dims(len(categories)) if not shared else (1, 1)
+            fig, ax_ = UTILS_Plotting.subplots(rows, cols, **self.subplot_args)
             ax = ax_ if isinstance(ax_, Axes) else ax_.ravel()
         else:
             fig = plt.gcf()
 
         centroids = self.DfFull.drop_duplicates(subset=["category", "centroid_bin"])
-        model_dict: dict[tuple[t.Any, int], HuberRegressor | LinearRegression] = {}
+        model_dict = self.model_dict
 
         for i, cat in enumerate(categories):
             color = plt.get_cmap("tab10")(i % 10)
@@ -202,33 +231,39 @@ class GroupScatter(DataFrameMixin):
             df: RichDF = self.DfFull[self.DfFull.category == cat]
             cent_cat: RichDF = centroids[centroids.category == cat]
 
+            # scatters
+
             if "raw" in scatters:
-                ax_curr.scatter(
-                    df["y_true"].to_numpy(),
-                    df["y_pred"].to_numpy(),
-                    color=color,
-                    label=f"{cat} Raw",
-                    **self.raw_scatter_kwargs,
-                )
+                ax_curr.scatter(df["y_true"], df["y_pred"], color=color, label=f"{cat} Raw", **self.raw_scatter_kwargs)
             if "centroids" in scatters:
                 ax_curr.scatter(
-                    cent_cat["y_true_centroid"].to_numpy(),
-                    cent_cat["y_pred_centroid"].to_numpy(),
+                    cent_cat["y_true_centroid"],
+                    cent_cat["y_pred_centroid"],
                     color=color,
                     label=f"{cat} Centroids",
                     **self.centroid_scatter_kwargs,
                 )
 
-            # Fit regression line
+            # regression line
             x = df["y_true"].to_numpy() if fit_on == "raw" else cent_cat["y_true_centroid"].to_numpy()
             y = df["y_pred"].to_numpy() if fit_on == "raw" else cent_cat["y_pred_centroid"].to_numpy()
+            r2 = r2_score(x, y)
 
             model = self.fit_line(x, y, self.regression_func)
             x_line: np.ndarray = np.linspace(x.min(), x.max())
             y_line = model.predict(x_line.reshape(-1, 1))
-            ax_curr.plot(x_line, y_line, linewidth=2)
+            ax_curr.plot(
+                x_line, y_line, linewidth=2, color=color, label=f"{self.regression_func} best fit. r2={r2:.3f}"
+            )
 
             model_dict[(cat, self.seed)] = model
+
+            # percentiles
+            for perc in perc_symmetric:
+                col = f"y_pred_perc_{perc}"
+                ax_curr.plot(
+                    cent_cat["y_true_centroid"], cent_cat[col], linestyle="--", linewidth=1, color=color, label=col
+                )
 
             ax_curr.set_title(f"Group: {cat}")
             ax_curr.set_xlabel("True Values")
@@ -239,14 +274,12 @@ class GroupScatter(DataFrameMixin):
         for ax_curr in ax if not isinstance(ax, Axes) else [ax]:
             lo = min(df["y_true"].min(), df["y_pred"].min())
             hi = max(df["y_true"].max(), df["y_pred"].max())
-            ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=1)
+            ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=1, label="Identity")
         self.model_dict = model_dict
 
         if isinstance(ax, Axes):
             """
-            If shared:
-
-                ax.set_title("Group Scatter")
+            Default single Axes case
             """
             ax.set_title(f"Group Scatter. Groups: {', '.join(map(str, categories))}")
         return fig

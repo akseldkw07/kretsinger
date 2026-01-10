@@ -9,8 +9,8 @@ import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from .groupscatter import GroupScatter as GroupScatterKRET
-from .UTILS_Matplotlib import Plotting_Utils as UKS_MPL
+from .groupscatter import GroupScatter as GroupScatterUKS
+from .UTILS_Matplotlib import UTILS_Plotting as UKS_MPL
 
 sns.set_theme()
 start_time_end = time.time()
