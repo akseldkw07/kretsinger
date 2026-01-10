@@ -5,7 +5,6 @@ from typing import Any, Literal
 import matplotlib.colors as mcolors
 import numpy as np
 from matplotlib.axes import Axes
-from requests import Session
 
 INTERVAL_LITERAL = t.Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
 PERIOD_LITERAL = t.Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
@@ -79,58 +78,6 @@ class Heatmap_Params_TD(t.TypedDict, total=False):
     vmax: float
     cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.LinearSegmentedColormap
     fmt: str
-
-
-class Download_TypedDictLite(t.TypedDict, total=False):
-    actions: bool
-    threads: bool | int
-    ignore_tz: bool | None
-    group_by: t.Literal["column", "ticker"]
-    auto_adjust: bool | None
-    back_adjust: t.Any
-    repair: bool
-    keepna: bool
-    progress: t.Any
-    interval: INTERVAL_LITERAL
-    period: PERIOD_LITERAL
-    prepost: bool
-    proxy: t.Any
-    rounding: bool
-    timeout: None | float
-    session: None | Session
-    multi_level_index: bool
-
-
-class LBGMRegressor__init___TypedDict(t.TypedDict, total=False):
-    self: t.Any
-    boosting_type: str
-    num_leaves: int
-    max_depth: int
-    learning_rate: float
-    n_estimators: int
-    subsample_for_bin: int
-    objective: (
-        str
-        | t.Callable[[np.ndarray | None, np.ndarray], tuple[np.ndarray, np.ndarray]]
-        | t.Callable[[np.ndarray | None, np.ndarray, np.ndarray | None], tuple[np.ndarray, np.ndarray]]
-        | t.Callable[
-            [np.ndarray | None, np.ndarray, np.ndarray | None, np.ndarray | None], tuple[np.ndarray, np.ndarray]
-        ]
-        | None
-    )
-    class_weight: dict | str | None
-    min_split_gain: float
-    min_child_weight: float
-    min_child_samples: int
-    subsample: float
-    subsample_freq: int
-    colsample_bytree: float
-    reg_alpha: float
-    reg_lambda: float
-    random_state: int | np.random.mtrand.RandomState | np.random._generator.Generator | None
-    n_jobs: int | None | None
-    importance_type: str
-    verbose: int
 
 
 class Pairplot_TypedDict(t.TypedDict, total=False):

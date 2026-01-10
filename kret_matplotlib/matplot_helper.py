@@ -3,9 +3,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.colors import Normalize, TwoSlopeNorm, to_hex
 
-from kret_type_hints.typed_cls import (
-    Heatmap_Params_TD,
-)
+from .typed_cls_mpl import Heatmap_Params_TD
 from kret_utils.float_utils import FloatPrecisionUtils
 
 from .constants_mpl import MPLConstants as C

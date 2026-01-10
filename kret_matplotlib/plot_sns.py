@@ -3,7 +3,7 @@ import typing as t
 import pandas as pd
 import seaborn as sns
 
-from kret_type_hints.typed_cls import Pairplot_TypedDict
+from .typed_cls_mpl import Pairplot_TypedDict
 
 
 class SeabornUtils:

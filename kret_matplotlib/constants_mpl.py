@@ -1,10 +1,6 @@
 import matplotlib.colors as mcolors
 
-from kret_type_hints.typed_cls import (
-    Background_gradient_TypedDict,
-    Format_TypedDict,
-    Sns_Heatmap_TypedDict,
-)
+from .typed_cls_mpl import Background_gradient_TypedDict, Format_TypedDict, Sns_Heatmap_TypedDict
 
 
 class MPLConstants:

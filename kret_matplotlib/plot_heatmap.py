@@ -4,8 +4,8 @@ import pandas as pd
 import seaborn as sns
 from pandas.io.formats.style import Styler
 
-from kret_matplotlib.matplot_helper import KretMatplotHelper
-from kret_type_hints.typed_cls import (
+from .matplot_helper import KretMatplotHelper
+from .typed_cls_mpl import (
     Background_gradient_TypedDict,
     Format_TypedDict,
     Pandas_Styler_TypedDict,

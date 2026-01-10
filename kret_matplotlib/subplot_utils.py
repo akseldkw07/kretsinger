@@ -7,7 +7,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
-from kret_type_hints.typed_cls import Subplots_TypedDict
+from .typed_cls_mpl import Subplots_TypedDict
 
 
 class SubplotHelper:
