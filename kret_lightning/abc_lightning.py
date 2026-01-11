@@ -19,6 +19,7 @@ class ABCLM(ABC, L.LightningModule):
     version: str = "v_000"  # eg. 'v_001'
     hparams: HPDict  # type: ignore
     hparams_initial: HPDict  # type: ignore
+    ignore_hparams: tuple[str, ...] = ()
 
     __call__: t.Callable[..., torch.Tensor]
     _criterion: nn.Module

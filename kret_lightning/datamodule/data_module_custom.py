@@ -1,5 +1,6 @@
 # from __future__ import annotations
 import typing as t
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import lightning as L
@@ -9,6 +10,7 @@ import torch
 from sklearn.utils.validation import check_is_fitted
 from torch.utils.data import DataLoader
 
+from kret_decorators.post_init import post_init
 from kret_lightning.constants_lightning import STAGE_LITERAL
 from kret_lightning.utils_lightning import LightningDataModuleAssert
 from kret_np_pd.np_pd_nb_imports import *
@@ -20,7 +22,7 @@ if t.TYPE_CHECKING:
     from kret_torch_utils.torch_typehints import DataLoader___init___TypedDict
 
 
-class DataModuleABC(L.LightningDataModule):
+class DataModuleABC(ABC, L.LightningDataModule):
     data_dir: Path
     data_split: "SplitTuple"
     ignore_hparams: tuple[str, ...] = ("pipeline_pd",)
@@ -36,6 +38,9 @@ class DataModuleABC(L.LightningDataModule):
     _pipeline_pd_x: PipelinePD | None = None
     _pipeline_pd_y: PipelinePD | None = None
 
+    @abstractmethod
+    def __post_init__(self) -> None: ...
+
 
 class SplitTuple(t.NamedTuple):
     train: float
@@ -45,6 +50,7 @@ class SplitTuple(t.NamedTuple):
     contiguous: bool = True  # If True, splits are contiguous (for time series); if False, fully random
 
 
+@post_init
 class CustomDataModule(DataModuleABC):
 
     def __init__(
@@ -61,9 +67,11 @@ class CustomDataModule(DataModuleABC):
         self._pipeline_pd_x, self._pipeline_pd_y = pipeline_pd if pipeline_pd is not None else (None, None)
         print(f"Saving hparams, ignoring {self.ignore_hparams}")
         self.save_hyperparameters(ignore=self.ignore_hparams)
+
+    def __post_init__(self) -> None:
         LightningDataModuleAssert.initialization_check(self)
 
-    def post_init(self, **dataloader_kwargs: t.Unpack["DataLoader___init___TypedDict"]):
+    def set_dataloader_args(self, **dataloader_kwargs: t.Unpack["DataLoader___init___TypedDict"]):
         self._dataloader_passed_kwargs = dataloader_kwargs
 
     @property
@@ -159,21 +167,19 @@ class PandasInputMixin(DataModuleABC):
         4- fit pipelines on training data only
 
         """
-        df_tuple = self.load_df()
-        self.x_y_raw = df_tuple
-        df_no_nans = self._df_remove_nans(df_tuple)
-        self.x_y_no_nans = df_no_nans
+        self.x_y_raw = self.load_df()
+        self.x_y_no_nans = self._df_remove_nans(self.x_y_raw)
 
-        split_indexes = self._generate_split_indexes(len(df_no_nans.X))
+        split_indexes = self._generate_split_indexes(len(self.x_y_no_nans.X))
         self.SplitIdx = split_indexes
 
-        X_train_raw = df_no_nans.X.iloc[split_indexes.train]
-        y_train_raw = df_no_nans.y.iloc[split_indexes.train]
+        X_train_raw = self.x_y_no_nans.X.iloc[split_indexes.train]
+        y_train_raw = self.x_y_no_nans.y.iloc[split_indexes.train]
 
         self.fit_pipelines_once(X_train_raw, y_train_raw)
         self.x_y_processed = LoadedDfTuple(
-            X=UKS_NP_PD.move_columns(self.PipelineX.transform_df(df_no_nans.X), **self.col_order),
-            y=self.PipelineY.transform_df(df_no_nans.y),
+            X=UKS_NP_PD.move_columns(self.PipelineX.transform_df(self.x_y_no_nans.X), **self.col_order),
+            y=self.PipelineY.transform_df(self.x_y_no_nans.y),
         )
 
         return self.x_y_processed

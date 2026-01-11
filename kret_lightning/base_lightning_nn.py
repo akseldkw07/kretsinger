@@ -43,7 +43,7 @@ class BaseLightningNN(ABCLM):
         """
         super().__init__()
         print(f"Saving hparams, ignoring {self.ignore_hparams}")
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=self.ignore_hparams)
 
     def __post_init__(self) -> None:
         # super().__post_init__()
