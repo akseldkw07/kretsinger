@@ -1,3 +1,4 @@
+import re
 import typing as t
 
 from lightning import Callback
@@ -9,9 +10,16 @@ from .abc_lightning import ABCLM, HPDict
 class CallbackMixin(ABCLM):
     @property
     def model_checkpoint(self):
+
+        ABCLM._ckpt_pattern = re.compile(  # TODO improve this
+            r"best(?:[-_](?:epoch=)?(?P<epoch>\d+))"  # epoch or epoch=NN
+            r"(?:[-_](?:val_loss=)?(?P<loss>-?\d+(?:\.\d+)?))"  # loss or val_loss=NN.NN
+            r"(?:\D|$)"  # tolerate suffix like .ckpt
+        )
+
         return ModelCheckpoint(
             dirpath=self.ckpt_path,
-            filename="best-{epoch:02d}-{val_loss:.2f}",
+            filename="best-{epoch:02d}-{val_loss:.2f}",  # NOTE don't change without update self.ckpt_pattern
             monitor="val_loss",
             mode="min",
             save_top_k=1,

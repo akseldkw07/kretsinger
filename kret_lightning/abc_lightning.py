@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
+from re import Pattern
 from typing import get_type_hints
 
 import lightning as L
@@ -25,6 +26,7 @@ class ABCLM(ABC, L.LightningModule):
     _criterion: nn.Module
     _load_dir_override: str | Path | None = None
     _root_dir = LightningConstants.LIGHTNING_LOG_DIR
+    _ckpt_pattern: Pattern[str]
 
     @abstractmethod
     def __post_init__(self) -> None: ...
