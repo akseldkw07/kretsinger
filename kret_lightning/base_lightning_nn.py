@@ -4,10 +4,11 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
+from kret_decorators.post_init import post_init
 from kret_lightning.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
 from kret_torch_utils.priors import PriorLosses
-from kret_decorators.post_init import post_init
+
 from .abc_lightning import ABCLM, HPDict, SaveLoadLoggingDict
 
 
