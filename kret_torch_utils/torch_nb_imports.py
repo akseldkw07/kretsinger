@@ -13,7 +13,13 @@ from datasets import Dataset, DatasetDict, IterableDataset, IterableDatasetDict,
 from huggingface_hub import hf_hub_download, list_datasets, snapshot_download
 from torch.utils.data import DataLoader, Dataset, StackDataset, TensorDataset, random_split
 from torch.utils.data.dataset import Subset
-from torchmetrics.functional import accuracy, f1_score, precision, r2_score, recall
+from torchmetrics.functional import (
+    accuracy as accuracy_pt,
+    f1_score as f1_score_pt,
+    precision as precision_pt,
+    r2_score as r2_score_pt,
+    recall as recall_pt,
+)
 
 from .tensor_ds_custom import TensorDatasetCustom
 from .UTILS_torch import KRET_TORCH_UTILS as UKS_TORCH_UTILS

@@ -1,36 +1,15 @@
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.colors import Normalize, TwoSlopeNorm, to_hex
 
-from kret_type_hints.typed_cls import (
-    Background_gradient_TypedDict,
-    Format_TypedDict,
-    Heatmap_Params_TD,
-    Sns_Heatmap_TypedDict,
-)
 from kret_utils.float_utils import FloatPrecisionUtils
+
+from .constants_mpl import MPLConstants as C
+from .typed_cls_mpl import Heatmap_Params_TD
 
 
 class KretMatplotHelper:
-
-    rwg = ["red", "white", "green"]
-    wg = ["white", "green"]
-    wr = ["red", "white"]
-
-    red_green_centered = mcolors.LinearSegmentedColormap.from_list("RedWhiteGreen", rwg)
-    white_green = mcolors.LinearSegmentedColormap.from_list("WhiteGreen", wg)
-    white_red = mcolors.LinearSegmentedColormap.from_list("WhiteRed", wr)
-    sns_heatmap_defaults: Sns_Heatmap_TypedDict = {
-        "annot": True,
-        "cmap": red_green_centered,
-        "linewidths": 0.1,
-        "cbar": True,
-    }
-    background_grad_defaults: Background_gradient_TypedDict = {"cmap": red_green_centered, "axis": None}
-    format_defaults: Format_TypedDict = {"formatter": "{:.2f}", "decimal": ".", "thousands": "_", "na_rep": "NaN"}
-
     @classmethod
     def _generate_heatmap_colors(cls, df: pd.DataFrame) -> Heatmap_Params_TD:
         df_min = float(df.min(axis=None))  # type: ignore
@@ -38,11 +17,11 @@ class KretMatplotHelper:
         abs_max = max(abs(df_min), abs(df_max))
 
         if df_min >= 0 and df_max >= 0:
-            return {"vmin": 0, "vmax": abs_max, "cmap": cls.white_green}
+            return {"vmin": 0, "vmax": abs_max, "cmap": C.white_green}
         if df_min <= 0 and df_max <= 0:
-            return {"vmin": -abs_max, "vmax": 0, "cmap": cls.white_red}
+            return {"vmin": -abs_max, "vmax": 0, "cmap": C.white_red}
         if df_min < 0 and df_max >= 0:
-            return {"vmin": -abs_max, "vmax": abs_max, "cmap": cls.red_green_centered}
+            return {"vmin": -abs_max, "vmax": abs_max, "cmap": C.red_green_centered}
         else:
             raise ValueError(f"{df_min=} {df_max=}, {abs_max=}")
 
@@ -97,9 +76,9 @@ class KretMatplotHelper:
 
 try:
     # TODO this seems slow, maybe lazy registration?
-    plt.colormaps.register(cmap=KretMatplotHelper.red_green_centered, name="RedWhiteGreen")
-    plt.colormaps.register(cmap=KretMatplotHelper.white_green, name="WhiteGreen")
-    plt.colormaps.register(cmap=KretMatplotHelper.white_red, name="WhiteRed")
+    plt.colormaps.register(cmap=C.red_green_centered, name="RedWhiteGreen")
+    plt.colormaps.register(cmap=C.white_green, name="WhiteGreen")
+    plt.colormaps.register(cmap=C.white_red, name="WhiteRed")
 except ValueError:
     # Re-registering raises ex
     pass

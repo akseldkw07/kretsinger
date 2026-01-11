@@ -12,8 +12,10 @@ from pandas.io.formats.style import Styler
 from kret_np_pd.filters import FilterSampleUtils
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
+from .typed_cls_np_pd import DTTKwargs, DTTParams, To_html_TypedDict
+
 if t.TYPE_CHECKING:
-    from pandas._typing import ColspaceArgType, FloatFormatType, FormattersType, ListLike
+    pass
 
     from kret_torch_utils.tensor_ds_custom import TensorDatasetCustom
 
@@ -71,43 +73,6 @@ TABLE_FMT = """
         """
 
 
-class DTTParams(t.TypedDict, total=False):
-    seed: int | None
-    max_col_width: int | None
-    num_cols: int | None
-    show_dimensions: bool  # TODO make this nicer, add to the bottom of the dataframe instead of applying it to title
-    align_cols: bool  # NOTE not implemented
-
-
-class To_html_TypedDict(t.TypedDict, total=False):
-    buf: None
-    columns: "ListLike | None"
-    col_space: "ColspaceArgType | None"
-    header: bool
-    index: bool
-    na_rep: str
-    formatters: "FormattersType | None"
-    float_format: "FloatFormatType | None"
-    sparsify: bool | None
-    index_names: bool
-    justify: str | None
-    max_rows: int | None
-    max_cols: int | None
-    decimal: str
-    bold_rows: bool
-    classes: str | list | tuple | None
-    escape: bool
-    notebook: bool
-    border: int | bool | None
-    table_id: str | None
-    render_links: bool
-    encoding: str | None
-
-
-class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
-    pass
-
-
 DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
@@ -119,7 +84,7 @@ class PD_Display_Utils:
     @classmethod
     def dtt(
         cls,
-        input: "list[VectorMatrixType] | VectorMatrixType",
+        input: "list[VectorMatrixType] | tuple[VectorMatrixType] | VectorMatrixType",
         n: int = 5,
         how: ViewHow = "sample",
         filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
@@ -132,7 +97,7 @@ class PD_Display_Utils:
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
         """
 
-        input = input if isinstance(input, (list)) else [input]
+        input = input if isinstance(input, (list)) else [*input] if isinstance(input, tuple) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
         filter = FilterSampleUtils.process_filter(filter) if filter is not None else None

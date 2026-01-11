@@ -4,6 +4,8 @@ import torch
 
 from kret_utils.constants_kret import KretConstants
 
+from .torch_typehints import DataLoader___init___TypedDict
+
 # DEVICE
 DEVICE_LITERAL = t.Literal["cuda", "mps", "xpu", "cpu"]  # extend to include "xla", "xpu" if needed
 
@@ -18,6 +20,16 @@ def pick_device() -> DEVICE_LITERAL:
     if hasattr(torch, "xpu") and torch.xpu.is_available():
         return "xpu"
     return "cpu"
+
+
+class TorchDefaults:
+    DATA_LOADER_INIT: DataLoader___init___TypedDict = {
+        "batch_size": 64,
+        "shuffle": True,
+        "num_workers": 4,
+        "pin_memory": True,
+        "persistent_workers": True,
+    }
 
 
 class TorchConstants:

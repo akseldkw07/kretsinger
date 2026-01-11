@@ -14,7 +14,7 @@ from kret_lightning.utils_lightning import LightningDataModuleAssert
 from kret_np_pd.np_pd_nb_imports import *
 from kret_sklearn.custom_transformers import MissingValueRemover
 from kret_sklearn.pd_pipeline import PipelinePD
-from kret_torch_utils.torch_defaults import TorchDefaults
+from kret_torch_utils.constants_torch import TorchDefaults
 
 if t.TYPE_CHECKING:
     from kret_torch_utils.torch_typehints import DataLoader___init___TypedDict

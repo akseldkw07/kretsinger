@@ -21,3 +21,7 @@ except Exception:
 warnings.filterwarnings(
     "ignore", message=r".*pin_memory.*", category=UserWarning, module=r"torch\.utils\.data\.dataloader"
 )
+
+
+# lgbm warnings
+warnings.filterwarnings("ignore", category=Warning, message=r".*No further splits with positive gai.*")
