@@ -56,3 +56,70 @@ class MakeMultilabelClassification_Params_TypedDict(t.TypedDict, total=False):
     return_indicator: t.Literal["dense", "sparse"]  # = "dense"
     return_distributions: bool  # = False
     random_state: int | np.random.RandomState | None  # = None
+
+
+# =========================
+# sklearn.linear_model estimators
+# =========================
+
+
+class LinearRegression_Params_TypedDict(t.TypedDict, total=False):
+    # sklearn.linear_model.LinearRegression.__init__ kwargs
+
+    fit_intercept: bool  # = True
+    copy_X: bool  # = True
+    n_jobs: int | None  # = None
+    positive: bool  # = False
+
+
+class HuberRegressor_Params_TypedDict(t.TypedDict, total=False):
+    # sklearn.linear_model.HuberRegressor.__init__ kwargs
+
+    epsilon: float  # = 1.35
+    max_iter: int  # = 100
+    alpha: float  # = 0.0001
+    warm_start: bool  # = False
+    fit_intercept: bool  # = True
+    tol: float  # = 1e-5
+
+
+class LogisticRegression_Params_TypedDict(t.TypedDict, total=False):
+    # sklearn.linear_model.LogisticRegression.__init__ kwargs
+
+    penalty: t.Literal["l1", "l2", "elasticnet", None, "deprecated"]  # = "deprecated"
+    C: float  # = 1.0
+    l1_ratio: float  # = 0.0
+    dual: bool  # = False
+    tol: float  # = 1e-4
+    fit_intercept: bool  # = True
+    intercept_scaling: float  # = 1.0
+    class_weight: dict[int | str, float] | t.Literal["balanced"] | None  # = None
+    random_state: int | np.random.RandomState | None  # = None
+    solver: t.Literal[
+        "lbfgs",
+        "liblinear",
+        "newton-cg",
+        "newton-cholesky",
+        "sag",
+        "saga",
+    ]  # = "lbfgs"
+    max_iter: int  # = 100
+    verbose: int  # = 0
+    warm_start: bool  # = False
+    n_jobs: int | None  # = None
+
+
+class ElasticNet_Params_TypedDict(t.TypedDict, total=False):
+    # sklearn.linear_model.ElasticNet.__init__ kwargs
+
+    alpha: float  # = 1.0
+    l1_ratio: float  # = 0.5
+    fit_intercept: bool  # = True
+    precompute: bool | np.ndarray  # = False  (Gram matrix can be array-like)
+    max_iter: int  # = 1000
+    copy_X: bool  # = True
+    tol: float  # = 1e-4
+    warm_start: bool  # = False
+    positive: bool  # = False
+    random_state: int | np.random.RandomState | None  # = None
+    selection: t.Literal["cyclic", "random"]  # = "cyclic"

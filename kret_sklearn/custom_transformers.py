@@ -6,16 +6,22 @@ TODO FunctionTransformer? Seems like a good experimental first step
     > how does featureunion work
 """
 
-from __future__ import annotations
-
 import typing as t
 
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.linear_model import ElasticNet, HuberRegressor, LinearRegression, LogisticRegression
 
 from kret_np_pd.np_bool_utils import AnyAll, IndexLabel
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
+
+from .typed_cls_sklean import (
+    ElasticNet_Params_TypedDict,
+    HuberRegressor_Params_TypedDict,
+    LinearRegression_Params_TypedDict,
+    LogisticRegression_Params_TypedDict,
+)
 
 
 class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
@@ -26,13 +32,13 @@ class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
     feature_names_in_: np.ndarray
     new_columns: list[str]  # NOTE To be set by subclasses during fit/transform
 
-    def fit(self, X: pd.DataFrame, y: t.Any = None) -> PandasColumnOrderBase:
+    def fit(self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None) -> "PandasColumnOrderBase":
         # Store input feature names for later use
         self.feature_names_in_ = np.array(X.columns, dtype=object)
         self._fit(X, y)
         return self
 
-    def _fit(self, X: pd.DataFrame, y: t.Any = None):
+    def _fit(self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None):
         """Actual fitting logic to be implemented by subclasses."""
         raise NotImplementedError("Subclasses must implement the _fit method.")
 
@@ -68,6 +74,59 @@ class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
 DEF_DATETIME_COLS = {"month": 12, "day": 31, "dayofweek": 7, "hour": 24, "minute": 60}
 
 
+REG_FUNC = t.Literal["OLS", "Huber", "ElasticNet", "Logistic"]
+INIT_PARAM_DICT = (
+    LinearRegression_Params_TypedDict
+    | HuberRegressor_Params_TypedDict
+    | ElasticNet_Params_TypedDict
+    | LogisticRegression_Params_TypedDict
+)
+
+
+class RegressionResidualAdder(PandasColumnOrderBase):
+    """
+    Add residuals from a linear regression model as new features to the DataFrame.
+    Maintains the original column order - appends residual columns at the end.
+    """
+
+    model: HuberRegressor | LinearRegression | LogisticRegression | ElasticNet
+
+    def __init__(self, regression: REG_FUNC, args: INIT_PARAM_DICT) -> None:
+        """
+        Args:
+            target_col: Name of the target column in the DataFrame
+            model: A fitted linear regression model with predict method
+        """
+        match regression:
+            case "OLS":
+                self.model = LinearRegression(**args)  # type: ignore[args]
+            case "Huber":
+                self.model = HuberRegressor(**args)  # type: ignore[args]
+            case "ElasticNet":
+                self.model = ElasticNet(**args)  # type: ignore[args]
+            case "Logistic":
+                self.model = LogisticRegression(**args)  # type: ignore[args]
+
+    def _fit(
+        self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None
+    ) -> "RegressionResidualAdder":
+        assert y is not None, "Must pass y to perform fit"
+        self.model.fit(X, y)
+        return self
+
+    def _transform(self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None) -> pd.DataFrame:
+        """
+        Add residuals and predictions to the DataFrame as new columns.
+        """
+
+        predictions = self.model.predict(X)
+        X["y_hat"] = predictions
+
+        self.new_columns = list(X.columns)
+
+        return X
+
+
 class DateTimeSinCosNormalizer(PandasColumnOrderBase):
     """
     Normalize datetime features (e.g., month, day, hour) using sine and cosine transformations.
@@ -83,7 +142,9 @@ class DateTimeSinCosNormalizer(PandasColumnOrderBase):
         """
         self.datetime_cols = datetime_cols if datetime_cols is not None else DEF_DATETIME_COLS
 
-    def _fit(self, X: pd.DataFrame, y: t.Any = None) -> DateTimeSinCosNormalizer:
+    def _fit(
+        self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None
+    ) -> "DateTimeSinCosNormalizer":
 
         return self
 
@@ -122,7 +183,7 @@ class MissingValueRemover(PandasColumnOrderBase):
         self.how = how
         self.subset = subset
 
-    def _fit(self, X: pd.DataFrame, y: t.Any = None) -> MissingValueRemover:
+    def _fit(self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None) -> "MissingValueRemover":
         return self
 
     def _transform(self, X: pd.DataFrame, y: pd.DataFrame | pd.Series | np.ndarray | None = None) -> pd.DataFrame:

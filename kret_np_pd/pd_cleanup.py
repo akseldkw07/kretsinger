@@ -2,6 +2,7 @@
 NOTE most of this code could probably be replaced with sklearn etc, it's for data cleanup
 """
 
+import typing as t
 import warnings
 
 import pandas as pd
@@ -10,9 +11,16 @@ from kret_np_pd.np_dtype_utils import STR_TO_BOOL, NP_Dtype_Utils
 
 
 class PD_Cleanup:
+    @t.overload
+    @classmethod
+    def data_cleanup(cls, df: pd.DataFrame, ret: t.Literal[True]) -> pd.DataFrame: ...
+
+    @t.overload
+    @classmethod
+    def data_cleanup(cls, df: pd.DataFrame, ret: t.Literal[False] = ...) -> None: ...
 
     @classmethod
-    def data_cleanup(cls, df: pd.DataFrame):
+    def data_cleanup(cls, df: pd.DataFrame, ret: bool = False):
         """
         Clean the DataFrame by converting columns to appropriate dtypes.
         Convert boolean candidates to bool
@@ -24,6 +32,8 @@ class PD_Cleanup:
         cls._cols_to_bool(df)
         cls._cols_to_categorical(df)
         cls._cols_to_datetime(df)
+        if ret:
+            return df
 
     @classmethod
     def _cols_to_bool(cls, df: pd.DataFrame):

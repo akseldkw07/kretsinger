@@ -26,6 +26,9 @@ class ABCLM(ABC, L.LightningModule):
     _root_dir = LightningConstants.LIGHTNING_LOG_DIR
 
     @abstractmethod
+    def __post_init__(self) -> None: ...
+
+    @abstractmethod
     def configure_optimizers(self, *args, **kwargs) -> t.Any:
         """
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)

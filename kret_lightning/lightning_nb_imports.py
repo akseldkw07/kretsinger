@@ -13,6 +13,7 @@ from .class_callbacks import CallbackMixin
 from .constants_lightning import LightningConstants as UKS_LIGHTNING_CONSTANTS
 from .custom_callbacks import CallbackConfig
 from .datamodule.data_module_custom import CustomDataModule
+from .metrics import MetricMixin
 from .trainer_defaults import TrainerDynamicDefaults, TrainerStaticDefaults
 from .typed_cls_lightning import (
     CSVLogger___init___TypedDict,

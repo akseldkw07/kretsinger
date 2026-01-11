@@ -140,6 +140,8 @@ class DataFrameMixin(FilterCalcMixin):
 # ==============================================================================================
 # Main Class
 # ==============================================================================================
+
+
 class GroupScatter(DataFrameMixin):
     """
     Plot a group scatter with regression line. Helpful for visualizing model performance, especially when there are thousands or millions of points.

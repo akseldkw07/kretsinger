@@ -5,20 +5,16 @@
             "path": "."
         },
         {
-            "name": "data_kretsinger",
-            "path": "../data_kretsinger"
-        },
-        {
             "name": "projects_kretsinger",
             "path": "../projects_kretsinger"
         },
         {
-            "name": ".claude",
-            "path": "../../.claude"
+            "name": "data_kretsinger",
+            "path": "../data_kretsinger"
         },
         {
-            "name": "PMML-Project",
-            "path": "../Columbia/PMML-Project"
+            "name": ".claude",
+            "path": "../../.claude"
         }
     ],
     "settings": {

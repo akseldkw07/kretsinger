@@ -4,6 +4,7 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
+from kret_decorators.post_init import post_init
 from kret_lightning.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
 from kret_torch_utils.priors import PriorLosses
@@ -11,6 +12,7 @@ from kret_torch_utils.priors import PriorLosses
 from .abc_lightning import ABCLM, HPDict, SaveLoadLoggingDict
 
 
+@post_init
 class BaseLightningNN(ABCLM):
     """
     TODO
@@ -42,6 +44,9 @@ class BaseLightningNN(ABCLM):
         super().__init__()
         print(f"Saving hparams, ignoring {self.ignore_hparams}")
         self.save_hyperparameters()
+
+    def __post_init__(self) -> None:
+        # super().__post_init__()
         LightningModuleAssert.initialization_check(self)
 
     @property
