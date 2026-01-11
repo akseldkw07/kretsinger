@@ -24,7 +24,7 @@ class LGBM_Defaults:
         "n_jobs": -2,  # everything except one core
         "bagging_fraction": 0.85,
         "feature_fraction": 0.85,
-        "min_data_in_leaf": 10,
+        "min_data_in_leaf": 20,
         # "verbose": 0, # this is handled in sitecustomize.py
     }
     EVAL_RECORDS = {}

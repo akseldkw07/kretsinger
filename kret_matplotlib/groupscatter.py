@@ -211,8 +211,9 @@ class GroupScatter(DataFrameMixin):
         self,
         ax: Axes | t.Iterable[Axes] | t.Literal["shared", "separate"] = "shared",
         scatters: tuple[t.Literal["raw", "centroids"], ...] | t.Literal["raw", "centroids"] = "centroids",
-        fit_on: t.Literal["raw", "centroids"] = "raw",
         percentiles: tuple[int, ...] = (),
+        addtl_plots: tuple[t.Literal["identity", "y_0"], ...] | t.Literal["identity", "y_0"] = "identity",
+        fit_on: t.Literal["raw", "centroids"] = "raw",
     ):
         """
         Plot the group scatter with regression line.
@@ -222,6 +223,8 @@ class GroupScatter(DataFrameMixin):
         categories = centroids.category.cat.categories
         if isinstance(scatters, str):
             scatters = (scatters,)
+        if isinstance(addtl_plots, str):
+            addtl_plots = (addtl_plots,)
 
         perc_symmetric = self.add_percentiles(percentiles)
 
@@ -289,9 +292,12 @@ class GroupScatter(DataFrameMixin):
 
         df = self.DfFull
         for ax_curr in ax if not isinstance(ax, Axes) else [ax]:
-            lo = min(df["y_true"].min(), df["y_pred"].min())
-            hi = max(df["y_true"].max(), df["y_pred"].max())
-            ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=2, label="Identity")
+            if "identity" in addtl_plots:
+                lo = min(df["y_true"].min(), df["y_pred"].min())
+                hi = max(df["y_true"].max(), df["y_pred"].max())
+                ax_curr.plot([lo, hi], [lo, hi], linestyle="--", linewidth=1, color="gray", zorder=2, label="Identity")
+            if "y_0" in addtl_plots:
+                ax_curr.axhline(0, linestyle="--", linewidth=1, color="gray", zorder=2, label="y=0")
         self.model_dict = model_dict
 
         if isinstance(ax, Axes):
