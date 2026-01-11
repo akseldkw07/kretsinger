@@ -13,7 +13,6 @@ from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_rosetta.to_pd_np import TO_NP_TYPE
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
-
 from .typed_cls_mpl import Subplots_TypedDict
 from .UTILS_Matplotlib import UTILS_Plotting
 
@@ -140,6 +139,8 @@ class DataFrameMixin(FilterCalcMixin):
 # ==============================================================================================
 # Main Class
 # ==============================================================================================
+
+
 class GroupScatter(DataFrameMixin):
     """
     Plot a group scatter with regression line. Helpful for visualizing model performance, especially when there are thousands or millions of points.
