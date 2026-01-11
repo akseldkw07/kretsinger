@@ -54,6 +54,7 @@ class LGBM_API_Args(t.TypedDict, total=False):
     min_data_in_leaf: int
     bagging_freq: int
     metric: t.Literal["rmse"]
+    verbose: int
 
 
 class LGBMRegressor___init___TypedDict(LGBM_API_Args, total=False):

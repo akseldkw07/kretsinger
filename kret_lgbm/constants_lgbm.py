@@ -1,4 +1,4 @@
-from lightgbm.callback import early_stopping, log_evaluation
+from lightgbm.callback import early_stopping, log_evaluation, record_evaluation
 
 from kret_utils.constants_kret import KretConstants
 
@@ -19,14 +19,16 @@ class LGBM_Defaults:
         "num_leaves": 31,
         "max_depth": 7,
         "learning_rate": 0.1,
-        # "reg_alpha": 1e-3,  # L1 regularization
-        # "reg_lambda": 1e-3,  # L2 regularization
+        "reg_alpha": 1e-3,  # L1 regularization
+        "reg_lambda": 1e-3,  # L2 regularization
         "n_jobs": -2,  # everything except one core
-        # "bagging_fraction": 0.85,
-        # "feature_fraction": 0.85,
-        # "min_data_in_leaf": 10,
+        "bagging_fraction": 0.85,
+        "feature_fraction": 0.85,
+        "min_data_in_leaf": 10,
+        # "verbose": 0, # this is handled in sitecustomize.py
     }
-    CALLBACK_FIT_LGBM = [early_stopping(stopping_rounds=50), log_evaluation(period=100)]
+    EVAL_RECORDS = {}
+    CALLBACK_FIT_LGBM = [early_stopping(stopping_rounds=50), log_evaluation(period=10), record_evaluation(EVAL_RECORDS)]
 
     LGBM_FIT_DEFAULTS: LGBMRegressor_Fit_TypedDict = {
         "eval_metric": "l2",
