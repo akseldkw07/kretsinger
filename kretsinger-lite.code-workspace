@@ -1,19 +1,20 @@
 {
     "folders": [
         {
+            "name": "kretsinger",
             "path": "."
         },
         {
-            "path": "/Users/Akseldkw/.claude"
+            "name": "projects_kretsinger",
+            "path": "../projects_kretsinger"
         },
         {
-            "path": "../Columbia/PMML-Project"
-        },
-        {
+            "name": "data_kretsinger",
             "path": "../data_kretsinger"
         },
         {
-            "path": "../projects_kretsinger"
+            "name": ".claude",
+            "path": "../../.claude"
         }
     ],
     "settings": {
@@ -21,7 +22,7 @@
             "/Users/Akseldkw/.zshrc": false,
             ".zshrc": false
         },
-		"python.defaultInterpreterPath": "/Users/Akseldkw/micromamba/envs/kret_312/bin/python",
-		"chatgpt.openOnStartup": false
+        "python.defaultInterpreterPath": "/Users/Akseldkw/micromamba/envs/kret_312/bin/python",
+        "chatgpt.openOnStartup": false
     }
 }
