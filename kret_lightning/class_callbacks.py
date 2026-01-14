@@ -4,14 +4,16 @@ from lightning import Callback
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
 from .abc_lightning import ABCLM, HPDict
+from .constants_lightning import LightningDefaults
 
 
 class CallbackMixin(ABCLM):
     @property
     def model_checkpoint(self):
+
         return ModelCheckpoint(
             dirpath=self.ckpt_path,
-            filename="best-{epoch:02d}-{val_loss:.2f}",
+            filename=LightningDefaults.CKPT_FILENAME,
             monitor="val_loss",
             mode="min",
             save_top_k=1,

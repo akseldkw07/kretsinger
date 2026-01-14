@@ -5,14 +5,25 @@ from kret_lightning.abc_lightning import ABCLM, HPasKwargs, HPDict
 from kret_utils.filename_utils import FilenameUtils
 
 if t.TYPE_CHECKING:
-    from kret_lightning.data_module_custom import DataModuleABC
+    from .datamodule.data_module_custom import DataModuleABC  # avoid circular import
 
 
-class LightningModuleAssert:
+class SharedAssert:
+    @classmethod
+    def assert_hparams(cls, datamodule: "DataModuleABC | ABCLM"):
+        overlap = set(datamodule.hparams_initial.keys()).intersection(set(datamodule.ignore_hparams))
+        assert not overlap, (
+            f"Datamodule hparams_initial keys {set(datamodule.hparams_initial.keys())} overlap with ignore_hparams "
+            f"{set(datamodule.ignore_hparams)}. Overlap: {overlap}"
+        )
+
+
+class LightningModuleAssert(SharedAssert):
     @classmethod
     def initialization_check(cls, lm: ABCLM) -> None:
         cls.assert_version_fmt(lm.version)
         cls.assert_filename_safe(lm)
+        cls.assert_hparams(lm)
 
     @classmethod
     def assert_version_fmt(cls, version: str) -> None:
@@ -30,19 +41,11 @@ class LightningModuleAssert:
         assert get_type_hints(HPDict) == get_type_hints(HPasKwargs)
 
 
-class LightningDataModuleAssert:
+class LightningDataModuleAssert(SharedAssert):
     @classmethod
     def initialization_check(cls, datamodule: "DataModuleABC"):
         cls.assert_hparams(datamodule)
         cls.assert_split_distribution(datamodule)
-
-    @classmethod
-    def assert_hparams(cls, datamodule: "DataModuleABC"):
-        overlap = set(datamodule.hparams_initial.keys()).intersection(set(datamodule.ignore_hparams))
-        assert not overlap, (
-            f"Datamodule hparams_initial keys {set(datamodule.hparams_initial.keys())} overlap with ignore_hparams "
-            f"{set(datamodule.ignore_hparams)}. Overlap: {overlap}"
-        )
 
     @classmethod
     def assert_split_distribution(cls, datamodule: "DataModuleABC"):

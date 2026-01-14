@@ -3,11 +3,14 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
+from lightning.fabric.utilities.types import _MAP_LOCATION_TYPE
 
 from kret_decorators.post_init import post_init
 from kret_lightning.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
+from kret_torch_utils.constants_torch import TorchConstants
 from kret_torch_utils.priors import PriorLosses
+from kret_utils.filename_utils import FileSearchUtils
 
 from .abc_lightning import ABCLM, HPDict, SaveLoadLoggingDict
 
@@ -43,11 +46,12 @@ class BaseLightningNN(ABCLM):
         """
         super().__init__()
         print(f"Saving hparams, ignoring {self.ignore_hparams}")
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=self.ignore_hparams)
 
     def __post_init__(self) -> None:
         # super().__post_init__()
         LightningModuleAssert.initialization_check(self)
+        self.to(TorchConstants.DEVICE_TORCH_STR)
 
     @property
     def criterion(self):
@@ -93,13 +97,50 @@ class BaseLightningNN(ABCLM):
         return self.root_dir / self.__class__.__name__ / self.version
 
     @classmethod
-    def ckpt_file_name(cls):
-        folder = cls._root_dir / cls.__name__ / cls.version  # / "checkpoints"
-        # use os to search folder for best checkpoint file
-        for file in folder.iterdir():
-            if file.name.startswith("best"):
-                return file
-        raise FileNotFoundError(f"No best checkpoint found in {folder}")
+    def ckpt_file_name(cls) -> Path:
+        """Return the best checkpoint file by parsing val_loss from filenames.
+
+        Expected filename format:
+            best-{epoch:02d}-{val_loss:.2f}.ckpt
+        Example:
+            best-03-0.12.ckpt
+
+        Searches both:
+            <root>/<ModelName>/<version>/
+            <root>/<ModelName>/<version>/checkpoints/
+        """
+
+        base_folder = Path(cls._root_dir) / cls.__name__ / cls.version
+        folders = [base_folder, base_folder / "checkpoints"]
+
+        candidates: list[tuple[float, int, Path]] = []
+        matching_files = FileSearchUtils.find_matching_files(folders, cls._ckpt_pattern)
+
+        for p in matching_files:
+            name = p.name
+            if "best-" not in name and "best_" not in name:
+                continue
+
+            m = cls._ckpt_pattern.search(name)
+            if m is None:
+                continue
+
+            try:
+                loss = float(m.group("loss"))
+                epoch = int(m.group("epoch"))
+            except ValueError:
+                continue
+
+            # store (-epoch) so "lowest" sorts to highest epoch when loss ties
+            candidates.append((loss, -epoch, p))
+
+        if not candidates:
+            raise FileNotFoundError(
+                f"No 'best' checkpoint with parsable loss found in {base_folder} or {base_folder / 'checkpoints'}"
+            )
+
+        candidates.sort(key=lambda x: (x[0], x[1]))
+        return candidates[0][2]
 
     # endregion
 
@@ -168,3 +209,20 @@ class BaseLightningNN(ABCLM):
         self.log_extra_metrics(outputs, y, stage="validate")
 
     # endregion
+
+    @classmethod
+    def load_from_checkpoint_custom(
+        cls,
+        checkpoint_path: str | Path | t.IO | None = None,
+        map_location: _MAP_LOCATION_TYPE = TorchConstants.DEVICE_TORCH_STR,
+        hparams_file: str | Path | None = None,
+        strict: bool | None = True,
+        weights_only: bool | None = False,
+        **kwargs: t.Any,
+    ) -> t.Self:
+        """
+        Thin Wrapper around LightningModule.load_from_checkpoint to set default checkpoint, location, strict, weights_only
+        """
+        if checkpoint_path is None:
+            checkpoint_path = cls.ckpt_file_name()
+        return cls.load_from_checkpoint(checkpoint_path, map_location, hparams_file, strict, weights_only, **kwargs)

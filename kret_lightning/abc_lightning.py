@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
+from re import Pattern
 from typing import get_type_hints
 
 import lightning as L
@@ -10,7 +11,7 @@ import torch
 import torch.nn as nn
 from lightning.fabric.utilities.data import AttributeDict
 
-from kret_lightning.constants_lightning import LightningConstants
+from kret_lightning.constants_lightning import LightningConstants, LightningDefaults
 
 from .constants_lightning import STAGE_LITERAL
 
@@ -19,11 +20,13 @@ class ABCLM(ABC, L.LightningModule):
     version: str = "v_000"  # eg. 'v_001'
     hparams: HPDict  # type: ignore
     hparams_initial: HPDict  # type: ignore
+    ignore_hparams: tuple[str, ...] = ()
 
     __call__: t.Callable[..., torch.Tensor]
     _criterion: nn.Module
     _load_dir_override: str | Path | None = None
     _root_dir = LightningConstants.LIGHTNING_LOG_DIR
+    _ckpt_pattern: Pattern[str] = LightningDefaults.CKPT_BEST_PATTERN
 
     @abstractmethod
     def __post_init__(self) -> None: ...

@@ -1,8 +1,30 @@
 import re
+import typing as t
 import unicodedata
 from pathlib import Path
+from re import Pattern
 
 from pathvalidate import is_valid_filename, sanitize_filename
+
+
+class FileSearchUtils:
+    @classmethod
+    def find_matching_files(cls, directories: Path | str | t.Sequence[Path | str], pattern: str | Pattern[str]):
+        if isinstance(directories, (str, Path)):
+            directories = [Path(directories)]
+
+        matched_files: list[Path] = []
+        pattern = re.compile(pattern) if isinstance(pattern, str) else pattern
+        for directory in directories:
+            directory = Path(directory)
+            if not directory.exists() or not directory.is_dir():
+                continue
+
+            for p in directory.iterdir():
+                if p.is_file() and pattern.search(p.name):
+                    matched_files.append(p)
+
+        return matched_files
 
 
 class FilenameUtils:
