@@ -18,34 +18,16 @@ dtt - use torch.tensor.cols_pd?
 3-
 
 kretsinger/
-    kret_sklearn/
-        sklearn.datasets.make_* # for generating datasets
     kret_torch/
         optuna/
             RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
             https://optuna.readthedocs.io/en/stable/tutorial/index.html
         fastai_integration/
-        pytorch_dataloaders/ (custom datasets and dataloaders)
         nn_weight_viz/
         lightning/
             *tutorials*
         rl_utils/
         graph_neural_networks/
-        data_loader_utils/
-            DataLoader next() typehinted to return two tensors
-        torch_utils/
-            def obs_numpy_to_torch (RL) - timedelta conversion
-    ~kret_numpy_pd/
-        numpy_utils/
-        pandas_utils/
-            pd.options.mode.copy_on_write
-            dtt/
-            pd_heatmap/~
-    kret_notebook/
-        notebook_imports/
-            torch_stuff
-            numpy_stuff
-            generic_stuff
     kret_mpl/
         mpl_utils/
     kret_RL/

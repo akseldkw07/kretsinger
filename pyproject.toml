@@ -31,6 +31,7 @@ skip_glob = ["**/notebook_imports.py"]
 combine_as_imports = true
 
 [tool.pyright]
+reportPrivateImportUsage = "none"
 include = ["/Users/Akseldkw/coding/kretsinger/"]
 
 [tool.pydeps]
