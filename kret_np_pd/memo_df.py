@@ -7,6 +7,10 @@ from kret_rosetta.to_pd_np import To_NP_PD
 
 from .typed_cls_np_pd import DataFrame___init___TypedDict
 
+# Type variables for generic MemoDataFrame and memo_array
+T = t.TypeVar("T", bound="InputTypedDict")
+MDF = t.TypeVar("MDF", bound="MemoDataFrame[t.Any]")
+
 
 class InputTypedDict(t.TypedDict):
     """
@@ -16,11 +20,6 @@ class InputTypedDict(t.TypedDict):
     """
 
     data: pd.DataFrame
-
-
-# Type variables for generic MemoDataFrame and memo_array
-T = t.TypeVar("T", bound="InputTypedDict")
-MDF = t.TypeVar("MDF", bound="MemoDataFrame[t.Any]")
 
 
 class MemoDataFrame(pd.DataFrame, t.Generic[T]):
@@ -102,3 +101,23 @@ class memo_array(t.Generic[MDF]):
     def __delete__(self, instance: MDF) -> None:
         if self.name in instance._memo_dict:
             del instance._memo_dict[self.name]
+
+
+# ===============================================================
+# Test class
+# ===============================================================
+
+
+class MyInputDict(InputTypedDict):
+    aux: pd.DataFrame
+
+
+class MyMemoDataFrame(MemoDataFrame[MyInputDict]):
+    @memo_array
+    def a_sq(self):
+        print("Calculating a_sq")
+        return self.data["a"] ** 2
+
+    @memo_array
+    def compute_sum(self):
+        return self.data.sum(axis=1) + self.inputs["aux"].sum(axis=1)
