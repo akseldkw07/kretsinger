@@ -1,4 +1,5 @@
 import typing as t
+from abc import ABC
 from typing import get_type_hints
 
 from kret_lightning.abc_lightning import ABCLM, HPasKwargs, HPDict
@@ -8,7 +9,7 @@ if t.TYPE_CHECKING:
     from .datamodule.data_module_custom import DataModuleABC  # avoid circular import
 
 
-class SharedAssert:
+class SharedAssert(ABC):
     @classmethod
     def assert_hparams(cls, datamodule: "DataModuleABC | ABCLM"):
         overlap = set(datamodule.hparams_initial.keys()).intersection(set(datamodule.ignore_hparams))
@@ -16,6 +17,10 @@ class SharedAssert:
             f"Datamodule hparams_initial keys {set(datamodule.hparams_initial.keys())} overlap with ignore_hparams "
             f"{set(datamodule.ignore_hparams)}. Overlap: {overlap}"
         )
+
+    @classmethod
+    def initialization_check(cls, *args, **kwargs) -> None:
+        raise NotImplementedError("Subclasses define initialization routine")
 
 
 class LightningModuleAssert(SharedAssert):

@@ -1,12 +1,11 @@
 import typing as t
+from re import Pattern
 
 from lightning import Callback
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
 from .abc_lightning import ABCLM, HPDict
 from .constants_lightning import LightningDefaults
-
-from re import Pattern
 
 
 class CallbackMixin(ABCLM):
