@@ -3,12 +3,13 @@ import collections.abc as c_abc
 import csv
 import typing as t
 
-
 if t.TYPE_CHECKING:
     from pandas._typing import (
+        Axes,
         ColspaceArgType,
         CompressionOptions,
         CSVEngine,
+        Dtype,
         DtypeArg,
         DtypeBackend,
         FloatFormatType,
@@ -17,8 +18,6 @@ if t.TYPE_CHECKING:
         ListLike,
         StorageOptions,
         UsecolsArgType,
-        Axes,
-        Dtype,
     )
 
 

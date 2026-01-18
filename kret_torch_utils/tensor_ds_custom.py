@@ -97,7 +97,7 @@ class TensorDatasetCustom(TensorDataset):
 
         return TensorDatasetCustom(*tensors, columns=columns)
 
-    def to_pandas(self) -> pd.DataFrame:
+    def to_pandas(self, copy: bool = False) -> pd.DataFrame:
         """
         Convert back to pandas DataFrame.
 
@@ -113,7 +113,7 @@ class TensorDatasetCustom(TensorDataset):
         data = []
         for col, tensor in zip(self.columns, self.tensors):
             arr = tensor.numpy(force=True)
-            df_part = pd.DataFrame(arr, columns=col)
+            df_part = pd.DataFrame(arr, columns=col, copy=copy)
             data.append(df_part)
 
         return pd.concat(data, axis=1)

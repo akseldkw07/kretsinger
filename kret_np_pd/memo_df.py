@@ -1,7 +1,10 @@
 import typing as t
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from kret_rosetta.to_pd_np import To_NP_PD
+
 from .typed_cls_np_pd import DataFrame___init___TypedDict
 
 
@@ -16,12 +19,11 @@ class InputTypedDict(t.TypedDict):
 
 
 # Type variables for generic MemoDataFrame and memo_array
-T = t.TypeVar("T", bound=InputTypedDict)
-InputT = t.TypeVar("InputT", bound=InputTypedDict)
+T = t.TypeVar("T", bound="InputTypedDict")
 MDF = t.TypeVar("MDF", bound="MemoDataFrame[t.Any]")
 
 
-class MemoDataFrame(pd.DataFrame, t.Generic[InputT]):
+class MemoDataFrame(pd.DataFrame, t.Generic[T]):
     """
     Subclass of pd.DataFrame that implements memoized np.ndarrays
 
@@ -29,23 +31,19 @@ class MemoDataFrame(pd.DataFrame, t.Generic[InputT]):
     1. registers objects to self._memo_dict
     2. When MemoDataFrame is viewed, the calculated memo arrays (but NOT the uncalculated arrays) are displayed,
     as if they were normal columns
-
-
-    TODO    1) handle clearing out the cache
-            2) validate that displaying looks good
     """
 
     _metadata = ["_inputs", "_memo_dict"]
-    _inputs: InputT
+    _inputs: T
     _memo_dict: dict[str, np.ndarray]
 
-    def __init__(self, input: InputT, /, **kwargs: t.Unpack[DataFrame___init___TypedDict]) -> None:
+    def __init__(self, input: T, /, **kwargs: t.Unpack[DataFrame___init___TypedDict]) -> None:
         object.__setattr__(self, "_inputs", input)
         object.__setattr__(self, "_memo_dict", {})
         super().__init__(input["data"], **kwargs)  # type: ignore[arg-type]
 
     @property
-    def inputs(self) -> InputT:
+    def inputs(self) -> T:
         return self._inputs
 
     @property
@@ -56,14 +54,37 @@ class MemoDataFrame(pd.DataFrame, t.Generic[InputT]):
     def _constructor(self):
         return type(self)
 
+    def clear(self):
+        """Clears the memoization cache."""
+        self._memo_dict.clear()
+
+    def _repr_html_(self):
+        """Custom HTML representation that includes memoized arrays as columns."""
+        display_df = self.to_pandas(copy=False)
+
+        return display_df._repr_html_()  # type: ignore
+
+    def __repr__(self):
+        """Custom string representation that includes memoized arrays as columns."""
+        display_df = self.to_pandas(copy=False)
+
+        return display_df.__repr__()
+
+    def to_pandas(self, copy: bool = True) -> pd.DataFrame:
+        """Return self as a pandas DataFrame."""
+        input = pd.DataFrame(self, copy=copy)
+        memo = pd.DataFrame(self._memo_dict, copy=copy)
+        return pd.concat([input, memo], axis=1)
+
 
 class memo_array(t.Generic[MDF]):
     """Descriptor similar to cached_property, but caches np.ndarrays in MemoDataFrame.
 
     Works with subclasses of MemoDataFrame by being generic over the instance type.
+    Accepts pd.Series or np.ndarray as input type, coerces to np.ndarray.
     """
 
-    def __init__(self, func: t.Callable[[MDF], np.ndarray]) -> None:
+    def __init__(self, func: t.Callable[[MDF], np.ndarray | pd.Series]) -> None:
         self.func = func
         self.name = func.__name__
 
@@ -71,7 +92,10 @@ class memo_array(t.Generic[MDF]):
         if instance is None:
             return self
         if self.name not in instance._memo_dict:
-            instance._memo_dict[self.name] = self.func(instance)
+            result = self.func(instance)
+            instance._memo_dict[self.name] = To_NP_PD.coerce_to_ndarray(
+                result, assert_1dim=True, attempt_flatten_1d=True
+            )
         return instance._memo_dict[self.name]
 
     def __set__(self, instance: MDF, value: np.ndarray) -> None:
