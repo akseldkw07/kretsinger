@@ -71,6 +71,7 @@ class MemoDataFrame(pd.DataFrame, t.Generic[T]):
         """Return self as a pandas DataFrame."""
         input = pd.DataFrame(self, copy=copy)
         memo = pd.DataFrame(self._memo_dict, copy=copy)
+        memo.insert(0, "SEP", "...")
         return pd.concat([input, memo], axis=1, copy=False)  # no need to copy again
 
 
@@ -79,6 +80,7 @@ class memo_array(t.Generic[MDF]):
 
     Works with subclasses of MemoDataFrame by being generic over the instance type.
     Accepts pd.Series or np.ndarray as input type, coerces to np.ndarray.
+    TODO fix type-hinting to always return np.ndarray
     """
 
     def __init__(self, func: t.Callable[[MDF], np.ndarray | pd.Series]) -> None:
@@ -91,6 +93,7 @@ class memo_array(t.Generic[MDF]):
         if instance is None:
             return self  # type: ignore
         if self.name not in instance._memo_dict:
+            print(f"Calculating {self.name}")
             result = self.func(instance)
             instance._memo_dict[self.name] = To_NP_PD.coerce_to_ndarray(
                 result, assert_1dim=True, attempt_flatten_1d=True
