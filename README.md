@@ -31,7 +31,6 @@ kretsinger/
     kret_wandb/
             look at christian's wandb example (NNDL project)
             programatically download run data (util to expand summary)
-    MemoDataset?
     kret_sandbox/
         *new experimental code*
 
