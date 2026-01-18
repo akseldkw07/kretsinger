@@ -1,4 +1,5 @@
 # from pandas._libs import lib
+import collections.abc as c_abc
 import csv
 import typing as t
 
@@ -64,7 +65,7 @@ class Read_csv_TypedDict(t.TypedDict, total=False):
     sep: str | None  # = _NoDefault(...)
     delimiter: str | None  # = None
     header: int | t.Sequence[int] | None | t.Literal["infer"]  # = infer
-    names: t.Sequence[t.Hashable] | None  # = _NoDefault(...)
+    names: c_abc.Sequence[t.Hashable] | None  # = _NoDefault(...)
     index_col: "IndexLabel | t.Literal[False] | None"  # = None
     usecols: "UsecolsArgType"  # = None
     dtype: "DtypeArg | None"  # = None

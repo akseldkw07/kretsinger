@@ -15,6 +15,9 @@
         {
             "name": ".claude",
             "path": "../../.claude"
+        },
+        {
+            "path": "../Columbia/RL-Project"
         }
     ],
     "settings": {
