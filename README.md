@@ -28,8 +28,6 @@ kretsinger/
             *tutorials*
         rl_utils/
         graph_neural_networks/
-    kret_mpl/
-        mpl_utils/
     kret_RL/
         gymnasium/
         Stable-Baselines/
@@ -38,7 +36,7 @@ kretsinger/
         tqdm patterns for notebooks and scripts. tqdm.auto, tqdm.notebook, etc.
         how to safely keyboard interrupt tqdm loops/ (GracefulInterrupt)
     kret_wandb/
-            look at christian's wandb example
+            look at christian's wandb example (NNDL project)
             programatically download run data (util to expand summary)
     kret_sandbox/
         *new experimental code*

@@ -6,8 +6,12 @@ from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from .abc_lightning import ABCLM, HPDict
 from .constants_lightning import LightningDefaults
 
+from re import Pattern
+
 
 class CallbackMixin(ABCLM):
+    _ckpt_pattern: Pattern[str] = LightningDefaults.CKPT_BEST_PATTERN
+
     @property
     def model_checkpoint(self):
 
