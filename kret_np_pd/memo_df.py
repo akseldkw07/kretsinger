@@ -14,7 +14,8 @@ MDF = t.TypeVar("MDF", bound="MemoDataFrame[t.Any]")
 
 class InputTypedDict(t.TypedDict):
     """
-    Base class for input param. General patte
+    Base class for input param. General pattern is for the "primary" dataset to get stored in `"data"`,
+    and supplmenetal datasets to live in separate keys
 
     NOTE `data` is required - will get passed onto `pd.DataFrame.__init__`
     """
