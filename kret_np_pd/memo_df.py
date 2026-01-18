@@ -10,7 +10,7 @@ from .typed_cls_np_pd import DataFrame___init___TypedDict
 
 class InputTypedDict(t.TypedDict):
     """
-    Base class for input param.
+    Base class for input param. General patte
 
     NOTE `data` is required - will get passed onto `pd.DataFrame.__init__`
     """
@@ -61,20 +61,18 @@ class MemoDataFrame(pd.DataFrame, t.Generic[T]):
     def _repr_html_(self):
         """Custom HTML representation that includes memoized arrays as columns."""
         display_df = self.to_pandas(copy=False)
-
-        return display_df._repr_html_()  # type: ignore
+        return t.cast(t.Callable, display_df._repr_html_)()
 
     def __repr__(self):
         """Custom string representation that includes memoized arrays as columns."""
         display_df = self.to_pandas(copy=False)
-
         return display_df.__repr__()
 
     def to_pandas(self, copy: bool = True) -> pd.DataFrame:
         """Return self as a pandas DataFrame."""
         input = pd.DataFrame(self, copy=copy)
         memo = pd.DataFrame(self._memo_dict, copy=copy)
-        return pd.concat([input, memo], axis=1)
+        return pd.concat([input, memo], axis=1, copy=False)  # no need to copy again
 
 
 class memo_array(t.Generic[MDF]):
@@ -85,21 +83,21 @@ class memo_array(t.Generic[MDF]):
     """
 
     def __init__(self, func: t.Callable[[MDF], np.ndarray | pd.Series]) -> None:
-        self.func = func
+        self.func: t.Callable[[MDF], np.ndarray | pd.Series] = func
         self.name = func.__name__
+        # Copy over function metadata for better type checking
+        self.__doc__ = func.__doc__
 
-    def __get__(self, instance: MDF | None, owner: type[MDF]) -> "np.ndarray | memo_array[MDF]":
+    def __get__(self, instance: MDF | None, owner: type[MDF]) -> np.ndarray:
         if instance is None:
-            return self
+            return self  # type: ignore
         if self.name not in instance._memo_dict:
             result = self.func(instance)
             instance._memo_dict[self.name] = To_NP_PD.coerce_to_ndarray(
                 result, assert_1dim=True, attempt_flatten_1d=True
             )
-        return instance._memo_dict[self.name]
-
-    def __set__(self, instance: MDF, value: np.ndarray) -> None:
-        instance._memo_dict[self.name] = value
+        ret = instance._memo_dict[self.name]
+        return ret
 
     def __delete__(self, instance: MDF) -> None:
         if self.name in instance._memo_dict:
