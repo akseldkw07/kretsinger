@@ -22,22 +22,16 @@ kretsinger/
         optuna/
             RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
             https://optuna.readthedocs.io/en/stable/tutorial/index.html
-        fastai_integration/
-        nn_weight_viz/
-        lightning/
-            *tutorials*
         rl_utils/
         graph_neural_networks/
     kret_RL/
         gymnasium/
         Stable-Baselines/
         CleanRL/
-    kret_tqdm/
-        tqdm patterns for notebooks and scripts. tqdm.auto, tqdm.notebook, etc.
-        how to safely keyboard interrupt tqdm loops/ (GracefulInterrupt)
     kret_wandb/
             look at christian's wandb example (NNDL project)
             programatically download run data (util to expand summary)
+    MemoDataset?
     kret_sandbox/
         *new experimental code*
 

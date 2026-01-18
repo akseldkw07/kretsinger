@@ -3,6 +3,7 @@ import collections.abc as c_abc
 import csv
 import typing as t
 
+
 if t.TYPE_CHECKING:
     from pandas._typing import (
         ColspaceArgType,
@@ -16,6 +17,8 @@ if t.TYPE_CHECKING:
         ListLike,
         StorageOptions,
         UsecolsArgType,
+        Axes,
+        Dtype,
     )
 
 
@@ -54,6 +57,14 @@ class To_html_TypedDict(t.TypedDict, total=False):
 
 class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
     pass
+
+
+class DataFrame___init___TypedDict(t.TypedDict, total=False):
+    # data: dict[str, pd.Series | np.ndarray | list] | pd.Series | np.ndarray | None
+    index: "Axes | None"  # = None
+    columns: "Axes | None"  # = None
+    dtype: "Dtype | None"  # = None
+    copy: bool | None  # = None
 
 
 class Read_csv_TypedDict(t.TypedDict, total=False):
