@@ -97,6 +97,8 @@ class CondaUtils:
         "kaggle",
         "kagglehub",
         "autograd",
+        "torchview",
+        "netron",  # visualize neural network architectures
         # 'thop', # for calculating FLOPs and params in pytorch models - PIP ONLY
     ]
     LLM_QUERY = [

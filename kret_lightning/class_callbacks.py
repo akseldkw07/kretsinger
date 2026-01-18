@@ -1,4 +1,5 @@
 import typing as t
+from re import Pattern
 
 from lightning import Callback
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
@@ -8,6 +9,8 @@ from .constants_lightning import LightningDefaults
 
 
 class CallbackMixin(ABCLM):
+    _ckpt_pattern: Pattern[str] = LightningDefaults.CKPT_BEST_PATTERN
+
     @property
     def model_checkpoint(self):
 

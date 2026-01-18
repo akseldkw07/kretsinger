@@ -27,11 +27,20 @@ class PandasConvertibleWithColumns(Protocol):
         """Get column names."""
         ...
 
-    def to_pandas(self) -> pd.DataFrame:
+    def to_pandas(self, copy: bool) -> pd.DataFrame:
         """Convert to pandas DataFrame."""
         ...
 
     @staticmethod
     def from_pd(df: pd.DataFrame, **kwargs) -> "PandasConvertibleWithColumns":
         """Create from pandas DataFrame."""
+        ...
+
+
+@runtime_checkable
+class ImplementsToPandas(Protocol):
+    """Protocol for objects that can convert to pandas DataFrame."""
+
+    def to_pandas(self, copy: bool) -> pd.DataFrame:
+        """Convert to pandas DataFrame."""
         ...

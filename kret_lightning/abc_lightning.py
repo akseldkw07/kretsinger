@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from lightning.fabric.utilities.data import AttributeDict
 
-from kret_lightning.constants_lightning import LightningConstants, LightningDefaults
+from kret_lightning.constants_lightning import LightningConstants
 
 from .constants_lightning import STAGE_LITERAL
 
@@ -26,7 +26,7 @@ class ABCLM(ABC, L.LightningModule):
     _criterion: nn.Module
     _load_dir_override: str | Path | None = None
     _root_dir = LightningConstants.LIGHTNING_LOG_DIR
-    _ckpt_pattern: Pattern[str] = LightningDefaults.CKPT_BEST_PATTERN
+    _ckpt_pattern: Pattern[str]
 
     @abstractmethod
     def __post_init__(self) -> None: ...

@@ -4,7 +4,7 @@ import torch
 
 from kret_utils.constants_kret import KretConstants
 
-from .torch_typehints import DataLoader___init___TypedDict
+from .typed_cls_torch import DataLoader___init___TypedDict
 
 # DEVICE
 DEVICE_LITERAL = t.Literal["cuda", "mps", "xpu", "cpu"]  # extend to include "xla", "xpu" if needed

@@ -8,7 +8,7 @@ import torch
 from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 from torch.utils.data import TensorDataset
 
-from .conversion_protocols import PandasConvertibleWithColumns
+from .conversion_protocols import ImplementsToPandas, PandasConvertibleWithColumns
 
 TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | pd.Categorical | torch.Tensor | list | tuple
 TO_PD_TYPE = pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor | TensorDataset
@@ -17,9 +17,9 @@ TO_PD_TYPE = pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | tor
 class To_NP_PD:
     @classmethod
     def coerce_to_df(cls, obj: TO_PD_TYPE, cols: list[str] | None = None):
-        if isinstance(obj, PandasConvertibleWithColumns):
+        if isinstance(obj, (PandasConvertibleWithColumns, ImplementsToPandas)):
             # This covers TensorDatasetCustom and any other custom types implementing the protocol
-            ret = obj.to_pandas()
+            ret = obj.to_pandas(copy=False)
         elif isinstance(obj, pd.DataFrame):
             ret = obj
         elif isinstance(obj, pd.Series):
