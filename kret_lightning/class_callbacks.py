@@ -4,8 +4,8 @@ from re import Pattern
 from lightning import Callback
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
-from .abc_lightning import ABCLM, HPDict
 from ._core.constants_lightning import LightningDefaults
+from .abc_lightning import ABCLM, HPDict
 
 
 class CallbackMixin(ABCLM):

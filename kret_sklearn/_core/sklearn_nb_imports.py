@@ -23,7 +23,6 @@ from sklearn.preprocessing import (
     StandardScaler,
 )
 
-from .constants_sklearn import SklearnDefaults
 from ..custom_transformers import (
     DateTimeSinCosNormalizer,
     MissingValueRemover,
@@ -32,6 +31,7 @@ from ..custom_transformers import (
 )
 from ..pd_pipeline import PipelinePD
 from ..UTILS_sklearn import UTILS_sklearn
+from .constants_sklearn import SklearnDefaults
 
 start_time_end = time.time()
 print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")
