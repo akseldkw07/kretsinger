@@ -1,6 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 from typing import Literal, TypedDict
+from typing_extensions import deprecated
 
 from lightning import Callback, LightningDataModule
 from lightning.pytorch.callbacks import ModelCheckpoint
@@ -9,6 +10,7 @@ from kret_lightning.abc_lightning import ABCLM
 
 
 class CallbackConfig:
+    @deprecated("Use `CallbackMixin.model_checkpoint` instead.", category=None)
     @classmethod
     def trainer_dynamic_defaults(cls, nn: ABCLM, datamodule: LightningDataModule):
 

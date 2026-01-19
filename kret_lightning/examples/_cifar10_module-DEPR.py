@@ -6,6 +6,19 @@ import torch.nn.functional as F
 
 from kret_lightning import *
 
+# Presets for CIFAR-10 (3 layer groups, suitable for 32x32 images)
+# Each list defines [blocks_in_layer1, blocks_in_layer2, blocks_in_layer3]
+# Total conv layers in residual portion = sum(blocks) * 2
+RESNET_PRESETS: dict[str, list[int]] = {
+    "tiny": [1, 1, 1],  # 6 conv layers, ~0.3M params
+    "small": [2, 2, 2],  # 12 conv layers, ~0.6M params
+    "medium": [3, 3, 3],  # 18 conv layers, ~0.9M params
+    "large": [3, 4, 6],  # 26 conv layers, ~1.3M params
+    "xlarge": [3, 6, 9],  # 36 conv layers, ~1.8M params
+}
+
+PresetLiteral = t.Literal["tiny", "small", "medium", "large", "xlarge"]
+
 
 class ResidualBlock(nn.Module):
     """
@@ -35,11 +48,16 @@ class ResidualBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    """ResNet-like architecture for CIFAR-10"""
+    """ResNet-like architecture for CIFAR-10 with preset configurations."""
 
-    def __init__(self, num_blocks: int = 2, num_filters: int = 64, dropout_rate: float = 0.3):
+    def __init__(self, preset: PresetLiteral = "small", num_filters: int = 64, dropout_rate: float = 0.3):
         super().__init__()
-        self.num_blocks = num_blocks
+        if preset not in RESNET_PRESETS:
+            raise ValueError(f"Unknown preset {preset!r}. Choose from: {list(RESNET_PRESETS.keys())}")
+
+        blocks_per_layer = RESNET_PRESETS[preset]
+        self.preset = preset
+        self.blocks_per_layer = blocks_per_layer
         self.num_filters = num_filters
         self.dropout_rate = dropout_rate
 
@@ -48,14 +66,20 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(num_filters)
         self.dropout = nn.Dropout(dropout_rate)
 
-        # 3 layer groups: 64 -> 128 -> 256 channels
-        self.layer1 = self._make_layer(num_filters, num_filters, num_blocks, stride=1)
-        self.layer2 = self._make_layer(num_filters, num_filters * 2, num_blocks, stride=2)
-        self.layer3 = self._make_layer(num_filters * 2, num_filters * 4, num_blocks, stride=2)
+        # Build residual layer groups based on preset
+        # First layer: no downsampling (stride=1), subsequent layers: downsample (stride=2)
+        # Channels double at each layer after the first
+        self.res_layers = nn.ModuleList()
+        in_ch = num_filters
+        for i, num_blocks in enumerate(blocks_per_layer):
+            out_ch = num_filters * (2**i)
+            stride = 1 if i == 0 else 2
+            self.res_layers.append(self._make_layer(in_ch, out_ch, num_blocks, stride))
+            in_ch = out_ch
 
-        # Classification head
+        # Classification head (in_ch is the final output channels)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(num_filters * 4, 10)
+        self.fc = nn.Linear(in_ch, 10)
 
     def _make_layer(self, in_channels: int, out_channels: int, num_blocks: int, stride: int):
         layers = []
@@ -67,9 +91,8 @@ class ResNet(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.dropout(out)
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
+        for layer in self.res_layers:
+            out = layer(out)
         out = self.avg_pool(out)
         out = out.view(out.size(0), -1)
         out = self.fc(out)
@@ -83,7 +106,7 @@ class CIFAR10ResNet(MetricMixin, BaseLightningNN, CallbackMixin):
 
     def __init__(
         self,
-        num_blocks: int = 2,
+        preset: PresetLiteral = "small",
         num_filters: int = 64,
         dropout_rate: float = 0.3,
         num_classes: int = 10,
@@ -95,7 +118,7 @@ class CIFAR10ResNet(MetricMixin, BaseLightningNN, CallbackMixin):
         self.save_hyperparameters(ignore=self.ignore_hparams)
         self.setup_metrics(task="multiclass", num_classes=num_classes)
 
-        self.model = ResNet(num_blocks=num_blocks, num_filters=num_filters, dropout_rate=dropout_rate)
+        self.model = ResNet(preset=preset, num_filters=num_filters, dropout_rate=dropout_rate)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
