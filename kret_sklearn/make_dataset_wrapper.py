@@ -6,8 +6,8 @@ import sklearn.datasets
 
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
-from .constants_sklearn import SklearnDefaults
-from .typed_cls_sklean import (
+from ._core.constants_sklearn import SklearnDefaults
+from ._core.typed_cls_sklean import (
     MakeClassification_Params_TypedDict,
     MakeMultilabelClassification_Params_TypedDict,
     MakeRegression_Params_TypedDict,

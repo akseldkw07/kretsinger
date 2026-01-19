@@ -6,9 +6,9 @@ import torch.nn as nn
 from lightning.fabric.utilities.types import _MAP_LOCATION_TYPE
 
 from kret_decorators.post_init import post_init
-from kret_lightning.constants_lightning import LightningConstants  # type: ignore
+from kret_lightning._core.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
-from kret_torch_utils.constants_torch import TorchConstants
+from kret_torch_utils._core.constants_torch import TorchConstants
 from kret_torch_utils.priors import PriorLosses
 from kret_utils.filename_utils import FileSearchUtils
 

@@ -4,7 +4,7 @@ from datetime import datetime
 
 import wandb
 
-from .constants_wandb import WandbConstants
+from ._core.constants_wandb import WandbConstants
 
 
 class WandB_Utils:

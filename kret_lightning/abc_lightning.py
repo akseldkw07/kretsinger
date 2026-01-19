@@ -11,9 +11,7 @@ import torch
 import torch.nn as nn
 from lightning.fabric.utilities.data import AttributeDict
 
-from kret_lightning.constants_lightning import LightningConstants
-
-from .constants_lightning import STAGE_LITERAL
+from ._core.constants_lightning import STAGE_LITERAL, LightningConstants
 
 
 class ABCLM(ABC, L.LightningModule):

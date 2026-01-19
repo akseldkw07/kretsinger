@@ -3,7 +3,7 @@ import math
 import torch
 import torch.nn as nn
 
-from .constants_torch import DEVICE_LITERAL
+from ._core.constants_torch import DEVICE_LITERAL
 
 
 class ResetNNWeights:

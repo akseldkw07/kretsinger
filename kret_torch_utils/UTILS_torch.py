@@ -1,4 +1,4 @@
-from .constants_torch import TorchDefaults
+from ._core.constants_torch import TorchDefaults
 from .load_utils import TorchLoadUtils
 from .priors import PriorLosses
 from .tensor_manipulate import TensorManipulate

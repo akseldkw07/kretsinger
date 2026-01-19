@@ -17,7 +17,7 @@ if pythonpath:
     for path in pythonpath.split(":"):
         sys.path.insert(0, path)
 
-from kret_utils.constants_kret import KretConstants
+from kret_utils._core.constants_kret import KretConstants
 
 """
 Analyze import dependencies in a Python repo.
