@@ -15,18 +15,19 @@ class CIFAR10DataModule(L.LightningDataModule):
         self.num_workers = num_workers
 
         # CIFAR-10 normalization constants
+        normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
         self.train_transform = transforms.Compose(
             [
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
+                transforms.ColorJitter(brightness=0.2, contrast=0.2),
+                transforms.RandomRotation(15),
                 transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                normalize,
             ]
         )
 
-        self.test_transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]
-        )
+        self.test_transform = transforms.Compose([transforms.ToTensor(), normalize])
 
         self.data_loader_args = {
             "batch_size": self.batch_size,

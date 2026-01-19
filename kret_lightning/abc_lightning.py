@@ -8,8 +8,8 @@ from typing import get_type_hints
 
 import lightning as L
 import torch
-import torch.nn as nn
 from lightning.fabric.utilities.data import AttributeDict
+from torch.nn.modules.loss import _Loss
 
 from ._core.constants_lightning import STAGE_LITERAL, LightningConstants
 
@@ -21,7 +21,7 @@ class ABCLM(ABC, L.LightningModule):
     ignore_hparams: tuple[str, ...] = ()
 
     __call__: t.Callable[..., torch.Tensor]
-    _criterion: nn.Module
+    _criterion: _Loss
     _load_dir_override: str | Path | None = None
     _root_dir = LightningConstants.LIGHTNING_LOG_DIR
     _ckpt_pattern: Pattern[str]

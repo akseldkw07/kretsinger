@@ -2,7 +2,6 @@ import typing as t
 from pathlib import Path
 
 import torch
-import torch.nn as nn
 from lightning.fabric.utilities.types import _MAP_LOCATION_TYPE
 
 from kret_decorators.post_init import post_init
@@ -27,7 +26,6 @@ class BaseLightningNN(ABCLM):
     4- add callbacks to assert correct behavior (tensor size? early stopping?)
     """
 
-    _criterion: nn.Module
     ignore_hparams: tuple[str, ...] = ()
 
     # region Init
