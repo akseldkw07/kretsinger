@@ -3,6 +3,7 @@ from pathlib import Path
 
 import torch
 from lightning.fabric.utilities.types import _MAP_LOCATION_TYPE
+from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 
 from kret_decorators.post_init import post_init
 from kret_lightning._core.constants_lightning import LightningConstants  # type: ignore
@@ -62,10 +63,18 @@ class BaseLightningNN(ABCLM):
         """
         hp = t.cast(HPDict, self.hparams_initial)
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=hp.lr)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hp.stepsize, gamma=hp.gamma)
+        # NOTE apparently Andrej Karpathy recommends eps=1e-10 for stability
+        optimizer = torch.optim.Adam(self.parameters(), lr=hp.lr, eps=1e-10)
 
-        return {"optimizer": optimizer, "lr_scheduler": scheduler}
+        # Learning rate scheduler: 10% warmup, then cosine annealing
+        total_steps = self.trainer.estimated_stepping_batches
+        warmup_steps = int(total_steps * 0.1)  # 10% warmup
+
+        warmup_sch = LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
+        cosine_sch = CosineAnnealingLR(optimizer, T_max=int(total_steps - warmup_steps), eta_min=1e-6)
+        scheduler = SequentialLR(optimizer, schedulers=[warmup_sch, cosine_sch], milestones=[warmup_steps])
+
+        return {"optimizer": optimizer, "lr_scheduler": {"scheduler": scheduler, "interval": "step", "frequency": 1}}
 
     # endregion
 
