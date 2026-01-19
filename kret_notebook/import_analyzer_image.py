@@ -21,7 +21,7 @@ import ast
 from collections import defaultdict
 from pathlib import Path
 
-from kret_utils.constants_kret import KretConstants
+from kret_utils._core.constants_kret import KretConstants
 
 try:
     import matplotlib.pyplot as plt

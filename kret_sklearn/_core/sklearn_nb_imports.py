@@ -24,14 +24,14 @@ from sklearn.preprocessing import (
 )
 
 from .constants_sklearn import SklearnDefaults
-from .custom_transformers import (
+from ..custom_transformers import (
     DateTimeSinCosNormalizer,
     MissingValueRemover,
     PandasColumnOrderBase,
     RegressionResidualAdder,
 )
-from .pd_pipeline import PipelinePD
-from .UTILS_sklearn import UTILS_sklearn
+from ..pd_pipeline import PipelinePD
+from ..UTILS_sklearn import UTILS_sklearn
 
 start_time_end = time.time()
 print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")

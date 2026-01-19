@@ -1,6 +1,6 @@
 from lightgbm.callback import early_stopping, log_evaluation, record_evaluation
 
-from kret_utils.constants_kret import KretConstants
+from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_lgbm import (
     LGBMRegressor___init___TypedDict,

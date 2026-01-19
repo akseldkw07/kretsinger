@@ -5,7 +5,7 @@ import pandas as pd
 
 from kret_rosetta.to_pd_np import To_NP_PD
 
-from .typed_cls_np_pd import DataFrame___init___TypedDict
+from ._core.typed_cls_np_pd import DataFrame___init___TypedDict
 
 # Type variables for generic MemoDataFrame and memo_array
 T = t.TypeVar("T", bound="InputTypedDict")

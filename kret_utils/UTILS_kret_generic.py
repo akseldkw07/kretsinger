@@ -1,4 +1,4 @@
-from kret_utils.constants_kret import KretConstants
+from kret_utils._core.constants_kret import KretConstants
 from kret_utils.filename_utils import FilenameUtils, FileSearchUtils
 from kret_utils.float_utils import FloatPrecisionUtils
 from kret_utils.obj_dir_util import DirUtils

@@ -21,8 +21,8 @@ from torchmetrics.functional import (
     recall as recall_pt,
 )
 
-from .tensor_ds_custom import TensorDatasetCustom
-from .UTILS_torch import KRET_TORCH_UTILS as UKS_TORCH_UTILS
+from ..tensor_ds_custom import TensorDatasetCustom
+from ..UTILS_torch import KRET_TORCH_UTILS as UKS_TORCH_UTILS
 
 # from torchvision import datasets, transforms
 

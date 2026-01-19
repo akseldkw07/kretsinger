@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
 
-from .typed_cls_mpl import Subplots_TypedDict
+from ._core.typed_cls_mpl import Subplots_TypedDict
 
 
 class SubplotHelper:

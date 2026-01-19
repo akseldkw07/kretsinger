@@ -5,8 +5,8 @@ from matplotlib.colors import Normalize, TwoSlopeNorm, to_hex
 
 from kret_utils.float_utils import FloatPrecisionUtils
 
-from .constants_mpl import MPLConstants as C
-from .typed_cls_mpl import Heatmap_Params_TD
+from ._core.constants_mpl import MPLConstants as C
+from ._core.typed_cls_mpl import Heatmap_Params_TD
 
 
 class KretMatplotHelper:

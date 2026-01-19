@@ -1,4 +1,4 @@
-from kret_utils.constants_kret import KretConstants
+from kret_utils._core.constants_kret import KretConstants
 
 
 class WandbConstants:

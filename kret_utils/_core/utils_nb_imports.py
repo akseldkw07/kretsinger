@@ -24,7 +24,7 @@ from IPython.display import HTML, Markdown, display
 from pathvalidate import is_valid_filename, sanitize_filename, validate_filename
 
 from .constants_kret import KretConstants
-from .UTILS_kret_generic import KRET_UTILS as UKS_UTILS
+from ..UTILS_kret_generic import KRET_UTILS as UKS_UTILS
 
 start_time_end = time.time()
 print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")

@@ -2,7 +2,7 @@ import typing as t
 
 import torch
 
-from kret_utils.constants_kret import KretConstants
+from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_torch import DataLoader___init___TypedDict
 

@@ -16,7 +16,7 @@ from sklearn.linear_model import ElasticNet, HuberRegressor, LinearRegression, L
 from kret_np_pd.np_bool_utils import AnyAll, IndexLabel
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 
-from .typed_cls_sklean import (
+from ._core.typed_cls_sklean import (
     ElasticNet_Params_TypedDict,
     HuberRegressor_Params_TypedDict,
     LinearRegression_Params_TypedDict,
