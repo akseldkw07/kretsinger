@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
-from re import Pattern
 from typing import get_type_hints
 
 import lightning as L
@@ -11,7 +10,7 @@ import torch
 from lightning.fabric.utilities.data import AttributeDict
 from torch.nn.modules.loss import _Loss
 
-from ._core.constants_lightning import LightningConstants
+from ._core.constants_lightning import CkptPatternTuple, LightningConstants
 
 
 class ABCLM(ABC, L.LightningModule):
@@ -24,7 +23,7 @@ class ABCLM(ABC, L.LightningModule):
     _criterion: _Loss
     _load_dir_override: str | Path | None = None
     _root_dir = LightningConstants.LIGHTNING_LOG_DIR
-    _ckpt_pattern: Pattern[str]
+    _ckpt_pattern_tuple: CkptPatternTuple
 
     @abstractmethod
     def __post_init__(self) -> None: ...

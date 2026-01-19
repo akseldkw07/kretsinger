@@ -1,10 +1,10 @@
 from datetime import timedelta
 from pathlib import Path
 from typing import Literal, TypedDict
-from typing_extensions import deprecated
 
 from lightning import Callback, LightningDataModule
 from lightning.pytorch.callbacks import ModelCheckpoint
+from typing_extensions import deprecated
 
 from kret_lightning.abc_lightning import ABCLM
 

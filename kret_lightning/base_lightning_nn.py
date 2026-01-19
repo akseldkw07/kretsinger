@@ -122,14 +122,15 @@ class BaseLightningNN(ABCLM):
         folders = [base_folder, base_folder / "checkpoints"]
 
         candidates: list[tuple[float, int, Path]] = []
-        matching_files = FileSearchUtils.find_matching_files(folders, cls._ckpt_pattern)
+        pattern = cls._ckpt_pattern_tuple.pattern
+        matching_files = FileSearchUtils.find_matching_files(folders, pattern)
 
         for p in matching_files:
             name = p.name
             if "best-" not in name and "best_" not in name:
                 continue
 
-            m = cls._ckpt_pattern.search(name)
+            m = pattern.search(name)
             if m is None:
                 continue
 
