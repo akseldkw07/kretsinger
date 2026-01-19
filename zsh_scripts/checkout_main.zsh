@@ -1,5 +1,6 @@
 #!/bin/zsh
 # checkout main, delete branches, and pull latest changes
+# TODO delete all worktrees, and then delete corresponding branches
 mpgd() {
     local PRIMARY_BRANCH
 

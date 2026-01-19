@@ -4,6 +4,7 @@ import time
 start_time = time.time()
 
 import optuna
+from optuna.integration import PyTorchLightningPruningCallback
 
 from ..UTILS_optuna import KRET_OPTUNA_UTILS
 
