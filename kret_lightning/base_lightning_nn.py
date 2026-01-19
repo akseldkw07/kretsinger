@@ -33,10 +33,11 @@ class BaseLightningNN(ABCLM):
     def __init__(
         self,
         lr: float = 1e-3,
-        gamma: float = 0.5,
-        stepsize: int = 12,
+        warmup_step_frac: float = 0.1,
         l1_penalty: float = 0.0,
         l2_penalty: float = 0.0,
+        # gamma: float = 0.5,
+        # stepsize: int = 12,
         patience: int = 10,  # passed to class_callbacks.CallbackMixin.early_stopping
         **kwargs,
     ):
@@ -44,11 +45,11 @@ class BaseLightningNN(ABCLM):
         NOTE: don't call .to(device) here; Lightning handles device placement
         """
         super().__init__()
+        # Commented out for now - handled in child class (initialization_check asserts that this happened correctly)
         print(f"Saving hparams, ignoring {self.ignore_hparams}")
         self.save_hyperparameters(ignore=self.ignore_hparams)
 
     def __post_init__(self) -> None:
-        # super().__post_init__()
         LightningModuleAssert.initialization_check(self)
         self.to(TorchConstants.DEVICE_TORCH_STR)
 
@@ -68,7 +69,7 @@ class BaseLightningNN(ABCLM):
 
         # Learning rate scheduler: 10% warmup, then cosine annealing
         total_steps = self.trainer.estimated_stepping_batches
-        warmup_steps = int(total_steps * 0.1)  # 10% warmup
+        warmup_steps = int(total_steps * hp.warmup_step_frac)
 
         warmup_sch = LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
         cosine_sch = CosineAnnealingLR(optimizer, T_max=int(total_steps - warmup_steps), eta_min=1e-6)
@@ -192,28 +193,44 @@ class BaseLightningNN(ABCLM):
 
     # endregion
     # region Training / Validation Steps
-    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
-        """
 
-        loss = ...
-        return loss
+    def _compute_step(
+        self, batch: tuple[torch.Tensor, torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Shared computation for training/validation steps.
+
+        Returns:
+            (outputs, targets, loss) tuple
         """
         x, y = batch
         outputs = self(x)
         loss = self.get_loss(outputs, y)
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return outputs, y, loss
+
+    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
+        """
+        Minimal training step - just compute and return loss.
+        Override in MetricMixin for logging.
+        """
+        _, _, loss = self._compute_step(batch)
         return loss
 
     def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         """
-        val_loss = ...
-        self.log('val_loss', val_loss)
+        Minimal validation step - compute and log val_loss for checkpointing.
+        Override in MetricMixin for additional metrics.
         """
-        x, y = batch
-        outputs = self(x)
-        val_loss = self.get_loss(outputs, y)
+        _, _, val_loss = self._compute_step(batch)
         self.log("val_loss", val_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-        self.log_extra_metrics(outputs, y, stage="validate")
+
+    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+        """
+        Minimal test step - compute and log test_loss.
+        Override in MetricMixin for additional metrics.
+        """
+        _, _, test_loss = self._compute_step(batch)
+        self.log("test_loss", test_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
     # endregion
 

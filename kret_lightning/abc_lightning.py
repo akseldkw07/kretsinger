@@ -11,7 +11,7 @@ import torch
 from lightning.fabric.utilities.data import AttributeDict
 from torch.nn.modules.loss import _Loss
 
-from ._core.constants_lightning import STAGE_LITERAL, LightningConstants
+from ._core.constants_lightning import LightningConstants
 
 
 class ABCLM(ABC, L.LightningModule):
@@ -71,9 +71,19 @@ class ABCLM(ABC, L.LightningModule):
         """
 
     @abstractmethod
-    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
+    def _compute_step(
+        self, batch: tuple[torch.Tensor, torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Shared computation for training/validation/test steps.
+
+        Returns:
+            (outputs, targets, loss) tuple
         """
 
+    @abstractmethod
+    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
+        """
         loss = ...
         return loss
         """
@@ -86,11 +96,18 @@ class ABCLM(ABC, L.LightningModule):
         """
 
     @abstractmethod
-    def log_extra_metrics(self, y_hat: torch.Tensor, y: torch.Tensor, stage: STAGE_LITERAL) -> None:
+    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         """
-        Log any extra metrics beyond loss here.
-        E.g., accuracy, F1, etc.
+        test_loss = ...
+        self.log('test_loss', test_loss)
         """
+
+    # @abstractmethod
+    # def log_extra_metrics(self, y_hat: torch.Tensor, y: torch.Tensor, stage: STAGE_LITERAL) -> None:
+    #     """
+    #     Log any extra metrics beyond loss here.
+    #     E.g., accuracy, F1, etc.
+    #     """
 
     """
     Other helpful methods:
@@ -107,17 +124,20 @@ class SaveLoadLoggingDict(t.TypedDict):
 
 class HPDict(AttributeDict):  # type: ignore
     lr: float
-    gamma: float
-    stepsize: int
+    warmup_step_frac: float
     l1_penalty: float
     l2_penalty: float
     patience: int
+    # gamma: float
+    # stepsize: int
 
     def as_str_safe(self, sanitize: bool = True) -> str:
         parts = [
             f"lr={self.lr:g}",
-            f"gamma={self.gamma:g}",
-            f"stepsize={self.stepsize}",
+            f"warmup={self.warmup_step_frac:g}",
+            f"patience={self.patience}",
+            # f"gamma={self.gamma:g}",
+            # f"stepsize={self.stepsize}",
         ]
         if self.l1_penalty > 0.0:
             parts.append(f"L1={self.l1_penalty:g}")
@@ -143,8 +163,9 @@ class HPDict(AttributeDict):  # type: ignore
 
 class HPasKwargs(t.TypedDict, total=False):
     lr: float
-    gamma: float
-    stepsize: int
+    warmup_step_frac: float
     l1_penalty: float
     l2_penalty: float
     patience: int
+    # gamma: float
+    # stepsize: int

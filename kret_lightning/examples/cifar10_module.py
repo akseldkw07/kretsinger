@@ -3,7 +3,6 @@ import typing as t
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics import Accuracy
 
 from kret_lightning import *
 
@@ -38,8 +37,9 @@ class ResidualBlock(nn.Module):
 class ResNet(nn.Module):
     """ResNet-like architecture for CIFAR-10"""
 
-    def __init__(self, num_blocks: int = 3, num_filters: int = 64, dropout_rate: float = 0.5):
+    def __init__(self, num_layers: int, num_blocks: int = 3, num_filters: int = 64, dropout_rate: float = 0.3):
         super().__init__()
+        self.num_layers = num_layers  # TODO implement variable number of layers
         self.num_filters = num_filters
         self.dropout_rate = dropout_rate
 
@@ -48,7 +48,7 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(num_filters)
         self.dropout = nn.Dropout(dropout_rate)
 
-        # Residual blocks
+        # Residual blocks TODO use n_layers arg
         self.layer1 = self._make_layer(num_filters, num_filters, num_blocks, stride=1)
         self.layer2 = self._make_layer(num_filters, num_filters * 2, num_blocks, stride=2)
         self.layer3 = self._make_layer(num_filters * 2, num_filters * 4, num_blocks, stride=2)
@@ -76,54 +76,29 @@ class ResNet(nn.Module):
         return out
 
 
-class CIFAR10ResNet(BaseLightningNN, CallbackMixin, MetricMixin):
+class CIFAR10ResNet(MetricMixin, BaseLightningNN, CallbackMixin):
     """Lightning wrapper for ResNet on CIFAR-10"""
 
     _criterion = nn.CrossEntropyLoss()
 
     def __init__(
         self,
+        num_layers: int,
         num_blocks: int = 3,
         num_filters: int = 64,
-        dropout_rate: float = 0.5,
+        dropout_rate: float = 0.3,
+        number_classes: int = 10,
         **kwargs: t.Unpack[HPasKwargs],
     ):
         super().__init__(**kwargs)
 
-        self.model = ResNet(num_blocks=num_blocks, num_filters=num_filters, dropout_rate=dropout_rate)
+        print(f"Saving hparams, ignoring {self.ignore_hparams}")
+        self.save_hyperparameters(ignore=self.ignore_hparams)
+        self.setup_metrics(task="multiclass", num_classes=number_classes)
 
-        self.train_accuracy = Accuracy(task="multiclass", num_classes=10)
-        self.val_accuracy = Accuracy(task="multiclass", num_classes=10)
-        self.test_accuracy = Accuracy(task="multiclass", num_classes=10)
+        self.model = ResNet(
+            num_layers=num_layers, num_blocks=num_blocks, num_filters=num_filters, dropout_rate=dropout_rate
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        loss = self.criterion(logits, y)
-
-        self.train_accuracy(logits, y)
-        self.log("train_loss", loss, on_epoch=True, on_step=False)
-        self.log("train_acc", self.train_accuracy, on_epoch=True, on_step=False)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        loss = self.criterion(logits, y)
-
-        self.val_accuracy(logits, y)
-        self.log("val_loss", loss, on_epoch=True)
-        self.log("val_acc", self.val_accuracy, on_epoch=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        loss = self.criterion(logits, y)
-
-        self.test_accuracy(logits, y)
-        self.log("test_loss", loss, on_epoch=True)
-        self.log("test_acc", self.test_accuracy, on_epoch=True)

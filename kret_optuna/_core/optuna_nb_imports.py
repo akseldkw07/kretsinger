@@ -5,6 +5,10 @@ start_time = time.time()
 
 import optuna
 from optuna.integration import PyTorchLightningPruningCallback
+from optuna.pruners import HyperbandPruner, MedianPruner, SuccessiveHalvingPruner
+from optuna.samplers import CmaEsSampler, RandomSampler, TPESampler
+from optuna.study import Study
+from optuna.trial import Trial
 
 from ..UTILS_optuna import KRET_OPTUNA_UTILS
 

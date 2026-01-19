@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Literal, TypedDict
 
+import optuna
 from lightning import Callback, LightningDataModule
 from lightning.fabric.plugins import CheckpointIO, ClusterEnvironment
 from lightning.pytorch.accelerators import Accelerator
@@ -12,8 +13,10 @@ from lightning.pytorch.loggers import CSVLogger, Logger
 from lightning.pytorch.plugins import LayerSync, Precision
 from lightning.pytorch.profilers import Profiler
 from lightning.pytorch.strategies import Strategy
+from optuna.integration import PyTorchLightningPruningCallback
 
 from kret_lightning.abc_lightning import ABCLM
+from kret_lightning.custom_callbacks import CallbackConfig
 
 
 class TrainerStaticDefaults:
@@ -51,7 +54,7 @@ class TrainerStaticDefaults:
     # for debugging
     TRAINER_DEBUG: Trainer___init___TypedDict = {
         "detect_anomaly": True,
-        # "fast_dev_run": True,
+        "fast_dev_run": True,
     }
 
     TRAINER_FIT: Trainer_Fit_TypedDict = {"ckpt_path": "best", "weights_only": False}
@@ -59,11 +62,18 @@ class TrainerStaticDefaults:
 
 class TrainerDynamicDefaults:
     @classmethod
-    def trainer_dynamic_defaults(cls, nn: ABCLM, datamodule: LightningDataModule):
+    def trainer_dynamic_defaults(
+        cls, nn: ABCLM, datamodule: LightningDataModule, trial: optuna.trial.Trial | None = None
+    ):
 
         logger = CSVLogger(**nn.save_load_logging_dict)
-        # checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
-        ret: Trainer___init___TypedDict = {"logger": logger, "default_root_dir": nn.ckpt_path}
+        checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
+
+        if trial is not None:
+            pruning_callback = PyTorchLightningPruningCallback(trial, monitor="val_loss")
+            checkpoints.append(pruning_callback)
+
+        ret: Trainer___init___TypedDict = {"logger": logger, "default_root_dir": nn.ckpt_path, "callbacks": checkpoints}
         return ret
 
 

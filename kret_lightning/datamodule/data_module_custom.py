@@ -19,7 +19,7 @@ from kret_sklearn.pd_pipeline import PipelinePD
 from kret_torch_utils._core.constants_torch import TorchDefaults
 
 if t.TYPE_CHECKING:
-    from kret_torch_utils.torch_typehints import DataLoader___init___TypedDict
+    from kret_torch_utils._core.typed_cls_torch import DataLoader___init___TypedDict
 
 
 class DataModuleABC(ABC, L.LightningDataModule):

@@ -2,6 +2,7 @@ from kret_lgbm._core.constants_lgbm import LGBM_Constants, LGBM_Defaults
 from kret_lightning._core.constants_lightning import LightningConstants
 from kret_matplotlib._core.constants_mpl import MPLConstants, MPLDefaults
 from kret_np_pd._core.constants_np_pd import NP_PD_Defaults
+from kret_optuna._core.constants_optuna import OptunaConstants, OptunaDefaults
 from kret_polars._core.constants_polars import PolarsConstants
 from kret_rosetta._core.constants_rosetta import RosettaConstants
 from kret_sklearn._core.constants_sklearn import SklearnDefaults
@@ -21,6 +22,7 @@ class KretConstantsNB(
     MPLConstants,
     LGBM_Constants,
     TQDMConstants,
+    OptunaConstants,
 ): ...
 
 
@@ -30,4 +32,5 @@ class KretDefaultsNB(
     LGBM_Defaults,
     NP_PD_Defaults,
     TQDMDefaults,
+    OptunaDefaults,
 ): ...

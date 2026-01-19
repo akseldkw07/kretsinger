@@ -4,6 +4,7 @@ import typing as t
 from kret_utils._core.constants_kret import KretConstants
 
 STAGE_LITERAL = t.Literal["fit", "validate", "predict", "test"]
+TASK_TYPE = t.Literal["regression", "binary", "multiclass", "multilabel"]
 
 
 class LightningConstants:
