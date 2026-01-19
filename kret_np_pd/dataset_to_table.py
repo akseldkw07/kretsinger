@@ -15,8 +15,6 @@ from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 from ._core.typed_cls_np_pd import DTTKwargs, DTTParams, To_html_TypedDict
 
 if t.TYPE_CHECKING:
-    pass
-
     from kret_torch_utils.tensor_ds_custom import TensorDatasetCustom
 
     VectorMatrixType = (
