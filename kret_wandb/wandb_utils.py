@@ -5,9 +5,27 @@ from datetime import datetime
 import wandb
 
 from ._core.constants_wandb import WandbConstants
+from ._core.typed_cls_wandb import *
+
+if t.TYPE_CHECKING:
+    from kret_lightning.abc_lightning import ABCLM
 
 
 class WandB_Utils:
+    @classmethod
+    def generate_wandb_args(cls, nn: "ABCLM", **kwargs: t.Unpack[Wandb_Init_TypedDict]):
+        args_nn: Wandb_Init_TypedDict = {"group": nn.name, "dir": nn.root_dir / "wandb_logs"}
+        args_defaults: Wandb_Init_TypedDict = {
+            "entity": WandbConstants.WANDB_TEAM_NAME,
+            "project": WandbConstants.WANDB_PROJECT_NAME,
+            "mode": "online",
+            "job_type": "train",
+            "reinit": "finish_previous",
+            # TODO config?? tags??
+        }
+        ret_args = args_defaults | args_nn | kwargs
+        return ret_args
+
     @classmethod
     def start_wandb_run(
         cls,

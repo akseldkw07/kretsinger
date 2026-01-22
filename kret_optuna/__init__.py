@@ -1,9 +1,9 @@
 """
+https://optuna.github.io/optuna-dashboard/
+
 TODO
 - wandb logging
 - unique names & save dirs for model weights
-- load up webapp to visualize results
-- different pruners
 - look into study.optimize() arguments
 - limit logging when running study.optimize()?
 - progress bar?
