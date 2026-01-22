@@ -80,6 +80,7 @@ class CIFAR10ResNet(MetricMixin, BaseLightningNN, CallbackMixin):
     """Lightning wrapper for ResNet on CIFAR-10"""
 
     _criterion = nn.CrossEntropyLoss()
+    version = "v_001"
 
     def __init__(
         self,

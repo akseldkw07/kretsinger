@@ -1,4 +1,3 @@
-# from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -52,7 +51,6 @@ class SplitTuple(t.NamedTuple):
 
 @post_init
 class CustomDataModule(DataModuleABC):
-
     def __init__(
         self,
         data_dir: Path | str,

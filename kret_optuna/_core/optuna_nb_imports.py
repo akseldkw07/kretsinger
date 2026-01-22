@@ -11,6 +11,7 @@ from optuna.study import Study
 from optuna.trial import Trial
 
 from ..UTILS_optuna import KRET_OPTUNA_UTILS
+from .constants_optuna import OptunaConstants, OptunaDefaults
 
 start_time_end = time.time()
 print(f"[{__name__}] Imported {__name__} in {start_time_end - start_time:.4f} seconds")

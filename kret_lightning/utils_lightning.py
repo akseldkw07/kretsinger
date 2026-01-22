@@ -57,7 +57,7 @@ class LightningModuleAssert(SharedAssert):
     @classmethod
     def assert_mro_order(cls, lm: ABCLM):
         from kret_lightning.base_lightning_nn import BaseLightningNN
-        from kret_lightning.metrics import MetricMixin
+        from kret_lightning.mixin_metrics import MetricMixin
 
         MROUtils.assert_mro_order(lm, MetricMixin, BaseLightningNN, "raise")
 

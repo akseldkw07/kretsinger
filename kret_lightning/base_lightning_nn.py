@@ -129,11 +129,9 @@ class BaseLightningNN(ABCLM):
             name = p.name
             if "best-" not in name and "best_" not in name:
                 continue
-
             m = pattern.search(name)
             if m is None:
                 continue
-
             try:
                 loss = float(m.group("loss"))
                 epoch = int(m.group("epoch"))
