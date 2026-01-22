@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import typing as t
 from collections.abc import Iterable
 from datetime import timedelta
 from pathlib import Path
@@ -9,7 +10,7 @@ import optuna
 from lightning import Callback, LightningDataModule
 from lightning.fabric.plugins import CheckpointIO, ClusterEnvironment
 from lightning.pytorch.accelerators import Accelerator
-from lightning.pytorch.loggers import CSVLogger, Logger
+from lightning.pytorch.loggers import CSVLogger, Logger, WandbLogger
 from lightning.pytorch.plugins import LayerSync, Precision
 from lightning.pytorch.profilers import Profiler
 from lightning.pytorch.strategies import Strategy
@@ -65,19 +66,34 @@ class TrainerStaticDefaults:
         "enable_model_summary": False,  # Skip summary printout each trial
         "enable_checkpointing": False,  # No checkpoints during sweep (saves I/O)
         "gradient_clip_val": 1.0,  # Stability for exploring LR ranges
-        "max_time": {"minutes": 5},  # Kill runaway trials
+        "max_time": {"minutes": 30},  # Kill runaway trials
     }
 
     TRAINER_FIT: Trainer_Fit_TypedDict = {"weights_only": False}
 
 
 class TrainerDynamicDefaults:
+
     @classmethod
     def trainer_dynamic_defaults(
-        cls, nn: ABCLM, datamodule: LightningDataModule, trial: optuna.trial.Trial | None = None
+        cls,
+        nn: ABCLM,
+        datamodule: LightningDataModule,
+        logtype: t.Literal["csv", "wandb", "tensorboard"] | bool | None = None,
+        trial: optuna.trial.Trial | None = None,
     ):
 
-        logger = CSVLogger(**nn.save_load_logging_dict)
+        if logtype == "wandb":
+            from kret_wandb.wandb_utils import WandB_Utils
+
+            args = WandB_Utils.generate_wandb_args(nn)
+            logger = WandbLogger(**args)
+        elif logtype == "csv":
+            logger = CSVLogger(**nn.save_load_logging_dict)
+        elif logtype == "tensorboard":
+            raise NotImplementedError("TensorBoard logger typed dict not yet implemented")
+        else:
+            logger = None
         # checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
         callbacks: list[Callback] = []
 

@@ -8,6 +8,8 @@ from torchvision.datasets import CIFAR10
 
 
 class CIFAR10DataModule(L.LightningDataModule):
+    """TODO Subclass CustomDataModule and cache the size of dataset"""
+
     def __init__(self, data_dir: Path | str, batch_size: int = 128, num_workers: int = 4):
         super().__init__()
         self.data_dir = Path(data_dir)
