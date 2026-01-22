@@ -1,4 +1,3 @@
-# from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -19,7 +18,7 @@ from kret_sklearn.pd_pipeline import PipelinePD
 from kret_torch_utils._core.constants_torch import TorchDefaults
 
 if t.TYPE_CHECKING:
-    from kret_torch_utils.torch_typehints import DataLoader___init___TypedDict
+    from kret_torch_utils._core.typed_cls_torch import DataLoader___init___TypedDict
 
 
 class DataModuleABC(ABC, L.LightningDataModule):
@@ -52,7 +51,6 @@ class SplitTuple(t.NamedTuple):
 
 @post_init
 class CustomDataModule(DataModuleABC):
-
     def __init__(
         self,
         data_dir: Path | str,

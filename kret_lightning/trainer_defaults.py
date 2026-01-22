@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Literal, TypedDict
 
+import optuna
 from lightning import Callback, LightningDataModule
 from lightning.fabric.plugins import CheckpointIO, ClusterEnvironment
 from lightning.pytorch.accelerators import Accelerator
@@ -12,6 +13,7 @@ from lightning.pytorch.loggers import CSVLogger, Logger
 from lightning.pytorch.plugins import LayerSync, Precision
 from lightning.pytorch.profilers import Profiler
 from lightning.pytorch.strategies import Strategy
+from optuna.integration import PyTorchLightningPruningCallback
 
 from kret_lightning.abc_lightning import ABCLM
 
@@ -51,19 +53,40 @@ class TrainerStaticDefaults:
     # for debugging
     TRAINER_DEBUG: Trainer___init___TypedDict = {
         "detect_anomaly": True,
-        # "fast_dev_run": True,
+        "fast_dev_run": True,
     }
 
-    TRAINER_FIT: Trainer_Fit_TypedDict = {"ckpt_path": "best", "weights_only": False}
+    # for lightweight Optuna sweeps
+    OPTUNA_SWEEP: Trainer___init___TypedDict = {
+        "max_epochs": 10,  # Enough to see trends, not full convergence
+        "limit_train_batches": 0.25,  # Use 25% of training data per epoch
+        "limit_val_batches": 0.5,  # Use 50% of val data (need reliable signal)
+        "log_every_n_steps": 50,  # Reduce logging overhead
+        "enable_model_summary": False,  # Skip summary printout each trial
+        "enable_checkpointing": False,  # No checkpoints during sweep (saves I/O)
+        "gradient_clip_val": 1.0,  # Stability for exploring LR ranges
+        "max_time": {"minutes": 5},  # Kill runaway trials
+    }
+
+    TRAINER_FIT: Trainer_Fit_TypedDict = {"weights_only": False}
 
 
 class TrainerDynamicDefaults:
     @classmethod
-    def trainer_dynamic_defaults(cls, nn: ABCLM, datamodule: LightningDataModule):
+    def trainer_dynamic_defaults(
+        cls, nn: ABCLM, datamodule: LightningDataModule, trial: optuna.trial.Trial | None = None
+    ):
 
         logger = CSVLogger(**nn.save_load_logging_dict)
         # checkpoints = CallbackConfig.trainer_dynamic_defaults(nn, datamodule)
-        ret: Trainer___init___TypedDict = {"logger": logger, "default_root_dir": nn.ckpt_path}
+        callbacks: list[Callback] = []
+
+        if trial is not None:
+            pruning_callback = PyTorchLightningPruningCallback(trial, monitor="val_loss")
+            callbacks.append(pruning_callback)
+            # checkpoints: list[Callback] = [pruning_callback]
+
+        ret: Trainer___init___TypedDict = {"logger": logger, "default_root_dir": nn.ckpt_path, "callbacks": callbacks}
         return ret
 
 

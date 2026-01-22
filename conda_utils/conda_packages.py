@@ -67,6 +67,7 @@ class CondaUtils:
         # "scikit-surprise",  # recommender systems. https://surpriselib.com/] ----- don't add, pin to numpy 1.26
         # 'lightfm',  # hybrid recommendation algorithms ----- don't add, pin to numpy 1.26 AND python 3.11
         "implicit",  # collaborative filtering for implicit datasets
+        "BoTorch",  # Bayesian optimization built on PyTorch
     ]
     R_STATS = ["sympy", "siuba"]
     NLP = [
@@ -85,13 +86,15 @@ class CondaUtils:
         "catboost",
         # "fbprophet",  # timeseries forecasting, facebook NOTE doesn't exist
         "wandb",  # weights and biases
+        "optuna-dashboard",
+        "optuna",
+        "optuna-integration",
     ]
     NN_DL = [
         "tensorflow",
         "keras",  # tensorflow wrapper
         "pytorch",
         "lightning",
-        "optuna-dashboard",
         # 'MLFlow',
         "fastai",  # pytorch wrapper, more configurable than keras
         "kaggle",

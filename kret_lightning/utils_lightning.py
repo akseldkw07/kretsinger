@@ -4,6 +4,7 @@ from typing import get_type_hints
 
 from kret_lightning.abc_lightning import ABCLM, HPasKwargs, HPDict
 from kret_utils.filename_utils import FilenameUtils
+from kret_utils.mro_check import MROUtils
 
 if t.TYPE_CHECKING:
     from .datamodule.data_module_custom import DataModuleABC  # avoid circular import
@@ -11,7 +12,7 @@ if t.TYPE_CHECKING:
 
 class SharedAssert(ABC):
     @classmethod
-    def assert_hparams(cls, datamodule: "DataModuleABC | ABCLM"):
+    def assert_hparams_correctly_ignored(cls, datamodule: "DataModuleABC | ABCLM"):
         overlap = set(datamodule.hparams_initial.keys()).intersection(set(datamodule.ignore_hparams))
         assert not overlap, (
             f"Datamodule hparams_initial keys {set(datamodule.hparams_initial.keys())} overlap with ignore_hparams "
@@ -28,7 +29,9 @@ class LightningModuleAssert(SharedAssert):
     def initialization_check(cls, lm: ABCLM) -> None:
         cls.assert_version_fmt(lm.version)
         cls.assert_filename_safe(lm)
-        cls.assert_hparams(lm)
+        cls.assert_hparams_correctly_ignored(lm)
+        cls.assert_dict_keys_consistency(lm)
+        cls.assert_mro_order(lm)
 
     @classmethod
     def assert_version_fmt(cls, version: str) -> None:
@@ -42,14 +45,27 @@ class LightningModuleAssert(SharedAssert):
         ), f"Filename '{lm.ckpt_path}' is not safe for filesystems."
 
     @classmethod
-    def assert_dict_keys_consistency(cls):
-        assert get_type_hints(HPDict) == get_type_hints(HPasKwargs)
+    def assert_dict_keys_consistency(cls, lm: ABCLM) -> None:
+        assert get_type_hints(HPDict) == get_type_hints(
+            HPasKwargs
+        ), f"{HPDict} and {HPasKwargs} type hints do not match. Got {get_type_hints(HPDict)} vs {get_type_hints(HPasKwargs)}."
+        assert set(t.get_type_hints(HPasKwargs)).issubset(set(lm.hparams_initial.keys())), (
+            f"HPasKwargs keys {set(t.get_type_hints(HPasKwargs))} are not all present in hparams_initial keys "
+            f"{set(lm.hparams_initial.keys())}."
+        )
+
+    @classmethod
+    def assert_mro_order(cls, lm: ABCLM):
+        from kret_lightning.base_lightning_nn import BaseLightningNN
+        from kret_lightning.mixin_metrics import MetricMixin
+
+        MROUtils.assert_mro_order(lm, MetricMixin, BaseLightningNN, "raise")
 
 
 class LightningDataModuleAssert(SharedAssert):
     @classmethod
     def initialization_check(cls, datamodule: "DataModuleABC"):
-        cls.assert_hparams(datamodule)
+        cls.assert_hparams_correctly_ignored(datamodule)
         cls.assert_split_distribution(datamodule)
 
     @classmethod

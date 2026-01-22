@@ -9,13 +9,13 @@ from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger, WandbLogger
 
 from ..abc_lightning import ABCLM, HPasKwargs, HPDict
 from ..base_lightning_nn import BaseLightningNN
-from ..class_callbacks import CallbackMixin
 from ..custom_callbacks import CallbackConfig
 from ..datamodule.data_module_custom import CustomDataModule
-from ..metrics import MetricMixin
+from ..mixin_callbacks import CallbackMixin
+from ..mixin_metrics import MetricMixin
 from ..trainer_defaults import TrainerDynamicDefaults, TrainerStaticDefaults
 from ..utils_lightning import LightningModuleAssert
-from .constants_lightning import LightningConstants as UKS_LIGHTNING_CONSTANTS
+from .constants_lightning import TASK_TYPE, LightningConstants as UKS_LIGHTNING_CONSTANTS
 from .typed_cls_lightning import (
     CSVLogger___init___TypedDict,
     TensorBoardLogger___init___TypedDict,
