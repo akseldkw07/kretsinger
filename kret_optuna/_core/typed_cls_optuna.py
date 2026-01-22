@@ -2,7 +2,6 @@ import typing as t
 
 from optuna import pruners, samplers, storages
 from optuna.study import Study, StudyDirection
-from optuna.study.study import ObjectiveFuncType
 from optuna.trial import FrozenTrial
 
 
@@ -17,7 +16,7 @@ class Create_study_TypedDict(t.TypedDict, total=False):
 
 
 class Study_Optimize_TypedDict(t.TypedDict, total=False):
-    func: ObjectiveFuncType
+    # func: ObjectiveFuncType
     n_trials: int | None  # = None
     timeout: float | None  # = None
     n_jobs: int  # = 1
