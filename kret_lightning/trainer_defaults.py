@@ -69,6 +69,16 @@ class TrainerStaticDefaults:
         "max_time": {"minutes": 30},  # Kill runaway trials
     }
 
+    OPTUNA_FINE_TUNE: Trainer___init___TypedDict = {
+        "max_epochs": 50,
+        "limit_train_batches": None,
+        "limit_val_batches": None,
+        "log_every_n_steps": 20,
+        "enable_model_summary": False,
+        "enable_checkpointing": False,
+        "max_time": {"hours": 2},
+    }
+
     TRAINER_FIT: Trainer_Fit_TypedDict = {"weights_only": False}
 
 

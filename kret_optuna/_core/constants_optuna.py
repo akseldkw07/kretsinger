@@ -5,9 +5,27 @@ from kret_utils._core.constants_kret import KretConstants
 from .typed_cls_optuna import Create_study_TypedDict, Study_Optimize_TypedDict
 
 
+class OptunaConstants:
+    OPTUNA_STUDY_DIR = KretConstants.DATA_DIR / "optuna_studies"
+    OPTUNA_STUDY_DIR.mkdir(parents=True, exist_ok=True)
+    OPTUNA_STORAGE_DB = r"sqlite:////" + str(OPTUNA_STUDY_DIR / "optuna_studies.db")
+
+
 class OptunaDefaults:
     HYPERBAND_PRUNER = optuna.pruners.HyperbandPruner()
-    CREATE_STUDY_DEFAULTS: Create_study_TypedDict = {"pruner": HYPERBAND_PRUNER, "load_if_exists": True}
+    CREATE_STUDY_DEFAULTS: Create_study_TypedDict = {
+        "pruner": HYPERBAND_PRUNER,
+        "load_if_exists": True,
+        "storage": OptunaConstants.OPTUNA_STORAGE_DB,
+    }
+
+    @classmethod
+    def study_n_hours(cls, hours: int) -> Study_Optimize_TypedDict:
+        return {"n_trials": None, "timeout": hours * 60 * 60}
+
+    @classmethod
+    def study_n_trials(cls, n_trials: int) -> Study_Optimize_TypedDict:
+        return {"n_trials": n_trials, "timeout": None}
 
     STUDY_8_HOURS: Study_Optimize_TypedDict = {"n_trials": None, "timeout": 8 * 60 * 60}
     STUDY_100_TRIAL: Study_Optimize_TypedDict = {"n_trials": 100, "timeout": None}
@@ -16,9 +34,3 @@ class OptunaDefaults:
         "gc_after_trial": True,
         "show_progress_bar": True,
     }
-
-
-class OptunaConstants:
-    OPTUNA_STUDY_DIR = KretConstants.DATA_DIR / "optuna_studies"
-    OPTUNA_STUDY_DIR.mkdir(parents=True, exist_ok=True)
-    OPTUNA_STORAGE_DB = r"sqlite:////" + str(OPTUNA_STUDY_DIR / "optuna_studies.db")

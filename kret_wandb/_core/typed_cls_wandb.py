@@ -1,6 +1,6 @@
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Literal, TypedDict
-from collections.abc import Sequence
 
 from wandb.sdk import Settings
 

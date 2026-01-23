@@ -102,6 +102,7 @@ class CondaUtils:
         "autograd",
         "torchview",
         "netron",  # visualize neural network architectures
+        "onnxscript",
         # 'thop', # for calculating FLOPs and params in pytorch models - PIP ONLY
     ]
     LLM_QUERY = [
