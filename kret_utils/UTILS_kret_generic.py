@@ -4,15 +4,10 @@ from kret_utils.filename_utils import FilenameUtils, FileSearchUtils
 from kret_utils.float_utils import FloatPrecisionUtils
 from kret_utils.mro_check import MROUtils
 from kret_utils.obj_dir_util import DirUtils
+from kret_utils.utilization_utils import UtilizationUtils
 
 
 class KRET_UTILS(
-    FloatPrecisionUtils,
-    DirUtils,
-    KretConstants,
-    FileSearchUtils,
-    FilenameUtils,
-    MROUtils,
-    TypeAssert,
+    FloatPrecisionUtils, DirUtils, KretConstants, FileSearchUtils, FilenameUtils, MROUtils, TypeAssert, UtilizationUtils
 ):
     pass

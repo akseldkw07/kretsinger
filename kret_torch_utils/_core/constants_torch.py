@@ -37,3 +37,4 @@ class TorchConstants:
     DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
     DEVICE = torch.device(DEVICE_TORCH_STR)
     HUGGING_FACE_DIR = KretConstants.DATA_DIR / "hugging_face"
+    TORCH_MODEL_VIZ_DIR = KretConstants.DATA_DIR / "pytorch_viz"

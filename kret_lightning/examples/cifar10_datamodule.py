@@ -21,10 +21,11 @@ class CIFAR10DataModule(L.LightningDataModule):
         self.train_transform = transforms.Compose(
             [
                 transforms.RandomCrop(32, padding=4),
-                transforms.RandomHorizontalFlip(),
+                transforms.RandomHorizontalFlip(p=0.5),
                 transforms.ColorJitter(brightness=0.2, contrast=0.2),
                 transforms.RandomRotation(15),
                 transforms.ToTensor(),
+                transforms.RandomPerspective(distortion_scale=0.5, p=0.5),
                 normalize,
             ]
         )
