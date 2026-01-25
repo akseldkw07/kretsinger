@@ -22,7 +22,7 @@
             "/Users/Akseldkw/.zshrc": false,
             ".zshrc": false
         },
-        "python.defaultInterpreterPath": "/Users/Akseldkw/micromamba/envs/kret_312/bin/python",
+        "python.defaultInterpreterPath": "~/micromamba/envs/kret_312/bin/python",
         "chatgpt.openOnStartup": false
     }
 }
