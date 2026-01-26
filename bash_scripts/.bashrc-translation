@@ -24,7 +24,7 @@ esac
 # ----------------------------
 # VARIABLES (ported 1:1)
 # ----------------------------
-export KRET='/Users/Akseldkw/coding/kretsinger'
+export KRET="$HOME/kretsinger"
 export PY312_ENV="kret_312"
 export PY311_ENV="kret_311"
 
@@ -36,7 +36,7 @@ export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
 
 export NB_LOGFILE="${KRET}/data/nb_log.log"
-export DESKTOP="/Users/Akseldkw/Desktop/"
+export DESKTOP="$HOME/Desktop/"
 
 # MICROMAMBA root prefix
 export MAMBA_ROOT_PREFIX="$HOME/micromamba"
@@ -119,10 +119,10 @@ rgf() {
   rg --files -g "**/*$@*" 2>/dev/null
 }
 
-# ----------------------------
-# Antigravity PATH (same)
-# ----------------------------
-export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"
+# # ----------------------------
+# # Antigravity PATH (same)
+# # ----------------------------
+# export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"
 
 # ----------------------------
 # Google Cloud SDK (bash equivalents)

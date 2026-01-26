@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-save_and_src_zshrc() {
+save_and_src_bashrc() {
   local dest_dir="${KRET}/backup"
   local rc_file="$HOME/.bashrc"          # NOTE: changed from .zshrc
   local backup_file="${dest_dir}/.bashrc"
@@ -44,4 +44,4 @@ save_and_src_zshrc() {
 }
 
 # Run on shell exit (bash equivalent of zshexit hook)
-trap 'save_and_src_zshrc' EXIT
+trap 'save_and_src_bashrc' EXIT
