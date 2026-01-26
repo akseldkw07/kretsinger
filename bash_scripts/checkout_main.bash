@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 # checkout main, delete branches, and pull latest changes
 
 mpgd() {
