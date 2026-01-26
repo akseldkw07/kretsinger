@@ -1,0 +1,141 @@
+# ~/.bashrc
+
+# ----------------------------
+# Basics / safety
+# ----------------------------
+# If not running interactively, don't do interactive stuff
+case $- in
+  *i*) ;;
+  *) return ;;
+esac
+
+# ----------------------------
+# Prompt / theme (bash note)
+# ----------------------------
+# Powerlevel10k + oh-my-zsh are zsh-specific.
+# In bash, you can use:
+# - starship (recommended), or
+# - bash-git-prompt, or
+# - pure PS1 tweaks
+#
+# If you want starship, install it and uncomment:
+# eval "$(starship init bash)"
+
+# ----------------------------
+# VARIABLES (ported 1:1)
+# ----------------------------
+export KRET='/Users/Akseldkw/coding/kretsinger'
+export PY312_ENV="kret_312"
+export PY311_ENV="kret_311"
+
+# IMPORTANT: in your zshrc you set MM_PATH="~/micromamba/envs"
+# Tilde doesn't expand inside quotes reliably across contexts.
+# Use $HOME.
+export MM_PATH="$HOME/micromamba/envs"
+export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
+export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
+
+export NB_LOGFILE="${KRET}/data/nb_log.log"
+export DESKTOP="/Users/Akseldkw/Desktop/"
+
+# MICROMAMBA root prefix
+export MAMBA_ROOT_PREFIX="$HOME/micromamba"
+
+# ----------------------------
+# Source all .bash files in ${KRET}/bash_scripts
+# (bash equivalent of your zsh_scripts loop)
+# ----------------------------
+# You probably want to copy/convert your .zsh helpers into .bash helpers
+# and store them in: ${KRET}/bash_scripts
+if [[ -d "${KRET}/bash_scripts" ]]; then
+  while IFS= read -r -d '' script; do
+    filename="$(basename "$script")"
+    [[ "$filename" == _* || "$filename" == .* ]] && continue
+    # shellcheck source=/dev/null
+    source "$script"
+  done < <(find "${KRET}/bash_scripts" -type f -name '*.bash' -print0)
+fi
+
+# ----------------------------
+# Source non-git-tracked tokens (bash version)
+# ----------------------------
+# If your vault file is still .zsh, either:
+# 1) rename it to .bash and make it bash-safe, or
+# 2) keep as .zsh but only source it from zsh.
+#
+# I'll assume you convert it to: source_tokens.bash
+# shellcheck disable=SC1090
+source "${KRET}/vault/source_tokens.bash" 2>/dev/null || \
+  echo "[vault] ⚠️ Failed to source source_tokens.bash. File not found or error."
+
+# ----------------------------
+# Micromamba shell hook (bash version of your init block)
+# ----------------------------
+export MAMBA_EXE='/usr/local/bin/micromamba'
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2>/dev/null)"
+if [[ $? -eq 0 ]]; then
+  eval "$__mamba_setup"
+else
+  alias micromamba="$MAMBA_EXE"
+fi
+unset __mamba_setup
+
+# Short alias
+alias mm='micromamba'
+
+# ----------------------------
+# BUILT IN ALIASES (same intent)
+# ----------------------------
+alias ls='lsd'
+alias l='ls -l'
+alias lt='l -t'
+alias lla='ls -la'
+alias lt='ls --tree'
+
+# ----------------------------
+# CUSTOM ALIASES
+# ----------------------------
+alias ld="ls -ltd -- */"    # List directories only
+alias home='cd /Users/Akseldkw'
+
+# These assume you converted these functions/scripts to bash and sourced them above
+alias src='save_and_src_bashrc'
+alias gitrebase='rebase_squash_conflict'
+alias gitnuke='rebase_nuclear_feature'
+
+# ----------------------------
+# CUSTOM FUNCTIONS (bash-compatible as written)
+# ----------------------------
+col() {
+  sod "${DESKTOP}/Columbia/"
+  ld
+}
+
+tailkret() {
+  less +F "$NB_LOGFILE"
+}
+
+rgf() {
+  rg --files -g "**/*$@*" 2>/dev/null
+}
+
+# ----------------------------
+# Antigravity PATH (same)
+# ----------------------------
+export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"
+
+# ----------------------------
+# Google Cloud SDK (bash equivalents)
+# Your zshrc uses .zsh.inc; bash uses .bash.inc
+# ----------------------------
+if [[ -f '/Users/Akseldkw/google-cloud-sdk/path.bash.inc' ]]; then
+  # shellcheck source=/dev/null
+  . '/Users/Akseldkw/google-cloud-sdk/path.bash.inc'
+fi
+
+if [[ -f '/Users/Akseldkw/google-cloud-sdk/completion.bash.inc' ]]; then
+  # shellcheck source=/dev/null
+  . '/Users/Akseldkw/google-cloud-sdk/completion.bash.inc'
+fi
+
+export PATH="$HOME/.local/bin:$PATH"
