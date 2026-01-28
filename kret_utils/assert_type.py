@@ -1,11 +1,12 @@
 import typing as t
+from types import UnionType
 
 T = t.TypeVar("T")
 
 
 class TypeAssert:
     @classmethod
-    def assert_type(cls, var: t.Any, expected_type: type[T]) -> T:
+    def assert_type(cls, var: t.Any, expected_type: type[T] | UnionType) -> T:
         if not isinstance(var, expected_type):
             raise TypeError(f"Expected type {expected_type}, but got type {type(var)}")
         return var

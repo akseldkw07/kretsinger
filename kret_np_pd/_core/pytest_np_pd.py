@@ -360,6 +360,10 @@ class TestIntegration:
 class TestIsClose:
     """Test the is_close method for comparing arrays and DataFrames."""
 
+    # -------------------------------------------------------------------------
+    # Basic numpy array tests
+    # -------------------------------------------------------------------------
+
     def test_is_close_numpy_arrays(self):
         """Test is_close with two numpy arrays."""
         arr1 = np.array([1.0, 2.0, 3.0, np.nan])
@@ -370,6 +374,66 @@ class TestIsClose:
 
         np.testing.assert_array_equal(result, expected)
 
+    def test_is_close_numpy_identical(self):
+        """Test is_close with identical numpy arrays."""
+        arr = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        result = NP_PD_Utils.is_close(arr, arr)
+        expected = np.array([True, True, True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_completely_different(self):
+        """Test is_close with completely different values."""
+        arr1 = np.array([1.0, 2.0, 3.0])
+        arr2 = np.array([100.0, 200.0, 300.0])
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([False, False, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_2d_arrays(self):
+        """Test is_close with 2D numpy arrays."""
+        arr1 = np.array([[1.0, 2.0], [3.0, 4.0]])
+        arr2 = np.array([[1.0, 2.00001], [3.1, 4.0]])
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-04)
+        expected = np.array([[True, True], [False, True]])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_zeros(self):
+        """Test is_close with zero values."""
+        arr1 = np.array([0.0, 0.0, 1e-10])
+        arr2 = np.array([0.0, 1e-10, 0.0])
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-05)
+        # np.isclose uses both rtol and atol, default atol=1e-08
+        expected = np.isclose(arr1, arr2, rtol=1e-05, equal_nan=True)
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_negative_values(self):
+        """Test is_close with negative values."""
+        arr1 = np.array([-1.0, -2.0, -3.0])
+        arr2 = np.array([-1.0, -2.00001, -3.1])
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-04)
+        expected = np.array([True, True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_inf_values(self):
+        """Test is_close with infinity values."""
+        arr1 = np.array([np.inf, -np.inf, 1.0])
+        arr2 = np.array([np.inf, -np.inf, 1.0])
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_inf_vs_finite(self):
+        """Test is_close with inf compared to finite values."""
+        arr1 = np.array([np.inf, 1.0])
+        arr2 = np.array([1e308, 1.0])
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([False, True])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # DataFrame tests
+    # -------------------------------------------------------------------------
+
     def test_is_close_dataframes(self):
         """Test is_close with two pandas DataFrames."""
         df1 = pd.DataFrame({"a": [1.0, 2.0, np.nan], "b": [4.0, 5.0, 6.0]})
@@ -379,6 +443,540 @@ class TestIsClose:
         assert isinstance(result, pd.DataFrame)
         expected = pd.DataFrame({"a": [True, True, True], "b": [True, False, True]})
 
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_dataframes_identical(self):
+        """Test is_close with identical DataFrames."""
+        df = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+        result = NP_PD_Utils.is_close(df, df)
+        expected = pd.DataFrame({"a": [True, True, True], "b": [True, True, True]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_dataframes_single_column(self):
+        """Test is_close with single-column DataFrames."""
+        df1 = pd.DataFrame({"col": [1.0, 2.0, 3.0]})
+        df2 = pd.DataFrame({"col": [1.0, 2.00001, 3.1]})
+        result = NP_PD_Utils.is_close(df1, df2, rtol=1e-04)
+        expected = pd.DataFrame({"col": [True, True, False]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_dataframes_many_columns(self):
+        """Test is_close with DataFrames having many columns."""
+        df1 = pd.DataFrame({"a": [1.0], "b": [2.0], "c": [3.0], "d": [4.0], "e": [5.0]})
+        df2 = pd.DataFrame({"a": [1.0], "b": [2.1], "c": [3.0], "d": [4.1], "e": [5.0]})
+        result = NP_PD_Utils.is_close(df1, df2, rtol=1e-03)
+        expected = pd.DataFrame({"a": [True], "b": [False], "c": [True], "d": [False], "e": [True]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_dataframes_with_nan_in_all_columns(self):
+        """Test is_close with NaN in all columns."""
+        df1 = pd.DataFrame({"a": [np.nan, np.nan], "b": [np.nan, 1.0]})
+        df2 = pd.DataFrame({"a": [np.nan, np.nan], "b": [np.nan, 1.0]})
+        result = NP_PD_Utils.is_close(df1, df2, nan_true=True)
+        expected = pd.DataFrame({"a": [True, True], "b": [True, True]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_dataframes_different_column_names(self):
+        """Test is_close raises error when DataFrames have different column names."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+        df2 = pd.DataFrame({"a": [1.0, 2.0], "c": [3.0, 4.0]})  # 'c' instead of 'b'
+
+        with pytest.raises(AssertionError, match="same columns"):
+            NP_PD_Utils.is_close(df1, df2)
+
+    # -------------------------------------------------------------------------
+    # pd.Series tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_two_series(self):
+        """Test is_close with two pandas Series (compares by position, not index)."""
+        s1 = pd.Series([1.0, 2.0, 3.0])
+        s2 = pd.Series([1.0, 2.00001, 3.1])
+
+        result = NP_PD_Utils.is_close(s1, s2, rtol=1e-04)
+        expected = np.array([True, True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_series_different_index(self):
+        """Test is_close with Series having different indices (compares by position)."""
+        s1 = pd.Series([1.0, 2.0, 3.0], index=[0, 1, 2])
+        s2 = pd.Series([1.0, 2.0, 3.0], index=[10, 20, 30])
+
+        result = NP_PD_Utils.is_close(s1, s2)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_series_and_numpy(self):
+        """Test is_close with pd.Series and np.ndarray (mixed ARR_TYPE)."""
+        s = pd.Series([1.0, 2.0, 3.0])
+        arr = np.array([1.0, 2.0, 3.0])
+
+        result = NP_PD_Utils.is_close(s, arr)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_numpy_and_series(self):
+        """Test is_close with np.ndarray and pd.Series (order reversed)."""
+        arr = np.array([1.0, 2.0, 3.0])
+        s = pd.Series([1.0, 2.00001, 3.1])
+
+        result = NP_PD_Utils.is_close(arr, s, rtol=1e-04)
+        expected = np.array([True, True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # torch.Tensor tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_two_tensors_1d(self):
+        """Test is_close with two 1D torch tensors (auto-coerces to ndarray)."""
+        t1 = torch.tensor([1.0, 2.0, 3.0])
+        t2 = torch.tensor([1.0, 2.00001, 3.1])
+
+        result = NP_PD_Utils.is_close(t1, t2, rtol=1e-04)
+        expected = np.array([True, True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_two_tensors_2d(self):
+        """Test is_close with two 2D torch tensors (no auto-coerce, uses tensor branch)."""
+        t1 = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+        t2 = torch.tensor([[1.0, 2.00001], [3.1, 4.0]])
+
+        result = NP_PD_Utils.is_close(t1, t2, rtol=1e-04)
+        expected = np.array([[True, True], [False, True]])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_tensor_with_nan(self):
+        """Test is_close with torch tensors containing NaN."""
+        t1 = torch.tensor([1.0, float("nan"), 3.0])
+        t2 = torch.tensor([1.0, float("nan"), 3.0])
+
+        result = NP_PD_Utils.is_close(t1, t2, nan_true=True)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # pd.Categorical tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_two_categoricals(self):
+        """Test is_close with two pd.Categorical (auto-coerces to ndarray via codes)."""
+        cat1 = pd.Categorical(["a", "b", "c"])
+        cat2 = pd.Categorical(["a", "b", "c"])
+
+        result = NP_PD_Utils.is_close(cat1, cat2)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_categorical_different_values(self):
+        """Test is_close with categoricals having different underlying codes."""
+        cat1 = pd.Categorical(["a", "b", "c"])
+        cat2 = pd.Categorical(["a", "a", "c"])
+
+        result = NP_PD_Utils.is_close(cat1, cat2)
+        # Compares codes: cat1=[0,1,2], cat2=[0,0,1] (different category order possible)
+        # With same categories: a=0, b=1, c=2 for both
+        # cat1 codes: [0, 1, 2], cat2 codes: [0, 0, 1]
+        expected = np.array([True, False, False])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # Filter parameter tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_with_filter_numpy(self):
+        """Test is_close with filter on numpy arrays."""
+        arr1 = np.array([1.0, 2.0, 3.0, 4.0])
+        arr2 = np.array([1.0, 2.0, 3.0, 4.0])
+        filt = np.array([True, False, True, False])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, filt=filt)
+        # Positions with filter=False return -1
+        expected = np.array([True, -1, True, -1])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_with_filter_all_false(self):
+        """Test is_close with all-false filter."""
+        arr1 = np.array([1.0, 2.0, 3.0])
+        arr2 = np.array([100.0, 200.0, 300.0])  # Would be False without filter
+        filt = np.array([False, False, False])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, filt=filt)
+        expected = np.array([-1, -1, -1])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_with_filter_all_true(self):
+        """Test is_close with all-true filter (same as no filter)."""
+        arr1 = np.array([1.0, 2.0, 3.0])
+        arr2 = np.array([1.0, 2.0001, 3.1])
+        filt = np.array([True, True, True])
+
+        result_with_filter = NP_PD_Utils.is_close(arr1, arr2, filt=filt, rtol=1e-03)
+        result_without_filter = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-03)
+        np.testing.assert_array_equal(result_with_filter, result_without_filter)
+
+    def test_is_close_with_filter_dataframe(self):
+        """Test is_close with filter on DataFrames."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+        df2 = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+        filt = np.array([True, False, True])
+
+        result = NP_PD_Utils.is_close(df1, df2, filt=filt)
+        assert isinstance(result, pd.DataFrame)
+        expected = pd.DataFrame({"a": [True, -1, True], "b": [True, -1, True]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_with_filter_mixed_results(self):
+        """Test is_close with filter where filtered positions differ."""
+        arr1 = np.array([1.0, 999.0, 3.0, 999.0])
+        arr2 = np.array([1.0, 1.0, 3.0, 1.0])
+        filt = np.array([True, False, True, False])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, filt=filt)
+        # Even though positions 1 and 3 differ, they're filtered out
+        expected = np.array([True, -1, True, -1])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # nan_true parameter tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_nan_true_default(self):
+        """Test that nan_true=True is the default behavior."""
+        arr1 = np.array([np.nan, np.nan, 1.0])
+        arr2 = np.array([np.nan, 1.0, np.nan])
+
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        # NaN == NaN is True, NaN vs non-NaN is False
+        expected = np.array([True, False, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_nan_true_explicit(self):
+        """Test is_close with nan_true=True explicitly set."""
+        arr1 = np.array([np.nan, np.nan, 1.0])
+        arr2 = np.array([np.nan, np.nan, 1.0])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, nan_true=True)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_nan_false(self):
+        """Test is_close with nan_true=False."""
+        arr1 = np.array([np.nan, np.nan, 1.0])
+        arr2 = np.array([np.nan, np.nan, 1.0])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, nan_true=False)
+        # NaN comparisons are False when nan_true=False
+        expected = np.array([False, False, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_nan_false_dataframe(self):
+        """Test is_close with nan_true=False on DataFrames."""
+        df1 = pd.DataFrame({"a": [np.nan, 1.0], "b": [2.0, np.nan]})
+        df2 = pd.DataFrame({"a": [np.nan, 1.0], "b": [2.0, np.nan]})
+
+        result = NP_PD_Utils.is_close(df1, df2, nan_true=False)
+        expected = pd.DataFrame({"a": [False, True], "b": [True, False]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_all_nan(self):
+        """Test is_close when all values are NaN."""
+        arr1 = np.array([np.nan, np.nan, np.nan])
+        arr2 = np.array([np.nan, np.nan, np.nan])
+
+        result_true = NP_PD_Utils.is_close(arr1, arr2, nan_true=True)
+        result_false = NP_PD_Utils.is_close(arr1, arr2, nan_true=False)
+
+        np.testing.assert_array_equal(result_true, np.array([True, True, True]))
+        np.testing.assert_array_equal(result_false, np.array([False, False, False]))
+
+    # -------------------------------------------------------------------------
+    # rtol parameter tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_rtol_tight(self):
+        """Test is_close with tight relative tolerance."""
+        arr1 = np.array([1.0, 1.0, 1.0])
+        arr2 = np.array([1.0, 1.000001, 1.00001])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-07)
+        expected = np.array([True, False, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_rtol_loose(self):
+        """Test is_close with loose relative tolerance."""
+        arr1 = np.array([1.0, 1.0, 1.0])
+        arr2 = np.array([1.0, 1.01, 1.1])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=0.05)
+        expected = np.array([True, True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_rtol_very_loose(self):
+        """Test is_close with very loose relative tolerance."""
+        arr1 = np.array([1.0, 2.0, 3.0])
+        arr2 = np.array([1.5, 2.5, 3.5])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=0.5)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_rtol_zero(self):
+        """Test is_close with zero tolerance (exact match only)."""
+        arr1 = np.array([1.0, 2.0, 3.0])
+        arr2 = np.array([1.0, 2.0 + 1e-15, 3.0])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=0.0)
+        # Note: np.isclose still has default atol=1e-08, so very small diffs may still match
+        expected = np.isclose(arr1, arr2, rtol=0.0, equal_nan=True)
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_rtol_with_large_values(self):
+        """Test is_close rtol with large values."""
+        arr1 = np.array([1e10, 1e10])
+        arr2 = np.array([1e10, 1.00001e10])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-06)
+        expected = np.array([True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # try_coerce_np parameter tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_coerce_np_single_col_dataframe_to_array(self):
+        """Test is_close with try_coerce_np on single-column DataFrame to 1D array."""
+        df = pd.DataFrame({"col": [1.0, 2.0, 3.0]})
+        arr = np.array([1.0, 2.0, 3.0])
+
+        result = NP_PD_Utils.is_close(df, arr, try_coerce_np=True)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_coerce_np_both_single_col_dataframes(self):
+        """Test is_close with try_coerce_np on two single-column DataFrames with different column names."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0, 3.0]})
+        df2 = pd.DataFrame({"b": [1.0, 2.00001, 3.1]})
+
+        result = NP_PD_Utils.is_close(df1, df2, try_coerce_np=True, rtol=1e-04)
+        expected = np.array([True, True, False])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_coerce_np_array_to_dataframe(self):
+        """Test is_close with try_coerce_np swapping order (array first, DataFrame second)."""
+        arr = np.array([1.0, 2.0, 3.0])
+        df = pd.DataFrame({"col": [1.0, 2.0, 3.0]})
+
+        result = NP_PD_Utils.is_close(arr, df, try_coerce_np=True)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_coerce_np_with_filter(self):
+        """Test is_close with try_coerce_np and filter combined."""
+        df = pd.DataFrame({"col": [1.0, 2.0, 3.0]})
+        arr = np.array([1.0, 999.0, 3.0])
+        filt = np.array([True, False, True])
+
+        result = NP_PD_Utils.is_close(df, arr, filt=filt, try_coerce_np=True)
+        expected = np.array([True, -1, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_coerce_np_with_nan(self):
+        """Test is_close with try_coerce_np and NaN values."""
+        df = pd.DataFrame({"col": [1.0, np.nan, 3.0]})
+        arr = np.array([1.0, np.nan, 3.0])
+
+        result = NP_PD_Utils.is_close(df, arr, try_coerce_np=True, nan_true=True)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_coerce_np_false_mixed_types(self):
+        """Test that try_coerce_np=False raises error on mixed types."""
+        df = pd.DataFrame({"col": [1.0, 2.0, 3.0]})
+        arr = np.array([1.0, 2.0, 3.0])
+
+        with pytest.raises(TypeError):
+            NP_PD_Utils.is_close(df, arr, try_coerce_np=False)
+
+    def test_is_close_coerce_np_1d_tensor_to_array(self):
+        """Test is_close with try_coerce_np on 1D tensor and array."""
+        t = torch.tensor([1.0, 2.0, 3.0])
+        arr = np.array([1.0, 2.0, 3.0])
+
+        result = NP_PD_Utils.is_close(t, arr, try_coerce_np=True)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # Auto-coercion tests (_should_coerce_np logic)
+    # -------------------------------------------------------------------------
+
+    def test_is_close_auto_coerce_1d_dataframe(self):
+        """Test that 1D (single-column) DataFrame auto-coerces when try_coerce_np=None."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0, 3.0]})
+        df2 = pd.DataFrame({"b": [1.0, 2.0, 3.0]})
+
+        # With try_coerce_np=None, single-col DataFrames should auto-coerce
+        result = NP_PD_Utils.is_close(df1, df2)  # try_coerce_np defaults to None
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_auto_coerce_1d_tensor(self):
+        """Test that 1D tensor auto-coerces when try_coerce_np=None."""
+        t = torch.tensor([1.0, 2.0, 3.0])
+        arr = np.array([1.0, 2.0, 3.0])
+
+        result = NP_PD_Utils.is_close(t, arr)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_auto_coerce_categorical(self):
+        """Test that pd.Categorical always auto-coerces when try_coerce_np=None."""
+        cat = pd.Categorical(["a", "b", "c"])
+        arr = np.array([0, 1, 2])  # codes
+
+        result = NP_PD_Utils.is_close(cat, arr)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_no_auto_coerce_2d_dataframe(self):
+        """Test that 2D (multi-column) DataFrame does NOT auto-coerce."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+        df2 = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+
+        result = NP_PD_Utils.is_close(df1, df2)
+        assert isinstance(result, pd.DataFrame)
+        expected = pd.DataFrame({"a": [True, True], "b": [True, True]})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_is_close_no_auto_coerce_2d_tensor(self):
+        """Test that 2D tensor does NOT auto-coerce (uses tensor branch)."""
+        t1 = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+        t2 = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+
+        result = NP_PD_Utils.is_close(t1, t2)
+        expected = np.array([[True, True], [True, True]])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # Error case tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_shape_mismatch_numpy(self):
+        """Test is_close raises error on shape mismatch for numpy arrays."""
+        arr1 = np.array([1.0, 2.0, 3.0])
+        arr2 = np.array([1.0, 2.0])
+
+        with pytest.raises(AssertionError, match="Shapes must match"):
+            NP_PD_Utils.is_close(arr1, arr2)
+
+    def test_is_close_shape_mismatch_dataframe_rows(self):
+        """Test is_close raises error on row count mismatch for DataFrames."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0, 3.0]})
+        df2 = pd.DataFrame({"a": [1.0, 2.0]})
+
+        with pytest.raises(AssertionError, match="Shapes must match"):
+            NP_PD_Utils.is_close(df1, df2)
+
+    def test_is_close_shape_mismatch_dataframe_cols(self):
+        """Test is_close raises error on column count mismatch for DataFrames."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+        df2 = pd.DataFrame({"a": [1.0, 2.0]})
+
+        with pytest.raises(AssertionError, match="Shapes must match"):
+            NP_PD_Utils.is_close(df1, df2)
+
+    def test_is_close_type_mismatch_without_coerce(self):
+        """Test is_close raises error on type mismatch without coercion."""
+        arr = np.array([1.0, 2.0, 3.0])
+        df = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})  # 2D so no auto-coerce
+
+        with pytest.raises(TypeError, match="Both inputs must be of the same type"):
+            NP_PD_Utils.is_close(arr, df, try_coerce_np=False)
+
+    def test_is_close_2d_array_mismatch(self):
+        """Test is_close raises error on 2D array shape mismatch."""
+        arr1 = np.array([[1.0, 2.0], [3.0, 4.0]])
+        arr2 = np.array([[1.0], [2.0]])
+
+        with pytest.raises(AssertionError, match="Shapes must match"):
+            NP_PD_Utils.is_close(arr1, arr2)
+
+    # -------------------------------------------------------------------------
+    # Edge case tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_single_element(self):
+        """Test is_close with single-element arrays."""
+        arr1 = np.array([1.0])
+        arr2 = np.array([1.0])
+
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_empty_arrays(self):
+        """Test is_close with empty arrays."""
+        arr1 = np.array([])
+        arr2 = np.array([])
+
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_large_arrays(self):
+        """Test is_close with large arrays."""
+        np.random.seed(42)
+        arr1 = np.random.randn(10000)
+        arr2 = arr1 + np.random.randn(10000) * 1e-10
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-05)
+        assert result.all(), "All values should be close with small noise"
+
+    def test_is_close_integer_input_numpy(self):
+        """Test is_close with integer numpy arrays (auto-converted to float comparison)."""
+        arr1 = np.array([1, 2, 3])
+        arr2 = np.array([1, 2, 3])
+
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_mixed_int_float(self):
+        """Test is_close with mixed integer and float arrays."""
+        arr1 = np.array([1, 2, 3], dtype=int)
+        arr2 = np.array([1.0, 2.0, 3.0], dtype=float)
+
+        result = NP_PD_Utils.is_close(arr1, arr2)
+        expected = np.array([True, True, True])
+        np.testing.assert_array_equal(result, expected)
+
+    # -------------------------------------------------------------------------
+    # Combined parameter tests
+    # -------------------------------------------------------------------------
+
+    def test_is_close_all_params_numpy(self):
+        """Test is_close with all parameters on numpy arrays."""
+        arr1 = np.array([1.0, np.nan, 3.0, 4.0])
+        arr2 = np.array([1.01, np.nan, 3.0, 4.0])
+        filt = np.array([True, True, False, True])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, filt=filt, nan_true=True, rtol=0.05)
+        # pos 0: 1.0 vs 1.01 with rtol=0.05 -> True
+        # pos 1: nan vs nan with nan_true=True -> True
+        # pos 2: filtered out -> -1
+        # pos 3: 4.0 vs 4.0 -> True
+        expected = np.array([True, True, -1, True])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_all_params_dataframe(self):
+        """Test is_close with all parameters on DataFrames."""
+        df1 = pd.DataFrame({"a": [1.0, np.nan, 3.0], "b": [4.0, 5.0, 6.0]})
+        df2 = pd.DataFrame({"a": [1.01, np.nan, 3.0], "b": [4.2, 5.0, 6.0]})
+        filt = np.array([True, True, False])
+
+        result = NP_PD_Utils.is_close(df1, df2, filt=filt, nan_true=True, rtol=0.05)
+        expected = pd.DataFrame({"a": [True, True, -1], "b": [False, True, -1]})
         pd.testing.assert_frame_equal(result, expected)
 
 
