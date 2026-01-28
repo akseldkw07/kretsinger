@@ -1,10 +1,10 @@
-minimum_pre_commit_version: 3.0.0
+minimum_pre_commit_version: 4.5.1
 # See https://pre-commit.com for more information
 # on pre-commit hooks and configuration.
 exclude: \.(html|svg|ipynb)$
 repos:
   - repo: https://github.com/WGUNDERWOOD/tex-fmt
-    rev: v0.5.4
+    rev: v0.5.6
     hooks:
       - id: tex-fmt
   - repo: local
@@ -32,13 +32,13 @@ repos:
             ^.*nb_imports.py
           )$
   - repo: https://github.com/python/black
-    rev: 24.4.2
+    rev: 26.1.0
     hooks:
       - id: black
         name: black
         args: [--safe, --quiet]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -61,7 +61,7 @@ repos:
       - id: fix-byte-order-marker
       - id: check-shebang-scripts-are-executable
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.8.0
+    rev: v3.2.0
     hooks:
       - id: setup-cfg-fmt
   # - repo: https://github.com/asottile/add-trailing-comma NOTE: this was annoying for function signatures
@@ -69,7 +69,7 @@ repos:
   #   hooks:
   #     - id: add-trailing-comma
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [--py311-plus]

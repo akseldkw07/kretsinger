@@ -10,6 +10,7 @@ from packaging.version import parse  # Used for robust version comparison
 
 class CondaUtils:
     JSON_NAME = "min_conda_versions.json"
+    # region Conda Packages
     CORE: list[str] = [
         "numpy",
         "pandas",
@@ -139,6 +140,7 @@ class CondaUtils:
     PINS_OVERRIDE = {}
     PINNED_PACKAGES = ["numpy", "pandas", "polars", "scikit-learn", "datasets"]
 
+    # endregion
     @staticmethod
     def conda_packages_to_str(
         packages: t.Iterable[str] = ALL,

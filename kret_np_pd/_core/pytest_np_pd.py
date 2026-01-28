@@ -357,5 +357,30 @@ class TestIntegration:
         np.testing.assert_array_equal(combined, expected)
 
 
+class TestIsClose:
+    """Test the is_close method for comparing arrays and DataFrames."""
+
+    def test_is_close_numpy_arrays(self):
+        """Test is_close with two numpy arrays."""
+        arr1 = np.array([1.0, 2.0, 3.0, np.nan])
+        arr2 = np.array([1.0, 2.00001, 3.1, np.nan])
+
+        result = NP_PD_Utils.is_close(arr1, arr2, rtol=1e-04)
+        expected = np.array([True, True, False, True])
+
+        np.testing.assert_array_equal(result, expected)
+
+    def test_is_close_dataframes(self):
+        """Test is_close with two pandas DataFrames."""
+        df1 = pd.DataFrame({"a": [1.0, 2.0, np.nan], "b": [4.0, 5.0, 6.0]})
+        df2 = pd.DataFrame({"a": [1.0, 2.0001, np.nan], "b": [4.0, 5.1, 6.0]})
+
+        result = NP_PD_Utils.is_close(df1, df2, rtol=1e-03)
+        assert isinstance(result, pd.DataFrame)
+        expected = pd.DataFrame({"a": [True, True, True], "b": [True, False, True]})
+
+        pd.testing.assert_frame_equal(result, expected)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
