@@ -9,7 +9,7 @@ from pandas.io.formats.style import Styler
 
 from ..memo_df import InputTypedDict, MemoDataFrame, memo_array
 from ..single_ret_ndarray import SingleReturnArray
-from ..UTILS_np_pd import NP_PD_Utils as UKS_NP_PD
+from ..UTILS_np_pd1 import NP_PD_Utils as UKS_NP_PD
 
 dtt = UKS_NP_PD.dtt
 
