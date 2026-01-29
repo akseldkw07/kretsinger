@@ -1,9 +1,16 @@
+from .eda import EDA_Utils
 from .plot_heatmap import HeatmapUtils
-from .plot_sns import SeabornUtils
-from .subplot_utils import SubplotHelper
+from .sklearn_model_viz import SklearnModelVizUtils
+from .subplot_utils import PlotlySubplotHelper, SubplotHelper
 
 
-class UTILS_Plotting(HeatmapUtils, SubplotHelper, SeabornUtils):
+class UTILS_Plotting(
+    HeatmapUtils,
+    SubplotHelper,
+    PlotlySubplotHelper,
+    SklearnModelVizUtils,
+    EDA_Utils,
+):
     """
     Utility class for common plotting functions using Matplotlib and Seaborn.
     """

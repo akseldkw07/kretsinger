@@ -10,6 +10,7 @@ from optuna.samplers import CmaEsSampler, RandomSampler, TPESampler
 from optuna.study import Study
 from optuna.trial import Trial
 
+from ..top_model_saver import TopNModelSaver
 from ..UTILS_optuna import KRET_OPTUNA_UTILS
 from .constants_optuna import OptunaConstants, OptunaDefaults
 

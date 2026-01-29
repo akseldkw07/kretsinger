@@ -28,7 +28,7 @@ class BaseLightningNN(ABCLM):
     4- add callbacks to assert correct behavior (tensor size? early stopping?)
     """
 
-    ignore_hparams: tuple[str, ...] = ()
+    ignore_hparams = []
 
     # region Init
     def __init__(

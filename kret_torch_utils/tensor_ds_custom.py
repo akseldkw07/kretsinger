@@ -21,11 +21,14 @@ class TensorDatasetCustom(TensorDataset):
 
     _columns: tuple[list[str], ...]
 
-    def __init__(self, *tensors, columns: tuple[list[str], ...] | None = None):
-        super().__init__(*tensors)
+    def __init__(
+        self,
+        *tensors: pd.DataFrame | torch.Tensor | np.ndarray | pd.Series,
+        columns: tuple[list[str], ...] | None = None,
+    ):
+        super().__init__(*tensors)  # type: ignore
 
-        cols_manual = tuple([[f"col_{i}" for i in range(tensor.shape[1])] for tensor in tensors])
-        self._columns = columns if columns is not None else cols_manual
+        self._columns = columns if columns is not None else self.calc_cols(*tensors)
         assert len(self._columns) == len(self.tensors), "Number of column sets must match number of tensors."
 
     @property
@@ -41,10 +44,17 @@ class TensorDatasetCustom(TensorDataset):
     def __repr__(self) -> str:
         """String representation."""
         return (
-            f"TensorDatasetCustom(shape={self.shape}, "
-            f"columns={self.columns}, "
+            f"TensorDatasetCustom(shape={self.shape}, \n"
+            f"columns={self.columns}, \n"
             f"dtype={[t.dtype for t in self.tensors]})"
         )
+
+    @staticmethod
+    def calc_cols(*tensors: pd.DataFrame | torch.Tensor | np.ndarray | pd.Series):
+        cols_manual = tuple(
+            [[f"col_{i}" for i in range(tensor.shape[1] if len(tensor.shape) > 1 else 1)] for tensor in tensors]
+        )
+        return cols_manual
 
     @staticmethod
     def from_pd_xy(
@@ -57,10 +67,10 @@ class TensorDatasetCustom(TensorDataset):
         tensors = [torch.tensor(X.values, dtype=dtype)]
 
         if y is not None:
-            y_df = UTILS_rosetta.coerce_to_df(y)
-            y_cols = y_df.columns.tolist()
-            y_cols = [f"label_{col}" for col in y_cols] if isinstance(y, np.ndarray) else y_cols
-            y_tensors = [torch.tensor(y_df.values, dtype=label_dtype)]
+            y_cols = [f"label_{i}" for i in range(y.shape[1])] if isinstance(y, np.ndarray) else y.columns.tolist()
+            y_np = UTILS_rosetta.try_to_ndarray(y)
+            assert isinstance(y_np, (np.ndarray, pd.Series, pd.DataFrame))
+            y_tensors = [torch.tensor((y_np if isinstance(y_np, np.ndarray) else y_np.values), dtype=label_dtype)]
 
             tensors.extend(y_tensors)
             columns += (y_cols,)

@@ -2,7 +2,7 @@ import typing as t
 
 from kret_decorators.class_property import classproperty
 
-from .typed_cls_mpl import Background_gradient_TypedDict, Format_TypedDict, Sns_Heatmap_TypedDict
+from .typed_cls_mpl import *
 
 if t.TYPE_CHECKING:
     import matplotlib.colors as mcolors
@@ -53,5 +53,8 @@ class MPLDefaults:
     @classproperty
     def background_grad_defaults(cls) -> Background_gradient_TypedDict:
         return {"cmap": MPLConstants.red_green_centered, "axis": None}
+
+    PX_HIST_DEFAULTS: PxHistogram_TypedDict = {"marginal": "box", "barmode": "overlay", "barnorm": None}
+    # GO_HIST_DEFAULTS: GoHistogram_TypedDict = {"marginal": "box", "barmode": "overlay", "barnorm": None}
 
     format_defaults: Format_TypedDict = {"formatter": "{:.2f}", "decimal": ".", "thousands": "_", "na_rep": "NaN"}

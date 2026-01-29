@@ -244,6 +244,9 @@ class MetricMixin(ABCLM):
         """
         if self._task == "regression":
             return y.squeeze()
+        elif self._task == "binary":
+            return y.squeeze()
+
         return y
 
     # endregion

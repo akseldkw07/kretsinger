@@ -5,6 +5,8 @@ start_time = time.time()
 import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure

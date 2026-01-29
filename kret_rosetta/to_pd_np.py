@@ -81,3 +81,14 @@ class To_NP_PD:
 
         assert not assert_1dim or ret.ndim == 1, f"Expected 1-dim ndarray output, got{ret.shape}"
         return ret
+
+    @classmethod
+    def try_to_ndarray(cls, arr: TO_NP_TYPE) -> np.ndarray | TO_NP_TYPE:
+        """
+        Try to convert to np.ndarray, return original if not possible
+        """
+        try:
+            ret = cls.coerce_to_ndarray(arr)
+        except Exception:
+            ret = arr
+        return ret
