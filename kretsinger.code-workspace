@@ -15,6 +15,9 @@
         {
             "name": ".claude",
             "path": "../../.claude"
+        },{
+            "name": "kagglehub",
+            "path": "/Users/Akseldkw/.cache"
         }
     ],
     "settings": {
