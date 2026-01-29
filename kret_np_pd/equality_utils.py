@@ -20,7 +20,7 @@ class EqualityUtils:
         if isinstance(arg, pd.Categorical):
             return True
         if isinstance(arg, (pd.DataFrame, torch.Tensor)):
-            if arg.ndim > 1:
+            if arg.ndim > 1 and arg.shape[1] > 1:
                 return False
             else:
                 return True
