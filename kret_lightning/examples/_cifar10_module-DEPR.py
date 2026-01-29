@@ -4,7 +4,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from kret_lightning import *
+
+from kret_lightning.mixin_metrics import MetricMixin
+from kret_lightning.mixin_callbacks import CallbackMixin
+from kret_lightning.base_lightning_nn import BaseLightningNN
+from kret_lightning.abc_lightning import HPasKwargs
 
 # Presets for CIFAR-10 (3 layer groups, suitable for 32x32 images)
 # Each list defines [blocks_in_layer1, blocks_in_layer2, blocks_in_layer3]
