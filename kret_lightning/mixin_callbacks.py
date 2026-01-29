@@ -23,7 +23,7 @@ class CallbackMixin(ABCLM):
         Don't enable checkpointing during hyperparameter sweeps
         (to avoid saving too many checkpoints)
         """
-        return not self._sweep_mode
+        return False
 
     @property
     def model_checkpoint(self):
