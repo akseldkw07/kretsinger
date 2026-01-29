@@ -1,3 +1,4 @@
+from kret_decorators.class_property import classproperty
 from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_optuna import Create_study_TypedDict, Study_Optimize_TypedDict
@@ -11,8 +12,7 @@ class OptunaConstants:
 
 class OptunaDefaults:
     # Lazy — only imports optuna when first accessed
-    @classmethod
-    @property
+    @classproperty
     def HYPERBAND_PRUNER(cls):
         if not hasattr(cls, "_HYPERBAND_PRUNER"):
             import optuna
@@ -20,8 +20,7 @@ class OptunaDefaults:
             cls._HYPERBAND_PRUNER = optuna.pruners.HyperbandPruner()
         return cls._HYPERBAND_PRUNER
 
-    @classmethod
-    @property
+    @classproperty
     def CREATE_STUDY_DEFAULTS(cls) -> Create_study_TypedDict:
         return {
             "pruner": cls.HYPERBAND_PRUNER,

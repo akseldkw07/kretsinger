@@ -1,9 +1,12 @@
 import typing as t
 
+from kret_decorators.class_property import classproperty
 from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_torch import DataLoader___init___TypedDict
 
+if t.TYPE_CHECKING:
+    import torch
 # DEVICE
 DEVICE_LITERAL = t.Literal["cuda", "mps", "xpu", "cpu"]  # extend to include "xla", "xpu" if needed
 
@@ -38,16 +41,14 @@ class TorchConstants:
     TORCH_MODEL_VIZ_DIR = KretConstants.DATA_DIR / "pytorch_viz"
 
     # Lazy — only imports torch when first accessed
-    @classmethod
-    @property
+    @classproperty
     def DEVICE_TORCH_STR(cls) -> DEVICE_LITERAL:
         if not hasattr(cls, "_DEVICE_TORCH_STR"):
             cls._DEVICE_TORCH_STR = pick_device()
         return cls._DEVICE_TORCH_STR
 
-    @classmethod
-    @property
-    def DEVICE(cls) -> "t.Any":
+    @classproperty
+    def DEVICE(cls) -> "torch.device":
         if not hasattr(cls, "_DEVICE"):
             import torch
 

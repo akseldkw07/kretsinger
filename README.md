@@ -1,27 +1,18 @@
-# Winter break TODO
+# Notes to self
+
+Use `@classproperty` for lazy class properties that need to import heavy libraries (e.g., torch) only when first accessed.
+
+In `typed_cls_*.py` files, use `if t.TYPE_CHECKING:` to avoid heavy unnecessary imports during runtime.
 
 
-## (1) Port over PMML project to new kret_torch package
 
-- FastAI integration / replacement
+# TODOs
 
-- Grid search hyperparameter optimization
-
-## (2) Port over PMML utils to kret_studies
-
-1 - sklearn data pipelines
-
-2 - pandas visualizations
-
-dtt - use torch.tensor.cols_pd?
-
-3-
 
 kretsinger/
     kret_torch/
         optuna/
             RUN_SUPERVISED (os.environ value - do I skip raising on bad outcome?)
-            https://optuna.readthedocs.io/en/stable/tutorial/index.html
         rl_utils/
         graph_neural_networks/
     kret_RL/

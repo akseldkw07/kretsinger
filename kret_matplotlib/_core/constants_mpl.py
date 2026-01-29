@@ -1,5 +1,7 @@
 import typing as t
 
+from kret_decorators.class_property import classproperty
+
 from .typed_cls_mpl import Background_gradient_TypedDict, Format_TypedDict, Sns_Heatmap_TypedDict
 
 if t.TYPE_CHECKING:
@@ -13,8 +15,7 @@ class MPLConstants:
     wr = ["red", "white"]
 
     # Lazy — only imports matplotlib when first accessed
-    @classmethod
-    @property
+    @classproperty
     def red_green_centered(cls) -> "mcolors.LinearSegmentedColormap":
         if not hasattr(cls, "_red_green_centered"):
             import matplotlib.colors as mcolors
@@ -22,8 +23,7 @@ class MPLConstants:
             cls._red_green_centered = mcolors.LinearSegmentedColormap.from_list("RedWhiteGreen", cls.rwg)
         return cls._red_green_centered
 
-    @classmethod
-    @property
+    @classproperty
     def white_green(cls) -> "mcolors.LinearSegmentedColormap":
         if not hasattr(cls, "_white_green"):
             import matplotlib.colors as mcolors
@@ -31,8 +31,7 @@ class MPLConstants:
             cls._white_green = mcolors.LinearSegmentedColormap.from_list("WhiteGreen", cls.wg)
         return cls._white_green
 
-    @classmethod
-    @property
+    @classproperty
     def white_red(cls) -> "mcolors.LinearSegmentedColormap":
         if not hasattr(cls, "_white_red"):
             import matplotlib.colors as mcolors
@@ -42,8 +41,7 @@ class MPLConstants:
 
 
 class MPLDefaults:
-    @classmethod
-    @property
+    @classproperty
     def sns_heatmap_defaults(cls) -> Sns_Heatmap_TypedDict:
         return {
             "annot": True,
@@ -52,8 +50,7 @@ class MPLDefaults:
             "cbar": True,
         }
 
-    @classmethod
-    @property
+    @classproperty
     def background_grad_defaults(cls) -> Background_gradient_TypedDict:
         return {"cmap": MPLConstants.red_green_centered, "axis": None}
 
