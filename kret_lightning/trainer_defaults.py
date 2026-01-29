@@ -64,7 +64,7 @@ class TrainerStaticDefaults:
         "limit_val_batches": 0.5,  # Use 50% of val data (need reliable signal)
         "log_every_n_steps": 50,  # Reduce logging overhead
         "enable_model_summary": False,  # Skip summary printout each trial
-        "enable_checkpointing": False,  # No checkpoints during sweep (saves I/O)
+        "enable_checkpointing": False,  # No checkpoints during sweep. NOTE Use TopNModelSaver instead!!!
         "gradient_clip_val": 1.0,  # Stability for exploring LR ranges
         "max_time": {"minutes": 30},  # Kill runaway trials
     }
