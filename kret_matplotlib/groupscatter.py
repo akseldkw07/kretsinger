@@ -10,7 +10,7 @@ from sklearn.linear_model import HuberRegressor, LinearRegression
 from sklearn.metrics import r2_score
 
 from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
-from kret_np_pd.UTILS_np_pd1 import NP_PD_Utils
+from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_rosetta.to_pd_np import TO_NP_TYPE
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
