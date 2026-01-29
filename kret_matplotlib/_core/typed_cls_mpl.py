@@ -2,13 +2,12 @@ import typing as t
 from collections.abc import Sequence
 from typing import Any, Literal
 
-import matplotlib.colors as mcolors
-import numpy as np
-from matplotlib.axes import Axes
-
 INTERVAL_LITERAL = t.Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
 PERIOD_LITERAL = t.Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
 if t.TYPE_CHECKING:
+    import matplotlib.colors as mcolors
+    import numpy as np
+    from matplotlib.axes import Axes
     from pandas._typing import Axis
     from pandas.io.formats.style_render import Subset
 
@@ -26,7 +25,7 @@ class Subplots_TypedDict(t.TypedDict, total=False):
 
 
 class Background_gradient_TypedDict(t.TypedDict, total=False):
-    cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.Colormap
+    cmap: "t.Literal['RedWhiteGreen', 'WhiteGreen', 'WhiteRed'] | mcolors.Colormap"
     low: float
     high: float
     axis: "Axis | None"
@@ -55,7 +54,7 @@ class Pandas_Styler_TypedDict(Background_gradient_TypedDict, Format_TypedDict, t
 class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
     vmin: float
     vmax: float
-    cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.LinearSegmentedColormap
+    cmap: "t.Literal['RedWhiteGreen', 'WhiteGreen', 'WhiteRed'] | mcolors.LinearSegmentedColormap"
     center: t.Any
     robust: t.Any
     annot: t.Any
@@ -69,14 +68,14 @@ class Sns_Heatmap_TypedDict(t.TypedDict, total=False):
     square: t.Any
     xticklabels: t.Any
     yticklabels: t.Any
-    mask: np.ndarray
-    ax: Axes
+    mask: "np.ndarray"
+    ax: "Axes"
 
 
 class Heatmap_Params_TD(t.TypedDict, total=False):
     vmin: float
     vmax: float
-    cmap: t.Literal["RedWhiteGreen", "WhiteGreen", "WhiteRed"] | mcolors.LinearSegmentedColormap
+    cmap: "t.Literal['RedWhiteGreen', 'WhiteGreen', 'WhiteRed'] | mcolors.LinearSegmentedColormap"
     fmt: str
 
 

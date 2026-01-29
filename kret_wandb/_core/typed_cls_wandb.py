@@ -1,8 +1,10 @@
+import typing as t
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
-from wandb.sdk import Settings
+if t.TYPE_CHECKING:
+    from wandb.sdk import Settings
 
 
 class Wandb_Init_TypedDict(TypedDict, total=False):
@@ -29,5 +31,5 @@ class Wandb_Init_TypedDict(TypedDict, total=False):
     tensorboard: bool | None  # = None
     sync_tensorboard: bool | None  # = None
     monitor_gym: bool | None  # = None
-    settings: Settings | dict[str, Any] | None  # = None
+    settings: "Settings" | dict[str, Any] | None  # = None
     # anonymous: DoNotSet  # = object(...)

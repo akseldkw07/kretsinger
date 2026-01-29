@@ -1,7 +1,5 @@
 import typing as t
 
-import torch
-
 from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_torch import DataLoader___init___TypedDict
@@ -11,6 +9,8 @@ DEVICE_LITERAL = t.Literal["cuda", "mps", "xpu", "cpu"]  # extend to include "xl
 
 
 def pick_device() -> DEVICE_LITERAL:
+    import torch
+
     if torch.cuda.is_available():
         return "cuda"
     # If you plan to use TPUs:
@@ -34,7 +34,22 @@ class TorchDefaults:
 
 class TorchConstants:
     TORCH_MODEL_WEIGHT_DIR = KretConstants.DATA_DIR / "pytorch_weights"
-    DEVICE_TORCH_STR: DEVICE_LITERAL = pick_device()
-    DEVICE = torch.device(DEVICE_TORCH_STR)
     HUGGING_FACE_DIR = KretConstants.DATA_DIR / "hugging_face"
     TORCH_MODEL_VIZ_DIR = KretConstants.DATA_DIR / "pytorch_viz"
+
+    # Lazy — only imports torch when first accessed
+    @classmethod
+    @property
+    def DEVICE_TORCH_STR(cls) -> DEVICE_LITERAL:
+        if not hasattr(cls, "_DEVICE_TORCH_STR"):
+            cls._DEVICE_TORCH_STR = pick_device()
+        return cls._DEVICE_TORCH_STR
+
+    @classmethod
+    @property
+    def DEVICE(cls) -> "t.Any":
+        if not hasattr(cls, "_DEVICE"):
+            import torch
+
+            cls._DEVICE = torch.device(cls.DEVICE_TORCH_STR)
+        return cls._DEVICE
