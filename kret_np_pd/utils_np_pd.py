@@ -7,6 +7,7 @@ from .pd_cleanup import PD_Cleanup
 from .pd_convenience_utils import PD_Convenience_utils
 from .categoricals import CategoricalUtils
 from .sort_utils import SortUtils
+from .equality_utils import EqualityUtils
 
 
 class NP_PD_Utils(
@@ -19,6 +20,7 @@ class NP_PD_Utils(
     CategoricalUtils,
     FilterSampleUtils,
     SortUtils,
+    EqualityUtils,
 ):
     """
     TODO debug long import time

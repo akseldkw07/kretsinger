@@ -14,7 +14,7 @@ FILT_TYPE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame
 
 class FilterSampleUtils:
     @classmethod
-    def process_filter(cls, filter: FILT_TYPE | None, shape: tuple[int] | int | None = None):
+    def process_filter(cls, filter: FILT_TYPE | None, shape: tuple[int, ...] | tuple[int] | int | None = None):
         if filter is None:
             assert shape is not None, "Shape must be provided when filter is None"
             ret = np.full((shape[0] if isinstance(shape, tuple) else shape), True)

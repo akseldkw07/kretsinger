@@ -22,6 +22,7 @@ class BaseLightningNN(ABCLM):
 
     1- finalize naming / filepath conventions
         how does load_from_checkpoint load hparams? how to save them?
+        IDEA: somehow hash model + hparams to get unique id for each model config?
     2- work on training loop defaults
     3- re-implement beijing nn with this base class
     4- add callbacks to assert correct behavior (tensor size? early stopping?)
