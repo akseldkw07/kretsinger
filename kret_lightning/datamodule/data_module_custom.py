@@ -12,10 +12,10 @@ from torch.utils.data import DataLoader
 from kret_decorators.post_init import post_init
 from kret_lightning._core.constants_lightning import STAGE_LITERAL
 from kret_lightning.utils_lightning import LightningDataModuleAssert
-from kret_np_pd._core.np_pd_nb_imports import *
 from kret_sklearn.custom_transformers import MissingValueRemover
 from kret_sklearn.pd_pipeline import PipelinePD
 from kret_torch_utils._core.constants_torch import TorchDefaults
+from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 
 if t.TYPE_CHECKING:
     from kret_torch_utils._core.typed_cls_torch import DataLoader___init___TypedDict
@@ -176,7 +176,7 @@ class PandasInputMixin(DataModuleABC):
 
         self.fit_pipelines_once(X_train_raw, y_train_raw)
         self.x_y_processed = LoadedDfTuple(
-            X=UKS_NP_PD.move_columns(self.PipelineX.transform_df(self.x_y_no_nans.X), **self.col_order),
+            X=NP_PD_Utils.move_columns(self.PipelineX.transform_df(self.x_y_no_nans.X), **self.col_order),
             y=self.PipelineY.transform_df(self.x_y_no_nans.y),
         )
 

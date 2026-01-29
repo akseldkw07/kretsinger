@@ -1,8 +1,10 @@
+import typing as t
 from collections.abc import Callable, Iterable
 from typing import Any, TypedDict, TypeVar
 
-import torch
-from torch.utils.data import Sampler
+if t.TYPE_CHECKING:
+    import torch
+    from torch.utils.data import Sampler
 
 _T = TypeVar("_T")
 
@@ -14,8 +16,8 @@ class DataLoader___init___TypedDict(TypedDict, total=False):
     # dataset: Dataset
     batch_size: int | None  # = 1
     shuffle: bool | None  # = None
-    sampler: Sampler | Iterable | None  # = None
-    batch_sampler: Sampler[list] | Iterable[list] | None  # = None
+    sampler: "Sampler | Iterable | None"  # = None
+    batch_sampler: "Sampler[list] | Iterable[list] | None"  # = None
     num_workers: int  # = 0
     collate_fn: _collate_fn_t | None  # = None
     pin_memory: bool  # = False
@@ -23,7 +25,7 @@ class DataLoader___init___TypedDict(TypedDict, total=False):
     timeout: float  # = 0
     worker_init_fn: _worker_init_fn_t | None  # = None
     multiprocessing_context: Any | None  # = None
-    generator: torch.Generator | None  # = None
+    generator: "torch.Generator | None"  # = None
     prefetch_factor: int | None  # = None
     persistent_workers: bool  # = False
     pin_memory_device: str  # = ''

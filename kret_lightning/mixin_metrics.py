@@ -6,7 +6,7 @@ from torchmetrics import MetricCollection
 from torchmetrics.classification import AUROC, Accuracy, F1Score, Precision, Recall
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, R2Score
 
-from ._core.constants_lightning import TASK_TYPE
+from ._core.constants_lightning import TASK_TYPE_LIGHTNING
 from .abc_lightning import ABCLM
 
 
@@ -41,7 +41,7 @@ class MetricMixin(ABCLM):
                 self._setup_metrics(task="multiclass", num_classes=num_classes)
     """
 
-    _task: TASK_TYPE
+    _task: TASK_TYPE_LIGHTNING
     _num_classes: int | None = None
     _num_labels: int | None = None  # for multilabel
 
@@ -51,7 +51,11 @@ class MetricMixin(ABCLM):
     _test_metrics: MetricCollection
 
     def setup_metrics(
-        self, task: TASK_TYPE, num_classes: int | None = None, num_labels: int | None = None, threshold: float = 0.5
+        self,
+        task: TASK_TYPE_LIGHTNING,
+        num_classes: int | None = None,
+        num_labels: int | None = None,
+        threshold: float = 0.5,
     ) -> None:
         """
         Initialize metrics based on task type. Call this in your __init__.
@@ -74,7 +78,7 @@ class MetricMixin(ABCLM):
         self._test_metrics = metrics.clone(prefix="test_")
 
     def _create_metrics(
-        self, task: TASK_TYPE, num_classes: int | None, num_labels: int | None, threshold: float
+        self, task: TASK_TYPE_LIGHTNING, num_classes: int | None, num_labels: int | None, threshold: float
     ) -> MetricCollection:
         """Create a MetricCollection based on task type."""
 

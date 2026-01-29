@@ -1,5 +1,4 @@
-from lightgbm.callback import early_stopping, log_evaluation, record_evaluation
-
+from kret_decorators.class_property import classproperty
 from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_lgbm import (
@@ -27,10 +26,24 @@ class LGBM_Defaults:
         "min_data_in_leaf": 20,
         # "verbose": 0, # this is handled in sitecustomize.py
     }
-    EVAL_RECORDS = {}
-    CALLBACK_FIT_LGBM = [early_stopping(stopping_rounds=50), log_evaluation(period=10), record_evaluation(EVAL_RECORDS)]
+    EVAL_RECORDS: dict = {}
 
-    LGBM_FIT_DEFAULTS: LGBMRegressor_Fit_TypedDict = {
-        "eval_metric": "l2",
-        "callbacks": CALLBACK_FIT_LGBM,
-    }
+    # Lazy — only imports lightgbm when first accessed
+    @classproperty
+    def CALLBACK_FIT_LGBM(cls) -> list:
+        if not hasattr(cls, "_CALLBACK_FIT_LGBM"):
+            from lightgbm.callback import early_stopping, log_evaluation, record_evaluation
+
+            cls._CALLBACK_FIT_LGBM = [
+                early_stopping(stopping_rounds=50),
+                log_evaluation(period=10),
+                record_evaluation(cls.EVAL_RECORDS),
+            ]
+        return cls._CALLBACK_FIT_LGBM
+
+    @classproperty
+    def LGBM_FIT_DEFAULTS(cls) -> LGBMRegressor_Fit_TypedDict:
+        return {
+            "eval_metric": "l2",
+            "callbacks": cls.CALLBACK_FIT_LGBM,
+        }

@@ -1,6 +1,7 @@
 import typing as t
 
-import numpy as np
+if t.TYPE_CHECKING:
+    import numpy as np
 
 
 class MakeRegression_Params_TypedDict(t.TypedDict, total=False):
@@ -17,7 +18,7 @@ class MakeRegression_Params_TypedDict(t.TypedDict, total=False):
     noise: float  # = 0.0
     shuffle: bool  # = True
     coef: bool  # = False
-    random_state: int | np.random.RandomState | None  # = None
+    random_state: "int | np.random.RandomState | None"  # = None
 
 
 class MakeClassification_Params_TypedDict(t.TypedDict, total=False):
@@ -38,7 +39,7 @@ class MakeClassification_Params_TypedDict(t.TypedDict, total=False):
     shift: float  # = 0.0
     scale: float  # = 1.0
     shuffle: bool  # = True
-    random_state: int | np.random.RandomState | None  # = None
+    random_state: "int | np.random.RandomState | None"  # = None
     # return_X_y: bool  # = True
 
 
@@ -55,7 +56,7 @@ class MakeMultilabelClassification_Params_TypedDict(t.TypedDict, total=False):
     sparse: bool  # = False
     return_indicator: t.Literal["dense", "sparse"]  # = "dense"
     return_distributions: bool  # = False
-    random_state: int | np.random.RandomState | None  # = None
+    random_state: "int | np.random.RandomState | None"  # = None
 
 
 # =========================
@@ -94,7 +95,7 @@ class LogisticRegression_Params_TypedDict(t.TypedDict, total=False):
     fit_intercept: bool  # = True
     intercept_scaling: float  # = 1.0
     class_weight: dict[int | str, float] | t.Literal["balanced"] | None  # = None
-    random_state: int | np.random.RandomState | None  # = None
+    random_state: "int | np.random.RandomState | None"  # = None
     solver: t.Literal[
         "lbfgs",
         "liblinear",
@@ -115,11 +116,11 @@ class ElasticNet_Params_TypedDict(t.TypedDict, total=False):
     alpha: float  # = 1.0
     l1_ratio: float  # = 0.5
     fit_intercept: bool  # = True
-    precompute: bool | np.ndarray  # = False  (Gram matrix can be array-like)
+    precompute: "bool | np.ndarray"  # = False  (Gram matrix can be array-like)
     max_iter: int  # = 1000
     copy_X: bool  # = True
     tol: float  # = 1e-4
     warm_start: bool  # = False
     positive: bool  # = False
-    random_state: int | np.random.RandomState | None  # = None
+    random_state: "int | np.random.RandomState | None"  # = None
     selection: t.Literal["cyclic", "random"]  # = "cyclic"

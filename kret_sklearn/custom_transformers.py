@@ -14,7 +14,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import ElasticNet, HuberRegressor, LinearRegression, LogisticRegression
 
 from kret_np_pd.np_bool_utils import AnyAll, IndexLabel
-from kret_np_pd.UTILS_np_pd1 import NP_PD_Utils
+from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 
 from ._core.typed_cls_sklean import (
     ElasticNet_Params_TypedDict,

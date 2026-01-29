@@ -1,5 +1,4 @@
-import optuna
-
+from kret_decorators.class_property import classproperty
 from kret_utils._core.constants_kret import KretConstants
 
 from .typed_cls_optuna import Create_study_TypedDict, Study_Optimize_TypedDict
@@ -12,12 +11,22 @@ class OptunaConstants:
 
 
 class OptunaDefaults:
-    HYPERBAND_PRUNER = optuna.pruners.HyperbandPruner()
-    CREATE_STUDY_DEFAULTS: Create_study_TypedDict = {
-        "pruner": HYPERBAND_PRUNER,
-        "load_if_exists": True,
-        "storage": OptunaConstants.OPTUNA_STORAGE_DB,
-    }
+    # Lazy — only imports optuna when first accessed
+    @classproperty
+    def HYPERBAND_PRUNER(cls):
+        if not hasattr(cls, "_HYPERBAND_PRUNER"):
+            import optuna
+
+            cls._HYPERBAND_PRUNER = optuna.pruners.HyperbandPruner()
+        return cls._HYPERBAND_PRUNER
+
+    @classproperty
+    def CREATE_STUDY_DEFAULTS(cls) -> Create_study_TypedDict:
+        return {
+            "pruner": cls.HYPERBAND_PRUNER,
+            "load_if_exists": True,
+            "storage": OptunaConstants.OPTUNA_STORAGE_DB,
+        }
 
     @classmethod
     def study_n_hours(cls, hours: int) -> Study_Optimize_TypedDict:
