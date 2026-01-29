@@ -38,6 +38,9 @@ class TorchDefaults:
 class TorchConstants:
     TORCH_MODEL_WEIGHT_DIR = KretConstants.DATA_DIR / "pytorch_weights"
     HUGGING_FACE_DIR = KretConstants.DATA_DIR / "hugging_face"
+    KAGGLEHUB_DIR = (
+        KretConstants.DATA_DIR / "kagglehub"
+    )  # NOTE this doesn't actually work - must set OS env variable KAGGLEHUB_CACHE
     TORCH_MODEL_VIZ_DIR = KretConstants.DATA_DIR / "pytorch_viz"
 
     # Lazy — only imports torch when first accessed

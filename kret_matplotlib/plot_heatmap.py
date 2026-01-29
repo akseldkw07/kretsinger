@@ -28,9 +28,9 @@ class HeatmapUtils(KretMatplotHelper):
         computed_params = cls._generate_heatmap_params(df_data)
 
         kwargs_compute = C.sns_heatmap_defaults | computed_params
-        kwargs = {**kwargs_compute, **kwargs}
+        kwargs_final = kwargs_compute | kwargs
         # print(kwargs)
-        sns.heatmap(df_data, **kwargs)
+        sns.heatmap(df_data, **kwargs_final)
 
     @classmethod
     def heatmap_styler(
