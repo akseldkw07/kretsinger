@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
@@ -37,8 +39,8 @@ def get_beijing_pipeline():
     return pipeline_x, pipeline_y
 
 
-def load_and_clean():
-    df_load = FunctionTransformer(func=pd.read_csv, validate=False)
+def load_and_clean(base_dir: Path = KretConstants.DATA_DIR, filename: str = "medical_cost.csv"):
+    df_load = FunctionTransformer(func=pd.read_csv, validate=False, kw_args={})
     custom_cleanup = FunctionTransformer(func=UKS_NP_PD.data_cleanup, validate=False, kw_args={"ret": True})
     pipeline_load_and_clean = PipelinePD(
         steps=[
@@ -46,7 +48,7 @@ def load_and_clean():
             ("cleanup_custom", custom_cleanup),
         ]
     )
-    df = pipeline_load_and_clean.fit_transform_df(KretConstants.DATA_DIR / "medical_cost.csv")
+    df = pipeline_load_and_clean.fit_transform_df(base_dir / filename)
     features, target = UKS_NP_PD.pop_label_and_drop(df, label_col="charges", drop_cols=["Id"])
     x_train, x_val, y_train, y_val = train_test_split(features, target, test_size=0.15, random_state=0)
     return x_train, x_val, y_train, y_val
@@ -75,3 +77,5 @@ def scale_and_regress(x_train, x_val, y_train, y_val):
     y_hat_val_ols = x_val.pop("y_hat")
     resid_val = y_val - y_hat_val_ols
     UKS_NP_PD.dtt([x_train, x_val, resid_train, resid_val], n=2)
+
+    return x_train, x_val, resid_train, resid_val, y_hat_train_ols, y_hat_val_ols, pipeline_scale_ols

@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from plotly.subplots import make_subplots
 
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
 
 from ._core.typed_cls_mpl import Subplots_TypedDict
-from plotly.subplots import make_subplots
 
 
 class SubplotHelper:

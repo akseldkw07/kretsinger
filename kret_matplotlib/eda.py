@@ -1,13 +1,14 @@
 import typing as t
 
 import pandas as pd
-import seaborn as sns
-import plotly.graph_objects as go
-from ._core.typed_cls_mpl import *
 import plotly.express as px
-from .subplot_utils import SubplotHelper
+import plotly.graph_objects as go
+import seaborn as sns
 from plotly.subplots import make_subplots
+
 from ._core.constants_mpl import MPLDefaults
+from ._core.typed_cls_mpl import *
+from .subplot_utils import SubplotHelper
 
 
 class EDA_Utils:

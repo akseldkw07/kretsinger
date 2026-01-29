@@ -12,10 +12,10 @@ from torch.utils.data import DataLoader
 from kret_decorators.post_init import post_init
 from kret_lightning._core.constants_lightning import STAGE_LITERAL
 from kret_lightning.utils_lightning import LightningDataModuleAssert
+from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 from kret_sklearn.custom_transformers import MissingValueRemover
 from kret_sklearn.pd_pipeline import PipelinePD
 from kret_torch_utils._core.constants_torch import TorchDefaults
-from kret_np_pd.UTILS_np_pd import NP_PD_Utils
 
 if t.TYPE_CHECKING:
     from kret_torch_utils._core.typed_cls_torch import DataLoader___init___TypedDict
@@ -24,7 +24,7 @@ if t.TYPE_CHECKING:
 class DataModuleABC(ABC, L.LightningDataModule):
     data_dir: Path
     data_split: "SplitTuple"
-    ignore_hparams: tuple[str, ...] = ("pipeline_pd",)
+    ignore_hparams: tuple[str, ...] = ("pipeline_pd_xy",)
 
     _train: torch.utils.data.Dataset
     _val: torch.utils.data.Dataset
@@ -55,14 +55,14 @@ class CustomDataModule(DataModuleABC):
         self,
         data_dir: Path | str,
         split: SplitTuple | None = None,
-        pipeline_pd: tuple[PipelinePD, PipelinePD] | None = None,
+        pipeline_pd_xy: tuple[PipelinePD, PipelinePD] | None = None,
         **kwargs,  # save_hyperparameters
     ) -> None:
         super().__init__()
 
         self.data_dir = Path(data_dir)
         self.data_split = split if split is not None else SplitTuple(train=0.8, val=0.2)
-        self._pipeline_pd_x, self._pipeline_pd_y = pipeline_pd if pipeline_pd is not None else (None, None)
+        self._pipeline_pd_x, self._pipeline_pd_y = pipeline_pd_xy if pipeline_pd_xy is not None else (None, None)
         print(f"Saving hparams, ignoring {self.ignore_hparams}")
         self.save_hyperparameters(ignore=self.ignore_hparams)
 
@@ -74,7 +74,11 @@ class CustomDataModule(DataModuleABC):
 
     @property
     def DataLoaderKwargs(self) -> "DataLoader___init___TypedDict":
-        return self.dataloader_kwargs_default | self._dataloader_passed_kwargs
+        try:
+            return self.dataloader_kwargs_default | self._dataloader_passed_kwargs
+        except AttributeError:
+            print("Warning: DataLoaderKwargs accessed before set_dataloader_args called; using default only.")
+            return self.dataloader_kwargs_default
 
     def prepare_data(self) -> None:
         raise NotImplementedError("Implement in subclass")

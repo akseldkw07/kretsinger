@@ -8,6 +8,24 @@ from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 class PD_Convenience_utils:
     @classmethod
+    def float_cols(cls, df: pd.DataFrame) -> list[str]:
+        return df.select_dtypes(include=["float"]).columns.tolist()
+
+    @classmethod
+    def int_cols(cls, df: pd.DataFrame) -> list[str]:
+        return df.select_dtypes(include=["integer"]).columns.tolist()
+
+    @classmethod
+    def numeric_cols(cls, df: pd.DataFrame) -> list[str]:
+        return df.select_dtypes(include=["number"]).columns.tolist()
+
+    @classmethod
+    def cat_cols(cls, df: pd.DataFrame) -> list[str]:
+        # This catches pandas 'category', strings/objects, and booleans.
+        # (If you treat bool as numeric, remove "bool".)
+        return df.select_dtypes(include=["category", "object", "string", "bool"]).columns.tolist()
+
+    @classmethod
     def move_columns(cls, df: pd.DataFrame, start: list[str] | None = None, end: list[str] | None = None):
         """
         Return a DataFrame with the specified columns moved to the start and/or end.

@@ -1,7 +1,7 @@
-from .plot_heatmap import HeatmapUtils
 from .eda import EDA_Utils
-from .subplot_utils import SubplotHelper, PlotlySubplotHelper
+from .plot_heatmap import HeatmapUtils
 from .sklearn_model_viz import SklearnModelVizUtils
+from .subplot_utils import PlotlySubplotHelper, SubplotHelper
 
 
 class UTILS_Plotting(
