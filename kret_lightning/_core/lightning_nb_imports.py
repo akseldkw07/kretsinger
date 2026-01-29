@@ -15,7 +15,7 @@ from ..mixin_callbacks import CallbackMixin
 from ..mixin_metrics import MetricMixin
 from ..trainer_defaults import TrainerDynamicDefaults, TrainerStaticDefaults
 from ..utils_lightning import LightningModuleAssert
-from .constants_lightning import TASK_TYPE, LightningConstants as UKS_LIGHTNING_CONSTANTS
+from .constants_lightning import TASK_TYPE_LIGHTNING, LightningConstants as UKS_LIGHTNING_CONSTANTS
 from .typed_cls_lightning import (
     CSVLogger___init___TypedDict,
     TensorBoardLogger___init___TypedDict,
