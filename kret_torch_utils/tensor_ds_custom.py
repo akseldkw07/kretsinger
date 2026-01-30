@@ -9,6 +9,8 @@ from torch.utils.data import TensorDataset
 
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
+from ._core.constants_torch import TorchConstants
+
 
 class TensorDatasetCustom(TensorDataset):
     """
@@ -74,6 +76,7 @@ class TensorDatasetCustom(TensorDataset):
 
             tensors.extend(y_tensors)
             columns += (y_cols,)
+        tensors = [tensor.to(TorchConstants.DEVICE_TORCH_STR) for tensor in tensors]
         return TensorDatasetCustom(*tensors, columns=columns)
 
     @staticmethod
@@ -105,6 +108,7 @@ class TensorDatasetCustom(TensorDataset):
             tensors.append(label_tensor)
             columns += ([label_col],)
 
+        tensors = [tensor.to(TorchConstants.DEVICE_TORCH_STR) for tensor in tensors]
         return TensorDatasetCustom(*tensors, columns=columns)
 
     def to_pandas(self, copy: bool = False) -> pd.DataFrame:

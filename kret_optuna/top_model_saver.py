@@ -92,5 +92,8 @@ class TopNModelSaver:
 
     @property
     def best_checkpoints(self) -> list[tuple[float, int, Path]]:
+        """
+        Best checkpoints sorted according to direction. The best score is first.
+        """
         reverse = self.direction == "maximize"
         return sorted(self._leaderboard, key=lambda x: x[0], reverse=reverse)

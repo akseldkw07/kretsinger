@@ -177,6 +177,20 @@ class MetricMixin(ABCLM):
         y_prepared = self._prepare_targets(y)
         self._test_metrics.update(preds, y_prepared)
 
+    def predict_step(self, batch: tuple[torch.Tensor, ...], batch_idx: int) -> torch.Tensor:
+        """
+        Prediction step - returns prepared predictions.
+        Batch may or may not contain labels; only x is used.
+
+        Example:
+            nn.eval()
+            with torch.no_grad():
+                preds = nn.predict_step((x_val_tensor,), batch_idx=0)
+        """
+        x = batch[0] if isinstance(batch, (tuple, list)) else batch
+        outputs = self(x)
+        return self._prepare_preds(outputs)
+
     # endregion
 
     # region Epoch End Hooks

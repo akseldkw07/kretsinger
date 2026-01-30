@@ -14,6 +14,9 @@ from kret_decorators.class_property import classproperty
 
 from ._core.constants_lightning import CkptPatternTuple, LightningConstants
 
+if t.TYPE_CHECKING:
+    from kret_optuna.top_model_saver import TopNModelSaver
+
 
 class ABCLM(ABC, L.LightningModule):
     version: str = "v_000"  # eg. 'v_001'
@@ -39,11 +42,15 @@ class ABCLM(ABC, L.LightningModule):
 
     @property
     @abstractmethod
-    def name(self) -> str: ...
+    def name_instance(self) -> str: ...
 
     @property
     @abstractmethod
     def hparams_str(self) -> str: ...
+
+    @classproperty
+    @abstractmethod
+    def classname(cls) -> Path: ...
 
     @classproperty
     @abstractmethod
@@ -116,10 +123,20 @@ class ABCLM(ABC, L.LightningModule):
     load_from_checkpoint()
     """
 
+    @classmethod
+    @abstractmethod
+    def create_model_saver(
+        cls,
+        n: int | None = None,
+        save_dir: str | Path | None = None,
+        direction: t.Literal["minimize", "maximize"] = "minimize",
+        create_new_on_fail: bool = True,
+    ) -> TopNModelSaver: ...
+
 
 class SaveLoadLoggingDict(t.TypedDict):
     save_dir: str | Path
-    name: str
+    name_cls: str
     version: str
 
 

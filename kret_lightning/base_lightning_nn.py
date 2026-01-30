@@ -82,13 +82,9 @@ class BaseLightningNN(DeprecatedLigthningRoutes, ABCLM):
     # endregion
 
     # region Naming & Saving
-    @classproperty
-    def classname(cls):
-        # cls is the class when called on class, but the instance when called on instance
-        return cls.__name__ if isinstance(cls, type) else type(cls).__name__
 
     @property
-    def name(self) -> str:
+    def name_instance(self) -> str:
         return f"{self.classname}__{self.hparams_str}"
 
     @property
@@ -97,13 +93,18 @@ class BaseLightningNN(DeprecatedLigthningRoutes, ABCLM):
         return hp.as_str_safe()
 
     @classproperty
+    def classname(cls):
+        # cls is the class when called on class, but the instance when called on instance
+        return cls.__name__ if isinstance(cls, type) else type(cls).__name__
+
+    @classproperty
     def root_dir(cls) -> Path:
         val = cls._load_dir_override if cls._load_dir_override is not None else cls._root_dir
         return Path(val)
 
     @classproperty
     def save_load_logging_dict(cls) -> SaveLoadLoggingDict:
-        ret: SaveLoadLoggingDict = {"save_dir": cls.root_dir, "name": cls.classname, "version": cls.version}
+        ret: SaveLoadLoggingDict = {"save_dir": cls.root_dir, "name_cls": cls.classname, "version": cls.version}
         return ret
 
     @classproperty
@@ -207,6 +208,10 @@ class BaseLightningNN(DeprecatedLigthningRoutes, ABCLM):
         """
         Thin Wrapper around LightningModule.load_from_checkpoint to set default checkpoint, location, strict, weights_only
         """
+
         if checkpoint_path is None:
-            checkpoint_path = cls.ckpt_file_name()
+            model_ckpt = cls.create_model_saver(create_new_on_fail=False)
+            checkpoint_path = model_ckpt.best_checkpoints[0][2]
+            hparams_file = model_ckpt._yaml_path_for(checkpoint_path)
+            print(f"Loading best checkpoint from {str(checkpoint_path)} with hparams from {hparams_file}")
         return cls.load_from_checkpoint(checkpoint_path, map_location, hparams_file, strict, weights_only, **kwargs)

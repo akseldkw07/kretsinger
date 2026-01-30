@@ -5,7 +5,6 @@ from pathlib import Path
 import lightning as L
 import numpy as np
 import pandas as pd
-import torch
 from sklearn.utils.validation import check_is_fitted
 from torch.utils.data import DataLoader
 
@@ -20,16 +19,18 @@ from kret_torch_utils._core.constants_torch import TorchDefaults
 if t.TYPE_CHECKING:
     from kret_torch_utils._core.typed_cls_torch import DataLoader___init___TypedDict
 
+from kret_torch_utils.tensor_ds_custom import TensorDatasetCustom
+
 
 class DataModuleABC(ABC, L.LightningDataModule):
     data_dir: Path
     data_split: "SplitTuple"
     ignore_hparams: tuple[str, ...] = ("pipeline_pd_xy",)
 
-    _train: torch.utils.data.Dataset
-    _val: torch.utils.data.Dataset
-    _test: torch.utils.data.Dataset
-    _predict: torch.utils.data.Dataset
+    _train: TensorDatasetCustom
+    _val: TensorDatasetCustom
+    _test: TensorDatasetCustom
+    _predict: TensorDatasetCustom
 
     _dataloader_passed_kwargs: "DataLoader___init___TypedDict"
     dataloader_kwargs_default: "DataLoader___init___TypedDict" = TorchDefaults.DATA_LOADER_INIT
@@ -51,6 +52,7 @@ class SplitTuple(t.NamedTuple):
 
 @post_init
 class CustomDataModule(DataModuleABC):
+
     def __init__(
         self,
         data_dir: Path | str,
