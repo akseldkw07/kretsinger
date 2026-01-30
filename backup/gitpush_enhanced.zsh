@@ -104,11 +104,11 @@ _fallback_pr_creation() {
   fi
 
   # Check for new PR creation URL
-  if echo "$push_output" | grep -q "Create a pull request for"; then
+    if echo "$push_output" | grep -q "Create a pull request for"; then
     pr_url=$(echo "$push_output" | grep -Eo 'https://github\.com/[^ ]+')
     if [[ -n "$pr_url" ]]; then
       echo "[gitpush] 🚀 Opening pull request creation page in browser..."
-      open "$pr_url"
+      open -a "browser" "$pr_url"
       return
     fi
   fi
@@ -124,21 +124,22 @@ _fallback_pr_creation() {
   echo "[gitpush] ℹ️  No PR creation URL or existing PR found. You may need to create the PR manually."
 }
 
-# Try to focus existing Chrome tab with PR, don't open new tab if not found
+# Try to focus existing browser tab/window with PR, don't open new tab if not found
 _focus_existing_pr_tab() {
   local pr_url="$1"
 
   if command -v osascript >/dev/null 2>&1; then
-    # First check if we can access Chrome at all
-    if ! osascript -e 'tell application "Google Chrome" to get name' &>/dev/null; then
-      echo "[gitpush] ℹ️  Chrome access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
+    # First check if we can access the browser app at all
+    browser_app="Google Chrome"
+    if ! osascript -e "tell application \"$browser_app\" to get name" &>/dev/null; then
+      echo "[gitpush] ℹ️  ${browser_app} access denied. Please grant permission in System Preferences → Security & Privacy → Privacy → Automation"
       echo "[gitpush] ℹ️  PR URL: $pr_url"
       return
     fi
 
     local found_tab
     found_tab=$(osascript -e "
-      tell application \"Google Chrome\"
+      tell application \"$browser_app\"
         try
           if not (exists window 1) then return \"no_windows\"
           set targetURL to \"$pr_url\"
@@ -173,15 +174,15 @@ _focus_existing_pr_tab() {
     " 2>/dev/null)
 
     if [[ "$found_tab" == "found" ]]; then
-      echo "[gitpush] ✅ Focused existing Chrome tab with PR (fuzzy match)."
+      echo "[gitpush] ✅ Focused existing ${browser_app} tab/window with PR (fuzzy match)."
     elif [[ "$found_tab" == "no_windows" ]]; then
-      echo "[gitpush] ℹ️  Chrome is running but has no windows open."
+      echo "[gitpush] ℹ️  ${browser_app} is running but has no windows open."
       echo "[gitpush] ℹ️  PR URL: $pr_url"
     elif [[ "$found_tab" =~ ^error: ]]; then
-      echo "[gitpush] ℹ️  Chrome access error: ${found_tab#error: }"
+      echo "[gitpush] ℹ️  ${browser_app} access error: ${found_tab#error: }"
       echo "[gitpush] ℹ️  PR URL: $pr_url"
     else
-      echo "[gitpush] ℹ️  No existing Chrome tab found for this PR."
+      echo "[gitpush] ℹ️  No existing ${browser_app} tab/window found for this PR."
       echo "[gitpush] ℹ️  PR URL: $pr_url"
     fi
   else
@@ -189,27 +190,8 @@ _focus_existing_pr_tab() {
   fi
 }
 
-# Generate commit message and description, using aicommits if available, else fallback
+# Generate commit message and description without calling external AI services
 _generate_commit_message() {
-  local ai_message=""
-  if command -v aicommits >/dev/null 2>&1; then
-    # Try to get AI-generated commit message (auto-accept feedback)
-    ai_message=$(aicommits --yes 2>&1)
-    if [[ -n "$ai_message" ]]; then
-      if echo "$ai_message" | grep -q 'OpenAI API Error'; then
-        echo "[gitpush] AI commit message failed: OpenAI API error. Falling back to handcrafted message." >&2
-      else
-        echo "[gitpush] Using AI-generated commit message." >&2
-        echo "$ai_message"
-        return 0
-      fi
-    else
-      echo "[gitpush] AI commit message failed, using fallback." >&2
-    fi
-  else
-    echo "[gitpush] aicommits not found, using fallback." >&2
-  fi
-
   # Fallback: handcrafted logic
   local added=()
   local modified=()
