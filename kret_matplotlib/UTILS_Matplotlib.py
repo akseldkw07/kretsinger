@@ -1,3 +1,4 @@
+from .classification_viz import ClassificationVizUtils
 from .eda import EDA_Utils
 from .plot_heatmap import HeatmapUtils
 from .sklearn_model_viz import SklearnModelVizUtils
@@ -9,6 +10,7 @@ class UTILS_Plotting(
     SubplotHelper,
     PlotlySubplotHelper,
     SklearnModelVizUtils,
+    ClassificationVizUtils,
     EDA_Utils,
 ):
     """
