@@ -6,6 +6,7 @@ import pandas as pd
 from matplotlib.axes import Axes
 from numpy.typing import ArrayLike
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     accuracy_score,
     classification_report,
     confusion_matrix,
@@ -49,7 +50,6 @@ class BinaryEvalResult:
         Plot confusion matrix heatmap using sklearn's ConfusionMatrixDisplay.
         TODO allow passing kwargs to disp.plot()
         """
-        from sklearn.metrics import ConfusionMatrixDisplay
 
         disp = ConfusionMatrixDisplay(
             confusion_matrix=self.confusion_matrix.values, display_labels=self.confusion_matrix.index
