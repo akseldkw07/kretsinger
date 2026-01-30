@@ -10,7 +10,12 @@ import torch
 from lightning.fabric.utilities.data import AttributeDict
 from torch.nn.modules.loss import _Loss
 
+from kret_decorators.class_property import classproperty
+
 from ._core.constants_lightning import CkptPatternTuple, LightningConstants
+
+if t.TYPE_CHECKING:
+    from kret_optuna.top_model_saver import TopNModelSaver
 
 
 class ABCLM(ABC, L.LightningModule):
@@ -37,21 +42,25 @@ class ABCLM(ABC, L.LightningModule):
 
     @property
     @abstractmethod
-    def name(self) -> str: ...
-
-    @property
-    @abstractmethod
-    def root_dir(self) -> Path: ...
+    def name_instance(self) -> str: ...
 
     @property
     @abstractmethod
     def hparams_str(self) -> str: ...
 
-    @property
+    @classproperty
+    @abstractmethod
+    def classname(cls) -> Path: ...
+
+    @classproperty
+    @abstractmethod
+    def root_dir(cls) -> Path: ...
+
+    @classproperty
     @abstractmethod
     def save_load_logging_dict(self) -> SaveLoadLoggingDict: ...
 
-    @property
+    @classproperty
     @abstractmethod
     def ckpt_path(self) -> Path: ...
 
@@ -114,10 +123,20 @@ class ABCLM(ABC, L.LightningModule):
     load_from_checkpoint()
     """
 
+    @classmethod
+    @abstractmethod
+    def create_model_saver(
+        cls,
+        n: int | None = None,
+        save_dir: str | Path | None = None,
+        direction: t.Literal["minimize", "maximize"] = "minimize",
+        create_new_on_fail: bool = True,
+    ) -> TopNModelSaver: ...
+
 
 class SaveLoadLoggingDict(t.TypedDict):
     save_dir: str | Path
-    name: str
+    name_cls: str
     version: str
 
 

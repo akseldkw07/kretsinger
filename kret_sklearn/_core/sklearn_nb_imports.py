@@ -11,7 +11,16 @@ from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.decomposition import PCA
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import ElasticNet, HuberRegressor, Lasso, LinearRegression, LogisticRegression, Ridge
-from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, precision_score, r2_score, recall_score
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import (
@@ -23,6 +32,7 @@ from sklearn.preprocessing import (
     StandardScaler,
 )
 
+from ..classification_eval import BinaryEvalResult, ClassificationEvalUtils
 from ..custom_transformers import (
     DateTimeSinCosNormalizer,
     MissingValueRemover,
