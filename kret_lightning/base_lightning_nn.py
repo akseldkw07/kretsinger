@@ -5,18 +5,19 @@ import torch
 from lightning.fabric.utilities.types import _MAP_LOCATION_TYPE
 from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 
+from kret_decorators.class_property import classproperty
 from kret_decorators.post_init import post_init
 from kret_lightning._core.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
 from kret_torch_utils._core.constants_torch import TorchConstants
 from kret_torch_utils.priors import PriorLosses
-from kret_utils.filename_utils import FileSearchUtils
 
 from .abc_lightning import ABCLM, HPDict, SaveLoadLoggingDict
+from .deprecated_funcs import DeprecatedLigthningRoutes
 
 
 @post_init
-class BaseLightningNN(ABCLM):
+class BaseLightningNN(DeprecatedLigthningRoutes, ABCLM):
     """
     TODO
 
@@ -81,74 +82,33 @@ class BaseLightningNN(ABCLM):
     # endregion
 
     # region Naming & Saving
+    @classproperty
+    def classname(cls):
+        # cls is the class when called on class, but the instance when called on instance
+        return cls.__name__ if isinstance(cls, type) else type(cls).__name__
 
     @property
     def name(self) -> str:
-        return f"{self.__class__.__name__}__{self.hparams_str}"
-
-    @property
-    def root_dir(self) -> Path:
-        val = self._load_dir_override if self._load_dir_override is not None else self._root_dir
-        return Path(val)
+        return f"{self.classname}__{self.hparams_str}"
 
     @property
     def hparams_str(self) -> str:
         hp = HPDict(self.hparams_initial)
         return hp.as_str_safe()
 
-    @property
-    def save_load_logging_dict(self) -> SaveLoadLoggingDict:
-        ret: SaveLoadLoggingDict = {"save_dir": self.root_dir, "name": self.__class__.__name__, "version": self.version}
+    @classproperty
+    def root_dir(cls) -> Path:
+        val = cls._load_dir_override if cls._load_dir_override is not None else cls._root_dir
+        return Path(val)
+
+    @classproperty
+    def save_load_logging_dict(cls) -> SaveLoadLoggingDict:
+        ret: SaveLoadLoggingDict = {"save_dir": cls.root_dir, "name": cls.classname, "version": cls.version}
         return ret
 
-    @property
-    def ckpt_path(self) -> Path:
-        return self.root_dir / self.__class__.__name__ / self.version
-
-    @classmethod
-    def ckpt_file_name(cls) -> Path:
-        """Return the best checkpoint file by parsing val_loss from filenames.
-
-        Expected filename format:
-            best-{epoch:02d}-{val_loss:.2f}.ckpt
-        Example:
-            best-03-0.12.ckpt
-
-        Searches both:
-            <root>/<ModelName>/<version>/
-            <root>/<ModelName>/<version>/checkpoints/
-        """
-
-        base_folder = Path(cls._root_dir) / cls.__name__ / cls.version
-        folders = [base_folder, base_folder / "checkpoints"]
-
-        candidates: list[tuple[float, int, Path]] = []
-        pattern = cls._ckpt_pattern_tuple.pattern
-        matching_files = FileSearchUtils.find_matching_files(folders, pattern)
-
-        for p in matching_files:
-            name = p.name
-            if "best-" not in name and "best_" not in name:
-                continue
-            m = pattern.search(name)
-            if m is None:
-                continue
-            try:
-                loss = float(m.group("loss"))
-                epoch = int(m.group("epoch"))
-            except ValueError:
-                continue
-
-            # store (-epoch) so "lowest" sorts to highest epoch when loss ties
-            candidates.append((loss, -epoch, p))
-
-        if not candidates:
-            raise FileNotFoundError(
-                f"No 'best' checkpoint with parsable loss found in {base_folder} or {base_folder / 'checkpoints'}"
-            )
-
-        candidates.sort(key=lambda x: (x[0], x[1]))
-        return candidates[0][2]
+    @classproperty
+    def ckpt_path(cls) -> Path:
+        return cls.root_dir / cls.classname / cls.version
 
     # endregion
 

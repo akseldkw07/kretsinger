@@ -10,6 +10,8 @@ import torch
 from lightning.fabric.utilities.data import AttributeDict
 from torch.nn.modules.loss import _Loss
 
+from kret_decorators.class_property import classproperty
+
 from ._core.constants_lightning import CkptPatternTuple, LightningConstants
 
 
@@ -41,17 +43,17 @@ class ABCLM(ABC, L.LightningModule):
 
     @property
     @abstractmethod
-    def root_dir(self) -> Path: ...
-
-    @property
-    @abstractmethod
     def hparams_str(self) -> str: ...
 
-    @property
+    @classproperty
+    @abstractmethod
+    def root_dir(cls) -> Path: ...
+
+    @classproperty
     @abstractmethod
     def save_load_logging_dict(self) -> SaveLoadLoggingDict: ...
 
-    @property
+    @classproperty
     @abstractmethod
     def ckpt_path(self) -> Path: ...
 
