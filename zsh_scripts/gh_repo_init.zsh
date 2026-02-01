@@ -64,8 +64,9 @@ ghinit() {
         return 1
     fi
 
-    # Apply branch protection rules
+    # Apply repo settings and branch protection rules
     if [[ "$apply_rules" == true ]]; then
+        _ghinit_apply_repo_settings "$gh_user" "$repo_name"
         _ghinit_apply_ruleset "$gh_user" "$repo_name"
     fi
 
@@ -131,6 +132,34 @@ _ghinit_initial_commit() {
         git add -A
         git commit -m "Initial commit"
         echo "[ghinit] ✅ Initial commit created"
+    fi
+}
+
+_ghinit_apply_repo_settings() {
+    local gh_user="$1"
+    local repo_name="$2"
+
+    echo "[ghinit] ⚙️  Configuring repository settings..."
+
+    local settings_payload
+    settings_payload=$(cat <<'EOF'
+{
+  "allow_merge_commit": false,
+  "allow_squash_merge": true,
+  "allow_rebase_merge": false,
+  "delete_branch_on_merge": true,
+  "allow_auto_merge": true,
+  "allow_update_branch": false,
+  "squash_merge_commit_title": "PR_TITLE",
+  "squash_merge_commit_message": "PR_BODY"
+}
+EOF
+)
+
+    if gh api "repos/$gh_user/$repo_name" --method PATCH --input - <<< "$settings_payload" &>/dev/null; then
+        echo "[ghinit] ✅ Repo settings applied (squash-only, auto-delete branches)"
+    else
+        echo "[ghinit] ⚠️  Failed to apply repo settings"
     fi
 }
 
