@@ -96,14 +96,14 @@ static_collected/
 lib/
 
 # Temporary files (often hidden)
-*~
+~*
 *.bak
 *.swp     # Vim swap files
 .DS_Store # macOS specific
 
 scratch/
 vault/
-data/
+# data/
 *.out
 
 # Claude Desktop

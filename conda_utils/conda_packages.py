@@ -106,6 +106,21 @@ class CondaUtils:
         "onnxscript",
         # 'thop', # for calculating FLOPs and params in pytorch models - PIP ONLY
     ]
+    CV = [
+        "opencv",
+        "pillow",
+        "scikit-image",
+        "torchvision",
+        "timm",
+        "faster-coco-eval",  # this is tough on macos for some reason, but pip works
+        "pycocotools",
+    ]
+    COLUMBIA = [
+        "opencv-python",
+        "pycocotools",
+        "timm",
+        "transformers",
+    ]
     LLM_QUERY = [
         # REQUIRE GPU
         "transformers",  # for LLMs
@@ -119,8 +134,10 @@ class CondaUtils:
         "cvxpy",  # optimization
     ]
     GRAPHS = ["graphviz", "networkx", "osmnx", "pytorch_geometric"]
-    MISC = ["openai", "openpyxl"]
     RL = ["gymnasium", "pygame"]
+    CI = ["tigramite"]  # causal inference, time series
+    MISC = ["openai", "openpyxl", "youtube-transcript-api"]
+
     ALL = (
         CORE
         # + FINANCE
@@ -132,8 +149,13 @@ class CondaUtils:
         # + REDDIT
         + ML
         + NN_DL
+        + CV
+        # + COLUMBIA
         # + LLM_QUERY
         + LINALG_OPTIMIZATION
+        + GRAPHS
+        + RL
+        + CI
         + MISC
     )
 

@@ -188,7 +188,7 @@ _ghinit_apply_ruleset() {
     {
       "type": "pull_request",
       "parameters": {
-        "allowed_merge_methods": ["merge", "squash", "rebase"],
+        "allowed_merge_methods": ["squash"],
         "dismiss_stale_reviews_on_push": false,
         "require_code_owner_review": false,
         "require_last_push_approval": false,
