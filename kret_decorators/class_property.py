@@ -1,4 +1,10 @@
-class classproperty:
+from typing import TypeVar, Generic
+from collections.abc import Callable
+
+T = TypeVar("T")
+
+
+class classproperty(Generic[T]):
     """Descriptor that acts like a combined @classmethod + @property.
 
     Works on Python 3.9-3.13+ (the built-in stacked ``@classmethod @property``
@@ -12,10 +18,10 @@ class classproperty:
                 return 42
     """
 
-    def __init__(self, func):
+    def __init__(self, func: Callable[..., T]) -> None:
         self.fget = func
 
-    def __get__(self, obj, owner=None):
+    def __get__(self, obj: object, owner: type | None = None) -> T:
         if owner is None:
             owner = type(obj)
         return self.fget(owner)
