@@ -1,23 +1,29 @@
 #!/bin/zsh
 
-rmworkspaces() {
+rmworktrees() {
     local REPO_ROOT
     local PRIMARY_BRANCH
     local -a WORKTREE_BRANCHES
+    local GIT
 
-    REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
-        echo "[rmworkspaces] Error: Not inside a git repository."
+    GIT=$(command -v git 2>/dev/null) || {
+        echo "[rmworktrees] Error: git not found in PATH."
         return 1
     }
 
-    PRIMARY_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)
+    REPO_ROOT=$("$GIT" rev-parse --show-toplevel 2>/dev/null) || {
+        echo "[rmworktrees] Error: Not inside a git repository."
+        return 1
+    }
+
+    PRIMARY_BRANCH=$("$GIT" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)
     if [[ -z "$PRIMARY_BRANCH" ]]; then
-        if git rev-parse --verify main &>/dev/null; then
+        if "$GIT" rev-parse --verify main &>/dev/null; then
             PRIMARY_BRANCH="main"
-        elif git rev-parse --verify master &>/dev/null; then
+        elif "$GIT" rev-parse --verify master &>/dev/null; then
             PRIMARY_BRANCH="master"
         else
-            echo "[rmworkspaces] Error: Could not determine primary branch."
+            echo "[rmworktrees] Error: Could not determine primary branch."
             return 1
         fi
     else
@@ -26,27 +32,27 @@ rmworkspaces() {
 
     WORKTREE_BRANCHES=()
 
-    while read -r path branchref; do
-        [[ -z "$path" ]] && continue
-        [[ "$path" == "$REPO_ROOT" ]] && continue
+    while read -r wt_path branchref; do
+        [[ -z "$wt_path" ]] && continue
+        [[ "$wt_path" == "$REPO_ROOT" ]] && continue
 
         local branch="${branchref#refs/heads/}"
 
-        if [[ -d "$path" ]]; then
-            echo "[rmworkspaces] 🧹 Removing worktree: $path"
-            git worktree remove --force "$path" || {
-                echo "[rmworkspaces] ❌ Failed to remove worktree: $path"
+        if [[ -d "$wt_path" ]]; then
+            echo "[rmworktrees] 🧹 Removing worktree: $wt_path"
+            "$GIT" worktree remove --force "$wt_path" || {
+                echo "[rmworktrees] ❌ Failed to remove worktree: $wt_path"
                 return 1
             }
         else
-            echo "[rmworkspaces] 🧹 Worktree directory gone (prunable), skipping remove: $path"
+            echo "[rmworktrees] 🧹 Worktree directory gone (prunable), skipping remove: $wt_path"
         fi
 
         if [[ -n "$branch" && "$branch" != "$PRIMARY_BRANCH" ]]; then
             WORKTREE_BRANCHES+=("$branch")
         fi
     done < <(
-        git worktree list --porcelain |
+        "$GIT" worktree list --porcelain |
             awk '
                 /^worktree / { path=$2 }
                 /^branch /   { branch=$2 }
@@ -60,14 +66,14 @@ rmworkspaces() {
             '
     )
 
-    git worktree prune
+    "$GIT" worktree prune
 
     if (( ${#WORKTREE_BRANCHES[@]} )); then
-        echo "[rmworkspaces] 🗑️ Deleting branches attached to removed worktrees..."
+        echo "[rmworktrees] 🗑️ Deleting branches attached to removed worktrees..."
         for branch in "${WORKTREE_BRANCHES[@]}"; do
-            echo "[rmworkspaces] 🗑️ Deleting branch: $branch"
-            git branch -D "$branch" || {
-                echo "[rmworkspaces] ❌ Failed to delete branch: $branch"
+            echo "[rmworktrees] 🗑️ Deleting branch: $branch"
+            "$GIT" branch -D "$branch" || {
+                echo "[rmworktrees] ❌ Failed to delete branch: $branch"
                 return 1
             }
         done
