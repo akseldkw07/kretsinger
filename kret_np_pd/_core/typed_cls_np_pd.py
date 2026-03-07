@@ -25,7 +25,7 @@ class DTTParams(t.TypedDict, total=False):
     seed: int | None
     max_col_width: int | None
     num_cols: int | None
-    show_dimensions: bool  # TODO make this nicer, add to the bottom of the dataframe instead of applying it to title
+    show_dims: bool
     align_cols: bool  # NOTE not implemented
 
 
