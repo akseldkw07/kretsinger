@@ -25,6 +25,7 @@ if t.TYPE_CHECKING:
         | torch.Tensor
         | torch.utils.data.TensorDataset
         | TensorDatasetCustom
+        | list
     )
 
 TITLE_FMT = '<div style="text-align: left; font-weight: bold; margin-left: 5px; font-size: 18px; margin-bottom: 8px;">{title}</div>'
@@ -71,7 +72,7 @@ TABLE_FMT = """
         """
 
 
-DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dimensions": False}
+DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dims": False}
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
 ViewHow = t.Literal["sample", "head", "tail"]
@@ -139,19 +140,29 @@ class PD_Display_Utils:
                 html_str += "</div>"
                 continue
 
-            title += f"{df.shape[0]} rows x {df.shape[1] } columns" if hparams.get("show_dimensions", False) else ""
             html_str += TITLE_FMT.format(title=title) if title else ""
             assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
+            full_shape = (len(df), df.shape[1]) if hparams.get("show_dims", False) else None
             mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
-            table_html = cls.generate_table_with_dtypes(df[mask], **hparams)
+            table_html = cls.generate_table_with_dtypes(df[mask], full_shape=full_shape, **hparams)
             html_str += table_html
             html_str += "</div>"
         html_str += "</div>" + ("</div>" if num_cols is not None else "")
         display_html(html_str, raw=True)
 
     @classmethod
-    def generate_table_with_dtypes(cls, df: pd.DataFrame | Styler, **hparams: t.Unpack[To_html_TypedDict]) -> str:
-        """Generate HTML table with datatypes displayed below column headers."""
+    def generate_table_with_dtypes(
+        cls,
+        df: pd.DataFrame | Styler,
+        full_shape: tuple[int, int] | None = None,
+        **hparams: t.Unpack[DTTKwargs],
+    ) -> str:
+        """
+        Generate HTML table with datatypes displayed below column headers.
+
+        Uses pandas' built-in to_html() for fast rendering, then injects a custom row for datatypes and a tfoot for dimensions if requested.
+        The CSS in TABLE_FMT handles truncation and ellipsis for long text if max_col_width is set.
+        """
         # Use pandas' fast to_html() method
 
         html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
@@ -177,6 +188,22 @@ class PD_Display_Utils:
         else:
             # Fallback if structure is unexpected
             html = base_html
+
+        # Inject a tfoot showing full dataset dimensions when show_dims=True.
+        # n_cols + 1 to span the index column as well.
+        if full_shape is not None:
+            full_rows, full_cols = full_shape
+            displayed = len(df)
+            n_cols = len(df.columns)
+            tfoot = (
+                f"  <tfoot>\n"
+                f'    <tr><td colspan="{n_cols + 1}" '
+                f'style="text-align: left; font-size: 0.8em; color: #888; font-style: italic; padding: 4px 8px;">'
+                f"Showing {displayed} of {full_rows} rows \u00d7 {full_cols} columns"
+                f"</td></tr>\n"
+                f"  </tfoot>\n"
+            )
+            html = html.replace("</table>", tfoot + "</table>")
 
         return html
 
