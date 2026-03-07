@@ -2,7 +2,8 @@
 # checkout main, delete branches, and pull latest changes
 
 mpgd() {
-    # TODO delete all worktrees (via rmworktrees), and then delete corresponding branches
+    rmworktrees || return 1
+
     local PRIMARY_BRANCH
 
     # Determine primary branch
