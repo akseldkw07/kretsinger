@@ -37,16 +37,16 @@ PER_TABLE_DIV = (
 )
 TABLE_FMT = """
         <style>
-            table td, table th {{
+            #{container_id} table td, #{container_id} table th {{
                 max-width: {max_col_width}px;
                 overflow: hidden;
                 white-space: nowrap;
                 position: relative;
             }}
-            table td {{
+            #{container_id} table td {{
                 text-overflow: ellipsis;
             }}
-            table td.truncated::after, table th.truncated::after {{
+            #{container_id} table td.truncated::after, #{container_id} table th.truncated::after {{
                 content: '';
                 position: absolute;
                 right: 0;
@@ -61,9 +61,13 @@ TABLE_FMT = """
             (function() {{
                 // Wait for the DOM to be ready
                 setTimeout(function() {{
-                    document.querySelectorAll('table td, table th').forEach(function(cell) {{
+                    document.querySelectorAll('#{container_id} table td, #{container_id} table th').forEach(function(cell) {{
                         if (cell.scrollWidth > cell.clientWidth) {{
                             cell.classList.add('truncated');
+                            // Expand truncated cells up to max_col_width so content
+                            // is as visible as possible without forcing non-truncated
+                            // cells to be wider than their natural size
+                            cell.style.width = '{max_col_width}px';
                         }}
                     }});
                 }}, 100);
@@ -118,10 +122,15 @@ class PD_Display_Utils:
         cls, args: list[pd.DataFrame | Styler], titles: t.Iterable[str], n: int, how: ViewHow, hparams: DTTKwargs
     ):
         """Original behavior: display all items in a single row with horizontal scroll."""
-        # Add overflow-x: auto for horizontal scrolling
+        # Unique container ID scopes CSS/JS to this render only, preventing
+        # styles from one dtt() call from overwriting those of previous calls
         num_cols = hparams.get("num_cols")
-        html_str = OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
-        html_str = cls.fmt_css(hparams, html_str)
+
+        container_id = f"dtt-{np.random.randint(0, 1_000_000)}"
+        html_str = f"<div id='{container_id}'>"
+
+        html_str += OUTER_STYLE_TABLE if num_cols else OUTER_STYLE_ROW
+        html_str = cls.fmt_css(hparams, html_str, container_id)
 
         for idx, (df, title) in enumerate(zip(args, chain(titles, cycle(["NO_TITLE"])))):
             if num_cols is not None and idx % num_cols == 0:
@@ -148,6 +157,7 @@ class PD_Display_Utils:
             html_str += table_html
             html_str += "</div>"
         html_str += "</div>" + ("</div>" if num_cols is not None else "")
+        html_str += "</div>"  # close the container div
         display_html(html_str, raw=True)
 
     @classmethod
@@ -208,10 +218,11 @@ class PD_Display_Utils:
         return html
 
     @classmethod
-    def fmt_css(cls, hparams: DTTParams, html_str: str):
-        # Add CSS for column width limits if specified
+    def fmt_css(cls, hparams: DTTParams, html_str: str, container_id: str):
+        # Add CSS/JS for column width limits, scoped to container_id so styles
+        # from this render don't bleed into previously rendered dtt() outputs
         if (max_col_width := hparams.get("max_col_width")) is not None:
-            html_str += TABLE_FMT.format(max_col_width=max_col_width)
+            html_str += TABLE_FMT.format(max_col_width=max_col_width, container_id=container_id)
         return html_str
 
 
