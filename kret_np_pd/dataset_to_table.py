@@ -112,7 +112,8 @@ class PD_Display_Utils:
                 df = arg[filter] if (filter is not None) else arg
                 df = UTILS_rosetta.coerce_to_df(df)
             else:
-                df = arg
+                styler_index: pd.Index = getattr(arg, "data").index
+                df = arg.hide(styler_index[~filter], axis="index") if (filter is not None) else arg
             args.append(df)
 
         cls.display_df_list(args, titles, n, how, hparams)
@@ -142,18 +143,22 @@ class PD_Display_Utils:
 
             # Add flex-shrink: 0 to prevent tables from shrinking
             html_str += PER_TABLE_DIV.format(addtl_width=0)
+            assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
+            df_data = getattr(df, "data") if isinstance(df, Styler) else df
+            mask = gen_display_mask(len(df_data), min(n, len(df_data)), hparams["seed"], how)
+
             if isinstance(df, Styler):
-                table_html = cls.generate_table_with_dtypes(df, **hparams)
+                df_masked = df.hide(df_data.index[~mask], axis="index")
+                table_html = cls.generate_table_with_dtypes(df_masked, **hparams)
                 html_str += TITLE_FMT.format(title=title) if title else ""
                 html_str += table_html
                 html_str += "</div>"
                 continue
 
             html_str += TITLE_FMT.format(title=title) if title else ""
-            assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
             full_shape = (len(df), df.shape[1]) if hparams.get("show_dims", False) else None
-            mask = gen_display_mask(len(df), min(n, len(df)), hparams["seed"], how)
-            table_html = cls.generate_table_with_dtypes(df[mask], full_shape=full_shape, **hparams)
+            mask = gen_display_mask(len(df_data), min(n, len(df_data)), hparams["seed"], how)
+            table_html = cls.generate_table_with_dtypes(df_data[mask], full_shape=full_shape, **hparams)
             html_str += table_html
             html_str += "</div>"
         html_str += "</div>" + ("</div>" if num_cols is not None else "")

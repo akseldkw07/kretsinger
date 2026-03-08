@@ -38,6 +38,8 @@ class KretMatplotHelper:
     def _legend_html(
         cls, *, cmap, vmin: float, vmax: float, vcenter: float | None = None, n: int = 256, height: int = 14, **kwargs
     ) -> str:
+        if isinstance(cmap, str):
+            cmap = plt.get_cmap(cmap)
         if vcenter is not None and vmin < vcenter < vmax:
             norm = TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
         else:

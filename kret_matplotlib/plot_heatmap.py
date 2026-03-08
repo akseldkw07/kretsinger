@@ -50,7 +50,7 @@ class HeatmapUtils(KretMatplotHelper):
             pd.io.formats.style.Styler: Styled DataFrame with heatmap coloring
         """
         # Extract DataFrame if a Styler was passed
-        df_data = df if isinstance(df, pd.DataFrame) else df.data  # type: ignore
+        df_data = df if isinstance(df, pd.DataFrame) else getattr(df, "data")
 
         computed_params = cls._generate_heatmap_params(df_data)
         fmt = computed_params.pop("fmt")
@@ -68,7 +68,7 @@ class HeatmapUtils(KretMatplotHelper):
         styled = styled.set_properties(**{"text-align": "center"})  # type: ignore[arg-type]
 
         if show_legend:
-            legend_html = cls._legend_html(**computed_params)
+            legend_html = cls._legend_html(**heatmap_params)  # type: ignore
             styled = styled.set_caption(legend_html)
         return styled
 

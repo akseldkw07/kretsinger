@@ -65,7 +65,7 @@ class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
 
     def get_feature_names_out(self, *args, **kwargs):
         # TODO return np.array(self.new_columns, dtype=object) if config set that way
-        return self.new_columns
+        return np.array(self.new_columns, dtype=object)
 
     def get_feature_names_out_list(self, *args, **kwargs):
         return self.new_columns
