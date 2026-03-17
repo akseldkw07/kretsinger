@@ -3,6 +3,7 @@ from kret_np_pd.exp_decay import NP_ExpDecay_Utils
 from kret_np_pd.filters import FilterSampleUtils
 
 from .categoricals import CategoricalUtils
+from .eda import EDA_Utils
 from .equality_utils import EqualityUtils
 from .np_bool_utils import NP_Boolean_Utils
 from .np_dtype_utils import NP_Dtype_Utils
@@ -22,7 +23,5 @@ class NP_PD_Utils(
     FilterSampleUtils,
     SortUtils,
     EqualityUtils,
-):
-    """
-    TODO debug long import time
-    """
+    EDA_Utils,
+): ...

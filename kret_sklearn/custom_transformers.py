@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import ElasticNet, HuberRegressor, LinearRegression, LogisticRegression
+from sklearn.preprocessing import FunctionTransformer
 
 from kret_np_pd.np_bool_utils import AnyAll, IndexLabel
 from kret_np_pd.UTILS_np_pd import NP_PD_Utils
@@ -203,3 +204,10 @@ class MissingValueRemover(PandasColumnOrderBase):
         print(f"Removed {nan_mask.sum()} rows, representing {nan_mask.mean():.2%} of the data")
 
         return ret
+
+
+###############################################################
+# Example
+###############################################################
+
+df_load = FunctionTransformer(func=pd.read_parquet, validate=False, kw_args={})

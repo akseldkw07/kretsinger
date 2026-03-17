@@ -6,6 +6,12 @@ import pandas as pd
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 
+class PD_Convenience_utils_Col_filter_TypedDict(t.TypedDict, total=False):
+    df: pd.DataFrame
+    include: list[str]  # = []
+    exclude: list[str]  # = []
+
+
 class PD_Convenience_utils:
     @classmethod
     def float_cols(cls, df: pd.DataFrame) -> list[str]:
@@ -42,6 +48,31 @@ class PD_Convenience_utils:
         middle = [col for col in df.columns if col not in start and col not in end]
         new_order = start + middle + end
         return df[new_order]
+
+    @classmethod
+    def col_filter(cls, df: pd.DataFrame, include: list[str] = [], exclude: list[str] = []) -> pd.DataFrame:
+        """
+        Return a DataFrame with only the specified columns included and/or excluded.
+        Args:
+            df: The DataFrame.
+            include: List of column substrings to include (if None, include all).
+            exclude: List of column substrings to exclude (if None, exclude none).
+        Returns:
+            A new DataFrame with columns filtered.
+        """
+        include = (
+            [col for col in df.columns if any(substr in col for substr in include)]
+            if len(include)
+            else df.columns.tolist()
+        )
+
+        exclude = [col for col in df.columns if any(substr in col for substr in exclude)]
+
+        ret = df[include].drop(columns=exclude, errors="ignore")
+        print(
+            f"Returning df without {len(cols_gone:=[col for col in df.columns if col not in ret.keys()])} columns: {cols_gone}"
+        )
+        return ret
 
     @t.overload
     @classmethod
