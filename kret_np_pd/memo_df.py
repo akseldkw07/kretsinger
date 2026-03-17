@@ -121,7 +121,7 @@ class memo_fn(t.Generic[MDF]):
             return self
 
         def wrapper(*args, **kwargs):
-            key = f"{self.name}__{args}__{tuple(sorted(kwargs.items()))}"
+            key = f"{self.name}__{args}" + (f"__{tuple(sorted(kwargs.items()))}" if kwargs else "")
             if key not in instance._memo_dict:
                 print(f"Calculating {self.name}{args or ''}")
                 instance._memo_dict[key] = self.func(instance, *args, **kwargs)

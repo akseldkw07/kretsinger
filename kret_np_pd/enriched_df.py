@@ -3,8 +3,8 @@ import typing as t
 import numpy as np
 import pandas as pd
 
-from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 from kret_np_pd.pd_convenience_utils import PD_Convenience_utils, PD_Convenience_utils_Col_filter_TypedDict
+from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 
 class Enriched_DF(pd.DataFrame):
