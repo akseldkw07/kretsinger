@@ -10,9 +10,10 @@ from ._core.typed_cls_np_pd import DataFrame___init___TypedDict
 # Type variables for generic MemoDataFrame and memo_array
 T = t.TypeVar("T", bound="InputTypedDict")
 MDF = t.TypeVar("MDF", bound="MemoDataFrame[t.Any]")
+TData = t.TypeVar("TData", bound=pd.DataFrame)
 
 
-class InputTypedDict(t.TypedDict):
+class InputTypedDict(t.TypedDict, t.Generic[TData]):
     """
     Base class for input param. General pattern is for the "primary" dataset to get stored in `"data"`,
     and supplmenetal datasets under different keys. NOTE they don't need to be the same len as `"data"`
@@ -20,7 +21,7 @@ class InputTypedDict(t.TypedDict):
     NOTE `data` is required - will get passed onto `pd.DataFrame.__init__`
     """
 
-    data: pd.DataFrame
+    data: TData
 
 
 class MemoDataFrame(pd.DataFrame, t.Generic[T]):
@@ -73,7 +74,7 @@ class MemoDataFrame(pd.DataFrame, t.Generic[T]):
         input = pd.DataFrame(self, copy=copy)
         memo = pd.DataFrame(self._memo_dict, copy=copy)
         memo.insert(0, "SEP", "...")
-        return pd.concat([input, memo], axis=1, copy=False)  # no need to copy again
+        return pd.concat([input, memo], axis=1, copy=False)  # type: ignore # no need to copy again
 
 
 class memo_array(t.Generic[MDF]):

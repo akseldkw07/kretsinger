@@ -214,7 +214,7 @@ class PD_Display_Utils:
                 f"  <tfoot>\n"
                 f'    <tr><td colspan="{n_cols + 1}" '
                 f'style="text-align: left; font-size: 0.8em; color: #888; font-style: italic; padding: 4px 8px;">'
-                f"Showing {displayed} of {full_rows} rows \u00d7 {full_cols} columns"
+                f"Showing {displayed} of {full_rows:,} rows \u00d7 {full_cols} columns"
                 f"</td></tr>\n"
                 f"  </tfoot>\n"
             )

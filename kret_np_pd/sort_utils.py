@@ -5,8 +5,6 @@ import pandas as pd
 class SortUtils:
     @classmethod
     def is_sorted(cls, arr: np.ndarray | pd.Series):
-        """
-        NOTE this is horrible inefficient, can be parallelized etc
-        """
-        is_sorted = np.array_equal(arr, np.sort(arr))
+
+        is_sorted = arr.is_monotonic_increasing if isinstance(arr, pd.Series) else np.all(np.diff(arr) >= 0)
         return is_sorted

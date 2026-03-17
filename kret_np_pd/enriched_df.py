@@ -46,6 +46,22 @@ class Enriched_DF(pd.DataFrame):
         ret = UTILS_rosetta.df_to_np_safe(df)
         return ret
 
+    @classmethod
+    def print_th(cls, df: pd.DataFrame) -> None:
+        """
+        Helper method to help print out somthing like
+
+        class MyDf(Enriched_DF):
+            a: pd.Series
+            b: pd.Series
+        """
+        cls_name = cls.__name__
+        print(f"class {cls_name}(Enriched_DF):")
+        for col in df.columns:
+            dtype = df[col].dtype
+            type_hint = "pd.Categorical" if hasattr(dtype, "categories") else "pd.Series"
+            print(f"    {col}: {type_hint}  # {dtype}")
+
 
 T = t.TypeVar("T", bound=pd.DataFrame)
 
