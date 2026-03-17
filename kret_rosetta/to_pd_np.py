@@ -12,6 +12,7 @@ from .conversion_protocols import ImplementsToPandas, PandasConvertibleWithColum
 
 TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | pd.Categorical | torch.Tensor | list | tuple
 TO_PD_TYPE = pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor | TensorDataset
+TO_SERIES_TYPE = pd.Series | np.ndarray | list | tuple | object | torch.Tensor
 
 
 class To_NP_PD:
@@ -80,6 +81,28 @@ class To_NP_PD:
             ret = ret.flatten()
 
         assert not assert_1dim or ret.ndim == 1, f"Expected 1-dim ndarray output, got{ret.shape}"
+        return ret
+
+    @classmethod
+    def coerce_to_series(cls, arr: TO_SERIES_TYPE):
+        if isinstance(arr, pd.Series):
+            ret = arr
+        elif isinstance(arr, torch.Tensor):
+            ret = pd.Series(arr.numpy(force=True))
+        elif isinstance(arr, pd.DataFrame):
+            if arr.shape[1] != 1:
+                raise ValueError(f"Expected DataFrame with 1 column to convert to Series, got {arr.shape}")
+            ret = arr.iloc[:, 0]
+        elif isinstance(arr, pd.Categorical):
+            ret = pd.Series(arr.codes)
+        elif isinstance(arr, np.ndarray):
+            if arr.ndim != 1:
+                raise ValueError(f"Expected 1-dim array to convert to Series, got {arr.shape}")
+            ret = pd.Series(arr)
+        elif isinstance(arr, (list, tuple)):
+            ret = pd.Series(arr)
+        else:
+            raise ValueError(f"Type {type(arr)} not accepted")
         return ret
 
     @classmethod

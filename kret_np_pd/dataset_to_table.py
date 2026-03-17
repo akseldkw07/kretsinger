@@ -79,7 +79,7 @@ TABLE_FMT = """
 DEFAULT_DTT_PARAMS: DTTParams = {"seed": None, "max_col_width": 150, "num_cols": None, "show_dims": False}
 PD_TO_HTML_KWARGS: To_html_TypedDict = {"border": 1, "float_format": "{:.3f}".format}
 
-ViewHow = t.Literal["sample", "head", "tail"]
+ViewHow = t.Literal["sample", "head", "tail"] | tuple[int, int]  # e.g. (10, 20) to show rows 10-20
 
 
 class PD_Display_Utils:
@@ -242,7 +242,15 @@ def gen_display_mask(n: int, hot: int, seed: int, display_method: ViewHow):
     elif display_method == "head":
         mask = np.zeros(n, dtype=bool)
         mask[:hot] = True
-    else:  # tail
+    elif display_method == "tail":
         mask = np.zeros(n, dtype=bool)
         mask[-hot:] = True
+    elif isinstance(display_method, tuple) and len(display_method) == 2:
+        start, end = display_method
+        if not (0 <= start < end <= n):
+            raise ValueError(f"Invalid display_method range: {display_method} for n={n}")
+        mask = np.zeros(n, dtype=bool)
+        mask[start:end] = True
+    else:
+        raise ValueError(f"Invalid display_method: {display_method}")
     return mask

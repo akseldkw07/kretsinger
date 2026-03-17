@@ -37,10 +37,12 @@ class MemoDataFrame(pd.DataFrame, t.Generic[T]):
     _metadata = ["_inputs", "_memo_dict"]
     _inputs: T
     _memo_dict: dict[str, np.ndarray]
+    _df_dict: dict[str, pd.DataFrame]
 
     def __init__(self, input: T, /, **kwargs: t.Unpack[DataFrame___init___TypedDict]) -> None:
         object.__setattr__(self, "_inputs", input)
         object.__setattr__(self, "_memo_dict", {})
+        object.__setattr__(self, "_df_dict", {})
         super().__init__(input["data"], **kwargs)  # type: ignore[arg-type]
 
     @property
@@ -58,6 +60,7 @@ class MemoDataFrame(pd.DataFrame, t.Generic[T]):
     def clear(self):
         """Clears the memoization cache."""
         self._memo_dict.clear()
+        self._df_dict.clear()
 
     def _repr_html_(self):
         """Custom HTML representation that includes memoized arrays as columns."""
@@ -75,6 +78,56 @@ class MemoDataFrame(pd.DataFrame, t.Generic[T]):
         memo = pd.DataFrame(self._memo_dict, copy=copy)
         memo.insert(0, "SEP", "...")
         return pd.concat([input, memo], axis=1, copy=False)  # type: ignore # no need to copy again
+
+    def to_pandas_memo(self, copy: bool = True) -> pd.DataFrame:
+        """Return only the memoized arrays as a pandas DataFrame."""
+        return pd.DataFrame(self._memo_dict, copy=copy)
+
+
+class memo_fn(t.Generic[MDF]):
+    """
+    Like ``memo_array`` but for methods that accept arguments.
+
+    The result is cached in ``_memo_dict`` under a key derived from the method
+    name and the call arguments, so each unique ``(name, args, kwargs)``
+    combination is computed once and reused.  No coercion is applied — the
+    return value is stored as-is (ndarray, Series, DataFrame, etc.).
+
+    Cleared by ``MemoDataFrame.clear()`` just like ``memo_array`` results.
+
+    Usage
+    -----
+    @memo_fn
+    def ptr_n_minutes(self, n: float) -> np.ndarray:
+        ...
+
+    @memo_fn
+    def f_streak_n(self, n: int, direction: str = "either") -> np.ndarray:
+        ...
+    """
+
+    def __init__(self, func: t.Callable) -> None:
+        self.func = func
+        self.name = func.__name__
+        self.__doc__ = func.__doc__
+
+    @t.overload
+    def __get__(self, instance: None, owner: type[MDF]) -> "memo_fn[MDF]": ...
+    @t.overload
+    def __get__(self, instance: MDF, owner: type[MDF]) -> t.Callable[..., np.ndarray]: ...
+
+    def __get__(self, instance: MDF | None, owner: type[MDF]) -> "memo_fn[MDF] | t.Callable[..., t.Any]":
+        if instance is None:
+            return self
+
+        def wrapper(*args, **kwargs):
+            key = f"{self.name}__{args}__{tuple(sorted(kwargs.items()))}"
+            if key not in instance._memo_dict:
+                print(f"Calculating {self.name}{args or ''}")
+                instance._memo_dict[key] = self.func(instance, *args, **kwargs)
+            return instance._memo_dict[key]
+
+        return wrapper
 
 
 class memo_array(t.Generic[MDF]):
@@ -106,23 +159,3 @@ class memo_array(t.Generic[MDF]):
     def __delete__(self, instance: MDF) -> None:
         if self.name in instance._memo_dict:
             del instance._memo_dict[self.name]
-
-
-# ===============================================================
-# Test class
-# ===============================================================
-
-
-class MyInputDict(InputTypedDict):
-    aux: pd.DataFrame
-
-
-class MyMemoDataFrame(MemoDataFrame[MyInputDict]):
-    @memo_array
-    def a_sq(self):
-        print("Calculating a_sq")
-        return self.data["a"] ** 2
-
-    @memo_array
-    def compute_sum(self):
-        return self.data.sum(axis=1) + self.inputs["aux"].sum(axis=1)

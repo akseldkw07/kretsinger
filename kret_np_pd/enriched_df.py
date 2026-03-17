@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
+from kret_np_pd.pd_convenience_utils import PD_Convenience_utils, PD_Convenience_utils_Col_filter_TypedDict
 
 
 class Enriched_DF(pd.DataFrame):
@@ -45,6 +46,10 @@ class Enriched_DF(pd.DataFrame):
 
         ret = UTILS_rosetta.df_to_np_safe(df)
         return ret
+
+    def col_filter(self, **kwargs: t.Unpack[PD_Convenience_utils_Col_filter_TypedDict]):
+        kwargs = kwargs | {"df": self}
+        return PD_Convenience_utils.col_filter(**kwargs)
 
     @classmethod
     def print_th(cls, df: pd.DataFrame) -> None:
