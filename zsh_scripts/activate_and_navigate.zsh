@@ -5,7 +5,7 @@
 # Usage: source ~/bin/setup_my_env.zsh [target_directory] [env_name]
 sod() {
     # --- Default Configuration ---
-    DEFAULT_TARGET_DIR="/Users/Akseldkw/coding/kretsinger"
+    DEFAULT_TARGET_DIR="$HOME/kretsinger"
 
     # --- Parse Optional Arguments ---
     TARGET_DIR="${1:-$DEFAULT_TARGET_DIR}"
