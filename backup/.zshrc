@@ -1,13 +1,10 @@
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-local zsh_user="$USER"
-local p10k_cache="${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${zsh_user}.zsh"
-typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
-
-if [[ -r "$p10k_cache" ]]; then
-  source "$p10k_cache"
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
@@ -37,10 +34,10 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Uncomment one of the following lines to change the auto-update behavior
 # zstyle ':omz:update' mode disabled  # disable automatic updates
 # zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 
 # Uncomment the following line to change how often to auto-update (in days).
-# zstyle ':omz:update' frequency 13
+zstyle ':omz:update' frequency 13
 
 # Uncomment the following line if pasting URLs and other text is messed up.
 # DISABLE_MAGIC_FUNCTIONS="true"
@@ -81,7 +78,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-syntax-highlighting zsh-autosuggestions vscode)
+plugins=(git zsh-syntax-highlighting zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 # User configuration
@@ -115,48 +112,39 @@ source $ZSH/oh-my-zsh.sh
 # START HERE
 
 # VARIABLES
-export KRET='/Users/Akseldkw/coding/kretsinger'
+export KRET="$HOME/coding/kretsinger"
 export PY312_ENV="kret_312"
 export PY311_ENV="kret_311"
-export MM_PATH="~/micromamba/envs"
+export MM_PATH="$HOME/micromamba/envs"
 export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
 export NB_LOGFILE="${KRET}/data/nb_log.log"
-export DESKTOP="/Users/Akseldkw/Desktop/"
 
 # Source all .zsh files in ${KRET}/zsh_scripts
 # Skip files starting with _ or .
-find "${KRET}/zsh_scripts" -type f -name '*.zsh' | while read -r script; do
+for script in "${KRET}"/zsh_scripts/*.zsh; do
+  [[ -f "$script" ]] || continue
   filename="$(basename "$script")"
   [[ "$filename" == _* || "$filename" == .* ]] && continue
   source "$script"
 done
 # Source non-git-tracked files in ${KRET}/vault
-source "${KRET}/vault/source_tokens.zsh" 2>/dev/null || echo "[vault] ⚠️ Failed to source source_tokens.zsh. File not found or error."
-
-# MICROMAMBA
-export MAMBA_ROOT_PREFIX=~/micromamba
+source "${KRET}/vault/source_tokens.zsh" 2>/dev/null || true
 
 # BUILT IN ALIAS
-alias ls='lsd'
 alias l='ls -l'
-alias lt='l -t'
-alias lla='ls -la'
 alias lt='ls --tree'
+alias lla='ls -la'
 
 # CUSTOM ALIAS
-alias ld="ls -ltd -- */" # List directories only
+alias ld="ls -ltd -- */"
 alias mm='micromamba'
-alias home='cd /Users/Akseldkw'
+alias home="cd $HOME"
 alias src='save_and_src_zshrc'
 alias gitrebase='rebase_squash_conflict'
 alias gitnuke='rebase_nuclear_feature'
 
 # CUSTOM ALIAS FUNCTIONS
-col() {
-  sod "${DESKTOP}/Columbia/"
-  ld
-}
 tailkret() {
   less +F "$NB_LOGFILE"
 }
@@ -164,26 +152,28 @@ tailkret() {
 rgf() {
   rg --files -g "**/*$@*" 2>/dev/null
 }
+
+# --- Homebrew ---
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!
-export MAMBA_EXE='/usr/local/bin/micromamba'
-export MAMBA_ROOT_PREFIX='/Users/Akseldkw/micromamba'
+export MAMBA_EXE="$HOME/bin/micromamba"
+export MAMBA_ROOT_PREFIX="$HOME/micromamba"
 
 __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2>/dev/null)"
 if [ $? -eq 0 ]; then
   eval "$__mamba_setup"
 else
-  alias micromamba="$MAMBA_EXE" # Fallback on help from micromamba activate
+  alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
 fi
 unset __mamba_setup
 # <<< mamba initialize <<<
 
-# Added by Antigravity
-export PATH="/Users/Akseldkw/.antigravity/antigravity/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/path.zsh.inc'; fi
+if [ -f "$HOME/google-cloud-sdk/path.zsh.inc" ]; then . "$HOME/google-cloud-sdk/path.zsh.inc"; fi
 
 # The next line enables shell command completion for gcloud.
-if [ -f '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/Akseldkw/google-cloud-sdk/completion.zsh.inc'; fi
-export PATH="$HOME/.local/bin:$PATH"
+if [ -f "$HOME/google-cloud-sdk/completion.zsh.inc" ]; then . "$HOME/google-cloud-sdk/completion.zsh.inc"; fi
