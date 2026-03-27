@@ -5,7 +5,9 @@
 save_and_src_zshrc() {
     local dest_dir="${KRET}/backup"
     local rc_file="$HOME/.zshrc"
+    local gitconfig_file="$HOME/.gitconfig"
     local backup_file="${dest_dir}/.zshrc"
+    local backup_gitconfig_file="${dest_dir}/.gitconfig"
     local log_file="${dest_dir}/backup_log.txt"
     local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
     local original_dir="$PWD"
@@ -27,6 +29,7 @@ save_and_src_zshrc() {
     fi
 
     cp -f "$rc_file" "$backup_file"
+    cp -f "$gitconfig_file" "$backup_gitconfig_file"
     echo "[$timestamp] ✅ .zshrc updated and backed up." >>"$log_file"
 
     # Git actions with guaranteed return to original directory
