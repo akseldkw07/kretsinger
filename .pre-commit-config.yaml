@@ -4,7 +4,7 @@ minimum_pre_commit_version: 4.5.1
 exclude: \.(html|svg|ipynb)$
 repos:
   - repo: https://github.com/WGUNDERWOOD/tex-fmt
-    rev: v0.5.6
+    rev: v0.5.7
     hooks:
       - id: tex-fmt
   - repo: local
@@ -15,7 +15,7 @@ repos:
         language: system
         stages: [pre-commit]
   - repo: https://github.com/myint/autoflake
-    rev: v2.3.1
+    rev: v2.3.3
     hooks:
       - id: autoflake
         args:
@@ -32,7 +32,7 @@ repos:
             ^.*nb_imports.py
           )$
   - repo: https://github.com/python/black
-    rev: 26.1.0
+    rev: 26.3.1
     hooks:
       - id: black
         name: black
