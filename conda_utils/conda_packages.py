@@ -112,7 +112,7 @@ class CondaUtils:
         "scikit-image",
         "torchvision",
         "timm",
-        "faster-coco-eval",  # this is tough on macos for some reason, but pip works
+        # "faster-coco-eval",  # this is tough on macos for some reason, but pip works
         "pycocotools",
     ]
     COLUMBIA = [
@@ -136,7 +136,15 @@ class CondaUtils:
     GRAPHS = ["graphviz", "networkx", "osmnx", "pytorch_geometric"]
     RL = ["gymnasium", "pygame"]
     CI = ["tigramite"]  # causal inference, time series
-    MISC = ["openai", "openpyxl", "youtube-transcript-api"]
+    LLMS = [
+        "anthropic",
+        "openai",
+    ]  # for querying LLMs. NOTE: these are not the same as the transformers library, which is for running LLMs locally. These are for querying APIs like OpenAI and Anthropic.
+    MISC = ["openpyxl", "youtube-transcript-api"]
+    PIP_ONLY = [
+        "faster-coco-eval",
+        "thop",
+    ]  # packages that are only available via pip and not conda, will be installed separately in the setup script
 
     ALL = (
         CORE
@@ -156,7 +164,9 @@ class CondaUtils:
         + GRAPHS
         + RL
         + CI
+        + LLMS
         + MISC
+        # + PIP_ONLY
     )
 
     PINS_OVERRIDE = {}
@@ -166,17 +176,24 @@ class CondaUtils:
     @staticmethod
     def conda_packages_to_str(
         packages: t.Iterable[str] = ALL,
-        pin_loc: str = JSON_NAME,
+        pin_loc: str | t.Literal[False] = JSON_NAME,
         pins_override: dict[str, str] = PINS_OVERRIDE,
         version: str = "3.12",
     ):
         packages = set(packages)
-        with open(pin_loc) as f:
-            loaded: dict[str, str] = json.load(f)
-        pins = loaded | pins_override
+        if pin_loc is not False:
+            with open(pin_loc) as f:
+                loaded: dict[str, str] = json.load(f)
+            pins = loaded | pins_override
+            print(f"Loaded pins: {pins}")
+        else:
+            pins = pins_override
+            print(f"Using override pins: {pins}")
+
         packages = sorted(packages, key=lambda x: (x not in pins, x))
         packages_w_pins = [package if package not in pins else f"'{package}>={pins[package]}'" for package in packages]
         packages_str = " ".join(packages_w_pins)
+
         prepend = f"mm create -n kret_{version.replace('.', '')} python={version} "
         suffix = " --yes"
 
