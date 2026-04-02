@@ -94,6 +94,7 @@ class CondaUtils:
     NN_DL = [
         "tensorflow",
         "keras",  # tensorflow wrapper
+        # "tf-keras", # NOTE not compatible with latest
         "pytorch",
         "lightning",
         # 'MLFlow',
