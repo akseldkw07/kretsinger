@@ -110,6 +110,7 @@ vault/
 ClaudeDesktopConfig.json
 .claude/
 
+.env
 
 # bash
 .bashrc.local*
