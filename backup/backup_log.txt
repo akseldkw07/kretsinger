@@ -299,25 +299,36 @@ total size is 6852  speedup is 0.98
 [2026-03-26 22:56:17] ✅ .zshrc updated and backed up.
 [2026-03-26 23:05:40] ✅ .zshrc updated and backed up.
 [2026-03-26 23:05:47] ✅ .zshrc updated and backed up.
-[2026-03-26 23:34:24] ✅ .zshrc updated and backed up.
-[2026-03-26 23:34:24] ✅ .zshrc updated and backed up.
-[2026-03-27 00:17:17] ✅ .zshrc updated and backed up.
-[2026-03-27 00:19:04] ✅ .zshrc updated and backed up.
-[2026-03-27 00:21:42] ✅ .zshrc updated and backed up.
-[2026-03-27 00:22:25] ✅ .zshrc updated and backed up.
-[2026-03-27 00:49:27] ✅ .zshrc updated and backed up.
-[2026-03-27 01:21:52] ❌ .zshrc source error. Backup canceled.
-[2026-03-27 01:21:52] ❌ .zshrc source error. Backup canceled.
-[2026-03-27 01:23:39] ✅ .zshrc updated and backed up.
-[2026-03-27 01:29:12] ❌ .zshrc source error. Backup canceled.
-[2026-03-27 01:31:42] ❌ .zshrc source error. Backup canceled.
-[2026-03-27 12:31:13] ✅ .zshrc updated and backed up.
-[2026-03-27 14:47:30] ✅ .zshrc updated and backed up.
-[2026-03-27 14:47:30] ✅ .zshrc updated and backed up.
-[2026-03-27 15:31:06] ✅ .zshrc updated and backed up.
-[2026-03-29 12:47:17] ✅ .zshrc updated and backed up.
-[2026-03-29 14:19:37] ✅ .zshrc updated and backed up.
-[2026-03-29 15:56:38] ✅ .zshrc updated and backed up.
-[2026-03-29 15:57:05] ✅ .zshrc updated and backed up.
-[2026-03-29 16:06:57] ✅ .zshrc updated and backed up.
-[2026-03-29 18:16:38] ✅ .zshrc updated and backed up.
+[2026-03-27 03:52:10] ✅ .zshrc updated and backed up.
+[2026-03-27 04:11:20] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-27 04:12:50] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-27 04:29:00] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-27 19:53:51] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-27 19:54:23] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-27 20:15:09] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-27 20:20:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-28 01:05:51] ❌ .zshrc source error. Backup canceled.
+[2026-03-28 02:44:58] ❌ .zshrc source error. Backup canceled.
+[2026-03-28 02:44:58] ❌ .zshrc source error. Backup canceled.
+[2026-03-28 14:22:15] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-28 15:34:27] ❌ .zshrc source error. Backup canceled.
+[2026-03-28 16:44:14] ❌ .zshrc source error. Backup canceled.
+[2026-03-28 16:44:14] ❌ .zshrc source error. Backup canceled.
+[2026-03-28 17:53:52] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-03-28 17:54:00] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-01 23:44:54] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-01 23:45:01] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-01 23:45:01] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-01 23:48:26] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-01 23:51:11] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-01 23:55:10] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 00:05:55] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 03:43:44] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 03:43:44] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 03:43:44] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 15:56:53] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 16:01:55] ❌ .zshrc source error. Backup canceled.
+[2026-04-02 16:01:55] ❌ .zshrc source error. Backup canceled.
+[2026-04-02 16:10:21] ℹ️ No changes detected in .zshrc. Early exit.
+[2026-04-02 16:12:46] ❌ .zshrc source error. Backup canceled.
+[2026-04-02 16:19:31] ℹ️ No changes detected in .zshrc. Early exit.

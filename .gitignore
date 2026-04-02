@@ -31,17 +31,17 @@ env/
 # For example: my_project_venv/
 
 # Editors, IDEs and OS files
-.DS_Store         # macOS
-.vscode/          # Visual Studio Code
-.idea/            # IntelliJ IDEA / PyCharm
-*.sublime-project # Sublime Text
+.DS_Store
+.vscode/
+.idea/
+*.sublime-project
 *.sublime-workspace
-.project      # Eclipse
-.pydevproject # Eclipse PyDev
-.vs/          # Visual Studio
-Thumbs.db     # Windows
-ehthumbs.db   # Windows
-Desktop.ini   # Windows
+.project
+.pydevproject
+.vs/
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # MyPy / Static analysis
 .mypy_cache/
@@ -98,8 +98,8 @@ lib/
 # Temporary files (often hidden)
 ~*
 *.bak
-*.swp     # Vim swap files
-.DS_Store # macOS specific
+*.swp
+.DS_Store
 
 scratch/
 vault/
@@ -113,3 +113,4 @@ ClaudeDesktopConfig.json
 
 # bash
 .bashrc.local*
+.vscode/
