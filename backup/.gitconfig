@@ -6,8 +6,6 @@
 [push]
 	autoSetupRemote = true
 	default = current
-[core]
-	excludesfile = /Users/Akseldkw/coding/kretsinger/.gitignore
 [pager]
 	branch = false
 [fetch]
@@ -25,4 +23,3 @@
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
-
