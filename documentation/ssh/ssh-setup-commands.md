@@ -19,6 +19,12 @@ NOTE create env in separate window, is slow
 curl -fsSL https://claude.ai/install.sh | bash
 ```
 
+4. homebrew
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
 4. zsh
 
 ```bash
@@ -54,4 +60,10 @@ source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme && p10k 
 
 ```bash
 sudo apt install ripgrep
+```
+
+9. git config setup
+
+```bash
+cp ~/coding/kretsinger/backup/.gitconfig ~/.gitconfig
 ```
