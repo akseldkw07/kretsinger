@@ -37,7 +37,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 
 # Uncomment the following line to change how often to auto-update (in days).
-zstyle ':omz:update' frequency 7
+zstyle ':omz:update' frequency 13
 
 # Uncomment the following line if pasting URLs and other text is messed up.
 # DISABLE_MAGIC_FUNCTIONS="true"
@@ -78,7 +78,7 @@ zstyle ':omz:update' frequency 7
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-syntax-highlighting zsh-autosuggestions vscode)
+plugins=(git zsh-syntax-highlighting zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 # User configuration
@@ -115,7 +115,6 @@ source $ZSH/oh-my-zsh.sh
 export KRET="$HOME/coding/kretsinger"
 export PY312_ENV="kret_312"
 export PY311_ENV="kret_311"
-export DESKTOP="$HOME/Desktop"
 export MM_PATH="$HOME/micromamba/envs"
 export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
@@ -146,10 +145,6 @@ alias gitrebase='rebase_squash_conflict'
 alias gitnuke='rebase_nuclear_feature'
 
 # CUSTOM ALIAS FUNCTIONS
-col() {
-  sod "${DESKTOP}/Columbia/"
-  ld
-}
 tailkret() {
   less +F "$NB_LOGFILE"
 }
@@ -159,24 +154,22 @@ rgf() {
 }
 
 # --- Homebrew ---
-# eval "$(/opt/homebrew/bin/brew shellenv)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!
-export MAMBA_EXE='/usr/local/bin/micromamba'
+export MAMBA_EXE="$HOME/bin/micromamba"
 export MAMBA_ROOT_PREFIX="$HOME/micromamba"
 
 __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2>/dev/null)"
 if [ $? -eq 0 ]; then
   eval "$__mamba_setup"
 else
-  alias micromamba="$MAMBA_EXE" # Fallback on help from micromamba activate
+  alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
 fi
 unset __mamba_setup
 # <<< mamba initialize <<<
 
-# Added by Antigravity
-export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # The next line updates PATH for the Google Cloud SDK.
