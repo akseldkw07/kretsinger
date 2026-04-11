@@ -20,7 +20,7 @@ exclude = ["__init__.py"]
 [tool.isort]
 profile = "black"
 line_length = 120
-py_version = ["py311","py312"]
+py_version = "312"
 known_first_party = ""
 use_parentheses = true
 atomic= true

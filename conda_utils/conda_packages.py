@@ -51,7 +51,6 @@ class CondaUtils:
         "graphviz",
         "drawdata",  # https://python.plainenglish.io/drawdata-the-python-library-you-didnt-know-you-needed-b8c2f2ff328b
         "pydeps",
-        # "streamlit",  # web apps, dashboards, and data storytelling # TODO check 1.56.0 released
     ]
     STATS = [
         # "abess",  # Algorithm for Best Element-wise Subset selection. don't add, pin to numpy 1.26
