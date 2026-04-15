@@ -5,7 +5,17 @@
 # Works on systems with `gh` CLI installed, otherwise falls back to manual PR creation.
 
 gitpush() {
-  local commit_message="$1"
+  local commit_message=""
+  local no_verify=0
+
+  for arg in "$@"; do
+    if [[ "$arg" == "--no-verify" ]]; then
+      no_verify=1
+    else
+      commit_message="$arg"
+    fi
+  done
+
   git add .
 
   # Get commit message/description (AI or fallback)
@@ -26,15 +36,18 @@ gitpush() {
   echo
 
   # Perform commit and push
-  _commit_and_push "$full_message"
+  _commit_and_push "$full_message" "$no_verify"
 }
 
 # Perform the git commit and push operations
 _commit_and_push() {
   local full_message="$1"
+  local no_verify="$2"
+  local commit_flags=()
+  [[ "$no_verify" == "1" ]] && commit_flags+=(--no-verify)
 
   # ✅ Commit and only push if commit succeeds
-  if git commit -m "$full_message"; then
+  if git commit "${commit_flags[@]}" -m "$full_message"; then
     # Push first and capture output
     local push_output
     push_output=$(git push --force 2>&1)
