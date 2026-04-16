@@ -4,7 +4,6 @@ from .constants_FINAL import KretConstantsNB as UKS_CONSTANTS, KretDefaultsNB as
 
 from .nb_setup import NBSetupUtils
 
-
 # source env variables
 NBSetupUtils.load_dotenv_file()
 NBSetupUtils.source_zsh_env()

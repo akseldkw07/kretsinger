@@ -29,6 +29,7 @@ class CondaUtils:
         "jax",  # high-performance numerical computing. Like numpy but faster. Vectorized
         "pytest",
         "pathvalidate",
+        "isort",
     ]
     FINANCE = [
         "yfinance",
