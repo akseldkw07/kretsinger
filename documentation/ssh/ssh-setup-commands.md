@@ -66,6 +66,8 @@ nvm install --lts
 ```
 
 ```bash
+sudo apt-get install -y unzip
+
 curl -fsSL https://bun.sh/install | bash
 ```
 
@@ -85,4 +87,13 @@ sudo apt install ripgrep
 
 ```bash
 cp ~/coding/kretsinger/backup/.gitconfig ~/.gitconfig
+```
+
+12. Claude plugins
+
+```bash
+
+/plugin marketplace add thedotmack/claude-mem
+
+/plugin install claude-mem
 ```
