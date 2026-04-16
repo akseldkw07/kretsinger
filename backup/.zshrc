@@ -189,3 +189,5 @@ export NVM_DIR="$HOME/.nvm"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+alias claude-mem='bun "/home/Akseldkw/.claude/plugins/cache/thedotmack/claude-mem/12.1.5/scripts/worker-service.cjs"'
