@@ -189,13 +189,13 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # bun completions
-[ -s "/Users/Akseldkw/.bun/_bun" ] && source "/Users/Akseldkw/.bun/_bun"
+[ -s "/$HOME/.bun/_bun" ] && source "/$HOME/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-alias claude-mem='/Users/Akseldkw/.bun/bin/bun "/Users/Akseldkw/.claude/plugins/cache/thedotmack/claude-mem/12.1.0/scripts/worker-service.cjs"'
+alias claude-mem='$HOME/.bun/bin/bun "$HOME/.claude/plugins/cache/thedotmack/claude-mem/12.1.0/scripts/worker-service.cjs"'
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
