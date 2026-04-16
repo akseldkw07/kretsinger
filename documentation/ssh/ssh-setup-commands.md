@@ -5,34 +5,14 @@ sudo apt update
 sudo apt install gh
 ```
 
-2. micromamba
-
-```bash
-"${SHELL}" <(curl -L micro.mamba.pm/install.sh)
-```
-
-NOTE create env in separate window, is slow
-
-3. claude
-
-```bash
-curl -fsSL https://claude.ai/install.sh | bash
-```
-
-4. homebrew
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-4. zsh
+2. zsh
 
 ```bash
 sudo apt install zsh
 
 ```
 
-5. oh-my-zsh
+3. oh-my-zsh
 
 ```bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -41,13 +21,13 @@ git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$
 
 ```
 
-6. Powerlevel10k
+4. Powerlevel10k
 
 ```bash
 p10k configure
 ```
 
-7. zsh plugins
+5. zsh plugins
 
 ```bash
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
@@ -56,13 +36,52 @@ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.
 source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme && p10k configure
 ```
 
-8. ripgrep
+6. homebrew
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+7. micromamba
+
+```bash
+"${SHELL}" <(curl -L micro.mamba.pm/install.sh)
+```
+
+NOTE create env in separate window, is slow
+
+8. nodejs
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+```
+
+```bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+```
+
+```bash
+nvm install --lts
+```
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+9. claude
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+10. ripgrep
 
 ```bash
 sudo apt install ripgrep
 ```
 
-9. git config setup
+11. git config setup
 
 ```bash
 cp ~/coding/kretsinger/backup/.gitconfig ~/.gitconfig
