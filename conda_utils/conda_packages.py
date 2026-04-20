@@ -108,6 +108,11 @@ class CondaUtils:
         "netron",  # visualize neural network architectures
         "onnxscript",
         # 'thop', # for calculating FLOPs and params in pytorch models - PIP ONLY
+        "transformers",
+        # "vllm", uv pip install vllm
+        "accelerate",
+        "peft",  # parameter-efficient fine-tuning for LLMs, like LoRA. NOTE: this is a bit finicky to install on macos, but pip works fine. Conda package is available but not always up to date, so we'll install via pip in the setup script.
+        "bitsandbytes",  # for 8-bit optimizers and quantization in PyTorch, often used with LLMs
     ]
     CV = [
         "opencv",
@@ -122,7 +127,6 @@ class CondaUtils:
         "opencv-python",
         "pycocotools",
         "timm",
-        "transformers",
     ]
     LLM_QUERY = [
         # REQUIRE GPU

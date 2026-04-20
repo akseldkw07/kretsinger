@@ -4,7 +4,6 @@ save_and_src_bashrc() {
   local dest_dir="${KRET}/backup"
   local rc_file="$HOME/.bashrc"          # NOTE: changed from .zshrc
   local backup_file="${dest_dir}/.bashrc"
-  local log_file="${dest_dir}/backup_log.txt"
   local timestamp
   timestamp="$(date +"%Y-%m-%d %H:%M:%S")"
   local original_dir="$PWD"
@@ -15,19 +14,16 @@ save_and_src_bashrc() {
   # shellcheck source=/dev/null
   if ! source "$rc_file"; then
     echo "[save_and_src] ❌ Failed to source .bashrc. Aborting."
-    echo "[$timestamp] ❌ .bashrc source error. Backup canceled." >>"$log_file"
     return 1
   fi
   echo "[save_and_src] ✅ .bashrc reloaded."
 
   if cmp -s "$rc_file" "$backup_file"; then
-    echo "[$timestamp] ℹ️ No changes detected in .bashrc. Early exit." >>"$log_file"
     echo "[save_and_src] ℹ️ No changes to back up. Exiting."
     return 0
   fi
 
   cp -f "$rc_file" "$backup_file"
-  echo "[$timestamp] ✅ .bashrc updated and backed up." >>"$log_file"
 
   (
     trap 'cd "$original_dir"' EXIT
