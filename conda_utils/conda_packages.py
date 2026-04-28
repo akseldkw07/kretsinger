@@ -111,7 +111,7 @@ class CondaUtils:
         "transformers",
         "accelerate",
         "peft",  # parameter-efficient fine-tuning for LLMs, like LoRA. NOTE: this is a bit finicky to install on macos, but pip works fine. Conda package is available but not always up to date, so we'll install via pip in the setup script.
-        "bitsandbytes",  # for 8-bit optimizers and quantization in PyTorch, often used with LLMs
+        # "bitsandbytes",  # for 8-bit optimizers and quantization in PyTorch, often used with LLMs (no MacOS)
     ]
     CV = [
         "opencv",

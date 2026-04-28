@@ -200,3 +200,6 @@ alias claude-mem='$HOME/.bun/bin/bun "$HOME/.claude/plugins/cache/thedotmack/cla
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+# jean-claude profile: personal
+alias claude-personal='CLAUDE_CONFIG_DIR="/Users/Akseldkw/.claude-personal" claude'
