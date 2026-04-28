@@ -109,7 +109,6 @@ class CondaUtils:
         "onnxscript",
         # 'thop', # for calculating FLOPs and params in pytorch models - PIP ONLY
         "transformers",
-        # "vllm", uv pip install vllm
         "accelerate",
         "peft",  # parameter-efficient fine-tuning for LLMs, like LoRA. NOTE: this is a bit finicky to install on macos, but pip works fine. Conda package is available but not always up to date, so we'll install via pip in the setup script.
         "bitsandbytes",  # for 8-bit optimizers and quantization in PyTorch, often used with LLMs
@@ -120,7 +119,6 @@ class CondaUtils:
         "scikit-image",
         "torchvision",
         "timm",
-        # "faster-coco-eval",  # this is tough on macos for some reason, but pip works
         "pycocotools",
     ]
     COLUMBIA = [
@@ -151,6 +149,9 @@ class CondaUtils:
     PIP_ONLY = [
         "faster-coco-eval",
         "thop",
+        "kaleido==0.2.1",  # for static image export in plotly
+        "faster-coco-eval",  # this is tough on macos for some reason, but pip works
+        "vllm",  # uv pip install vllm
     ]  # packages that are only available via pip and not conda, will be installed separately in the setup script
 
     ALL = (
