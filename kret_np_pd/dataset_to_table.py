@@ -15,12 +15,16 @@ from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 from ._core.typed_cls_np_pd import DTTKwargs, DTTParams, To_html_TypedDict
 
 if t.TYPE_CHECKING:
+    import polars as pl
+
     from kret_torch_utils.tensor_ds_custom import TensorDatasetCustom
 
     VectorMatrixType = (
         pd.DataFrame
         | Styler
         | pd.Series
+        | pl.DataFrame
+        | pl.Series
         | np.ndarray
         | torch.Tensor
         | torch.utils.data.TensorDataset

@@ -4,6 +4,7 @@ Utility class to convert to pandas and numpy
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import torch
 from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 from torch.utils.data import TensorDataset
@@ -11,14 +12,32 @@ from torch.utils.data import TensorDataset
 from .conversion_protocols import ImplementsToPandas, PandasConvertibleWithColumns
 
 TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | pd.Categorical | torch.Tensor | list | tuple
-TO_PD_TYPE = pd.DataFrame | pd.Series | np.ndarray | list | tuple | object | torch.Tensor | TensorDataset
-TO_SERIES_TYPE = pd.Series | np.ndarray | list | tuple | object | torch.Tensor
+TO_PD_TYPE = (
+    pd.DataFrame
+    | pd.Series
+    | pl.DataFrame
+    | pl.Series
+    | np.ndarray
+    | list
+    | tuple
+    | object
+    | torch.Tensor
+    | TensorDataset
+)
+TO_SERIES_TYPE = pd.Series | pl.Series | np.ndarray | list | tuple | object | torch.Tensor
 
 
 class To_NP_PD:
     @classmethod
     def coerce_to_df(cls, obj: TO_PD_TYPE, cols: list[str] | None = None):
-        if isinstance(obj, (PandasConvertibleWithColumns, ImplementsToPandas)):
+        # Polars handled before the protocol check: pl.DataFrame structurally
+        # satisfies ImplementsToPandas but its to_pandas() rejects copy=.
+        if isinstance(obj, pl.DataFrame):
+            ret = obj.to_pandas()
+        elif isinstance(obj, pl.Series):
+            ret = obj.to_frame().to_pandas()
+            ret.columns = cols if cols is not None else [obj.name]
+        elif isinstance(obj, (PandasConvertibleWithColumns, ImplementsToPandas)):
             # This covers TensorDatasetCustom and any other custom types implementing the protocol
             ret = obj.to_pandas(copy=False)
         elif isinstance(obj, pd.DataFrame):
