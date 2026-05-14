@@ -11,7 +11,9 @@ from torch.utils.data import TensorDataset
 
 from .conversion_protocols import ImplementsToPandas, PandasConvertibleWithColumns
 
-TO_NP_TYPE = pd.DataFrame | pd.Series | np.ndarray | pd.Categorical | torch.Tensor | list | tuple
+TO_NP_TYPE = (
+    pd.DataFrame | pd.Series | pl.DataFrame | pl.Series | np.ndarray | pd.Categorical | torch.Tensor | list | tuple
+)
 TO_PD_TYPE = (
     pd.DataFrame
     | pd.Series
@@ -91,6 +93,10 @@ class To_NP_PD:
             ret = arr.codes
         elif isinstance(arr, pd.Series):
             ret = arr.to_numpy()
+        elif isinstance(arr, pl.Series):
+            ret = arr.to_numpy()
+        elif isinstance(arr, pl.DataFrame):
+            ret = arr.to_numpy()
         elif isinstance(arr, (list, tuple)):
             ret = np.array(arr)
         else:
@@ -106,6 +112,8 @@ class To_NP_PD:
     def coerce_to_series(cls, arr: TO_SERIES_TYPE):
         if isinstance(arr, pd.Series):
             ret = arr
+        elif isinstance(arr, pl.Series):
+            ret = arr.to_pandas()
         elif isinstance(arr, torch.Tensor):
             ret = pd.Series(arr.numpy(force=True))
         elif isinstance(arr, pd.DataFrame):

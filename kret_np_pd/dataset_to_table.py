@@ -9,7 +9,7 @@ import torch
 from IPython.display import display_html
 from pandas.io.formats.style import Styler
 
-from kret_np_pd.filters import FilterSampleUtils
+from kret_np_pd.filters import FilterSampleUtils, FILT_TYPE
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 from ._core.typed_cls_np_pd import DTTKwargs, DTTParams, To_html_TypedDict
@@ -94,7 +94,7 @@ class PD_Display_Utils:
         input: "list[VectorMatrixType] | tuple[VectorMatrixType] | VectorMatrixType",
         n: int = 5,
         how: ViewHow = "sample",
-        filter: np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | None = None,
+        filter: FILT_TYPE = None,
         titles: list[str] | cycle = cycle([""]),
         **hparams: t.Unpack[DTTKwargs],
     ):
