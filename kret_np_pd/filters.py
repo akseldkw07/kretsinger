@@ -8,13 +8,14 @@ from pandas.api.types import is_bool_dtype
 
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
+import polars as pl
 
-FILT_TYPE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame
+FILT_TYPE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | pl.Series | pl.DataFrame | None
 
 
 class FilterSampleUtils:
     @classmethod
-    def process_filter(cls, filter: FILT_TYPE | None, shape: tuple[int, ...] | tuple[int] | int | None = None):
+    def process_filter(cls, filter: FILT_TYPE, shape: tuple[int, ...] | tuple[int] | int | None = None):
         if filter is None:
             assert shape is not None, "Shape must be provided when filter is None"
             ret = np.full((shape[0] if isinstance(shape, tuple) else shape), True)
