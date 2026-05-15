@@ -103,6 +103,7 @@ lib/
 
 scratch/
 vault/
+scratch*
 # data/
 *.out
 

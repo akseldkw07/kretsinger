@@ -50,7 +50,7 @@ class PD_Convenience_utils:
         return df[new_order]
 
     @classmethod
-    def col_filter(cls, df: pd.DataFrame, include: list[str] = [], exclude: list[str] = []) -> pd.DataFrame:
+    def col_filter(cls, df: pd.DataFrame, include: t.Sequence[str] = [], exclude: t.Sequence[str] = []) -> pd.DataFrame:
         """
         Return a DataFrame with only the specified columns included and/or excluded.
         Args:
