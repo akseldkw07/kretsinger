@@ -29,6 +29,13 @@ class DTTParams(t.TypedDict, total=False):
     align_cols: bool  # NOTE not implemented
 
 
+class Col_filter_TypedDict(t.TypedDict, total=False):
+    # Forwarded to PD_Convenience_utils.col_filter(df, include=..., exclude=...).
+    # `include` / `exclude` are substring sequences matched against column names.
+    include: t.Sequence[str]
+    exclude: t.Sequence[str]
+
+
 class To_html_TypedDict(t.TypedDict, total=False):
     buf: None
     columns: "ListLike | None"
@@ -54,7 +61,7 @@ class To_html_TypedDict(t.TypedDict, total=False):
     encoding: str | None
 
 
-class DTTKwargs(To_html_TypedDict, DTTParams, total=False):
+class DTTKwargs(To_html_TypedDict, DTTParams, Col_filter_TypedDict, total=False):
     pass
 
 
