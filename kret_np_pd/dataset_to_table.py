@@ -113,8 +113,10 @@ class PD_Display_Utils:
         for arg in input:
             arg = arg.numpy(force=True) if isinstance(arg, torch.Tensor) else arg
             if not isinstance(arg, Styler):
-                df = arg[filter] if (filter is not None) else arg
-                df = UTILS_rosetta.coerce_to_df(df)
+                # Coerce first: polars DataFrames reject boolean __getitem__ and
+                # fall through to a column-mask path that fails on length.
+                df = UTILS_rosetta.coerce_to_df(arg)
+                df = df[filter] if (filter is not None) else df
             else:
                 styler_index: pd.Index = getattr(arg, "data").index
                 df = arg.hide(styler_index[~filter], axis="index") if (filter is not None) else arg
