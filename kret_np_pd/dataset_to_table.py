@@ -99,8 +99,10 @@ class PD_Display_Utils:
         **hparams: t.Unpack[DTTKwargs],
     ):
         """
-        TODO add shape to the titles
         TODO ability to view slice of rows
+        TODO ability to pass `UKS_NP_PD.col_filter` args
+        TODO ability to pass a filter that highlights those rows (warn if filter rows are not in the passed filter)
+        TODO better polars support - as of right now, polars DataFrames are coerced to pandas for display, which is slow for large DataFrames and loses some styling (e.g. for datatypes).
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
         """
 
@@ -173,10 +175,7 @@ class PD_Display_Utils:
 
     @classmethod
     def generate_table_with_dtypes(
-        cls,
-        df: pd.DataFrame | Styler,
-        full_shape: tuple[int, int] | None = None,
-        **hparams: t.Unpack[DTTKwargs],
+        cls, df: pd.DataFrame | Styler, full_shape: tuple[int, int] | None = None, **hparams: t.Unpack[DTTKwargs]
     ) -> str:
         """
         Generate HTML table with datatypes displayed below column headers.

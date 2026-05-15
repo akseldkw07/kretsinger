@@ -67,7 +67,7 @@ class FilterSampleUtils:
     @classmethod
     def get_nearby_rows(
         cls,
-        df: pd.DataFrame,
+        df: pd.DataFrame | pl.DataFrame,
         filt: FILT_TYPE,
         hard_match: t.Sequence[str] | str = [],
         hard_match_apply: t.Literal["and", "or"] = "and",
@@ -92,8 +92,8 @@ class FilterSampleUtils:
         boolean ndarray.
 
         Full worked examples are appended below at runtime — see
-        `kret_np_pd/_core/get_nearby_rows_examples.py` (or `help(get_nearby_rows)` /
-        `get_nearby_rows?` in Jupyter).
+        `kret_np_pd/_core/get_nearby_rows_examples.py` (or
+        `help(UKS_NP_PD.get_nearby_rows)` / `UKS_NP_PD.get_nearby_rows?` in Jupyter).
         """
         filt = cls.process_filter(filt, shape=len(df))
         n = len(df)
@@ -101,6 +101,10 @@ class FilterSampleUtils:
             return np.zeros(n, dtype=bool)
         if not hard_match and not soft_match:
             return np.asarray(filt, dtype=bool)
+
+        # Normalize to pandas: polars subclasses (e.g. Enriched_DF_PL) override
+        # to_numpy() to expect their full column_order, which breaks on subsets.
+        df = UTILS_rosetta.coerce_to_df(df)
 
         per_seed_masks: list[np.ndarray] = []
 
