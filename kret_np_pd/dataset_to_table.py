@@ -10,6 +10,7 @@ from IPython.display import display_html
 from pandas.io.formats.style import Styler
 
 from kret_np_pd.filters import FilterSampleUtils, FILT_TYPE
+from kret_np_pd.pd_convenience_utils import PD_Convenience_utils
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
 from ._core.typed_cls_np_pd import DTTKwargs, DTTParams, To_html_TypedDict
@@ -100,16 +101,20 @@ class PD_Display_Utils:
     ):
         """
         TODO ability to view slice of rows
-        TODO ability to pass `UKS_NP_PD.col_filter` args
         TODO ability to pass a filter that highlights those rows (warn if filter rows are not in the passed filter)
         TODO better polars support - as of right now, polars DataFrames are coerced to pandas for display, which is slow for large DataFrames and loses some styling (e.g. for datatypes).
+        TODO update show_dims to show total rows/cols pre- and post-filtering (both column filter and row filtering)
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
+
+        Pass `include=[...]` / `exclude=[...]` to forward column-name substring filters
+        to `UKS_NP_PD.col_filter` (applied per non-Styler arg after row filtering).
         """
 
         input = input if isinstance(input, (list)) else [*input] if isinstance(input, tuple) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
         filter = FilterSampleUtils.process_filter(filter) if filter is not None else None
+        include, exclude = hparams.get("include") or [], hparams.get("exclude") or []
 
         args: list[pd.DataFrame | Styler] = []
         for arg in input:
@@ -122,6 +127,8 @@ class PD_Display_Utils:
             else:
                 styler_index: pd.Index = getattr(arg, "data").index
                 df = arg.hide(styler_index[~filter], axis="index") if (filter is not None) else arg
+            if include or exclude:
+                df = PD_Convenience_utils.col_filter(df, include=include, exclude=exclude)
             args.append(df)
 
         cls.display_df_list(args, titles, n, how, hparams)

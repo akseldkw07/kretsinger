@@ -2,6 +2,7 @@ import typing as t
 
 import numpy as np
 import pandas as pd
+from pandas.io.formats.style import Styler
 
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
@@ -49,30 +50,46 @@ class PD_Convenience_utils:
         new_order = start + middle + end
         return df[new_order]
 
+    @t.overload
     @classmethod
-    def col_filter(cls, df: pd.DataFrame, include: t.Sequence[str] = [], exclude: t.Sequence[str] = []) -> pd.DataFrame:
+    def col_filter(  # type: ignore
+        cls, df: pd.DataFrame, include: t.Sequence[str] = ..., exclude: t.Sequence[str] = ...
+    ) -> pd.DataFrame: ...
+    @t.overload
+    @classmethod
+    def col_filter(cls, df: Styler, include: t.Sequence[str] = ..., exclude: t.Sequence[str] = ...) -> Styler: ...
+
+    @classmethod
+    def col_filter(cls, df: Styler | pd.DataFrame, include: t.Sequence[str] = [], exclude: t.Sequence[str] = []):
         """
-        Return a DataFrame with only the specified columns included and/or excluded.
+        Return a DataFrame/Styler with only the specified columns included and/or excluded.
+
+        NOTE: `include` and `exclude` are sequences of substrings, not exact column names.
+
+        For a Styler, columns are *hidden* via `Styler.hide(subset=..., axis="columns")`
+        rather than dropped — this preserves any styling rules bound to column positions.
+
         Args:
-            df: The DataFrame.
-            include: List of column substrings to include (if None, include all).
-            exclude: List of column substrings to exclude (if None, exclude none).
+            df: The DataFrame or Styler.
+            include: Sequence of column substrings to include (empty = include all).
+            exclude: Sequence of column substrings to exclude (empty = exclude none).
         Returns:
-            A new DataFrame with columns filtered.
+            A new DataFrame (or Styler with the matching columns hidden).
         """
-        include = (
-            [col for col in df.columns if any(substr in col for substr in include)]
+        data: pd.DataFrame = getattr(df, "data") if isinstance(df, Styler) else df
+        keep = (
+            [col for col in data.columns if any(substr in col for substr in include)]
             if len(include)
-            else df.columns.tolist()
+            else data.columns.tolist()
         )
+        drop = [col for col in data.columns if any(substr in col for substr in exclude)]
+        keep_final = [c for c in keep if c not in drop]
+        cols_gone: list[t.Hashable] = [col for col in data.columns if col not in keep_final]
+        print(f"Returning df without {len(cols_gone)} columns: {cols_gone}")
 
-        exclude = [col for col in df.columns if any(substr in col for substr in exclude)]
-
-        ret = df[include].drop(columns=exclude, errors="ignore")
-        print(
-            f"Returning df without {len(cols_gone:=[col for col in df.columns if col not in ret.keys()])} columns: {cols_gone}"
-        )
-        return ret
+        if isinstance(df, Styler):
+            return df.hide(subset=cols_gone, axis="columns") if cols_gone else df
+        return data[keep_final]
 
     @t.overload
     @classmethod
