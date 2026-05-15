@@ -76,7 +76,7 @@ class PD_Convenience_utils:
         Returns:
             A new DataFrame (or Styler with the matching columns hidden).
         """
-        data: pd.DataFrame = df.data if isinstance(df, Styler) else df
+        data: pd.DataFrame = getattr(df, "data") if isinstance(df, Styler) else df
         keep = (
             [col for col in data.columns if any(substr in col for substr in include)]
             if len(include)
@@ -84,7 +84,7 @@ class PD_Convenience_utils:
         )
         drop = [col for col in data.columns if any(substr in col for substr in exclude)]
         keep_final = [c for c in keep if c not in drop]
-        cols_gone = [col for col in data.columns if col not in keep_final]
+        cols_gone: list[t.Hashable] = [col for col in data.columns if col not in keep_final]
         print(f"Returning df without {len(cols_gone)} columns: {cols_gone}")
 
         if isinstance(df, Styler):
