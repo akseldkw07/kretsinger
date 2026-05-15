@@ -114,8 +114,7 @@ class PD_Display_Utils:
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
         filter = FilterSampleUtils.process_filter(filter) if filter is not None else None
-        include: t.Sequence[str] = hparams.get("include") or []
-        exclude: t.Sequence[str] = hparams.get("exclude") or []
+        include, exclude = hparams.get("include") or [], hparams.get("exclude") or []
 
         args: list[pd.DataFrame | Styler] = []
         for arg in input:
