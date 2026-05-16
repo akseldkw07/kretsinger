@@ -101,19 +101,15 @@ class PD_Display_Utils:
     ):
         """
         TODO ability to view slice of rows
-        TODO ability to pass a filter that highlights those rows (warn if filter rows are not in the passed filter)
         TODO better polars support - as of right now, polars DataFrames are coerced to pandas for display, which is slow for large DataFrames and loses some styling (e.g. for datatypes).
         TODO update show_dims to show total rows/cols pre- and post-filtering (both column filter and row filtering)
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
-
-        Pass `include=[...]` / `exclude=[...]` to forward column-name substring filters
-        to `UKS_NP_PD.col_filter` (applied per non-Styler arg after row filtering).
         """
 
         input = input if isinstance(input, (list)) else [*input] if isinstance(input, tuple) else [input]
         hparams = {**DEFAULT_DTT_PARAMS, **PD_TO_HTML_KWARGS, **hparams}
         hparams["seed"] = hparams.get("seed") or np.random.randint(0, 1_000_000)
-        filter = FilterSampleUtils.process_filter(filter) if filter is not None else None
+        filter = FilterSampleUtils.process_filter(filter)
         include, exclude = hparams.get("include") or [], hparams.get("exclude") or []
 
         args: list[pd.DataFrame | Styler] = []
@@ -172,7 +168,6 @@ class PD_Display_Utils:
 
             html_str += TITLE_FMT.format(title=title) if title else ""
             full_shape = (len(df), df.shape[1]) if hparams.get("show_dims", False) else None
-            mask = gen_display_mask(len(df_data), min(n, len(df_data)), hparams["seed"], how)
             table_html = cls.generate_table_with_dtypes(df_data[mask], full_shape=full_shape, **hparams)
             html_str += table_html
             html_str += "</div>"
@@ -189,11 +184,22 @@ class PD_Display_Utils:
 
         Uses pandas' built-in to_html() for fast rendering, then injects a custom row for datatypes and a tfoot for dimensions if requested.
         The CSS in TABLE_FMT handles truncation and ellipsis for long text if max_col_width is set.
+        `highlight_filter` (via hparams) → Styler uses set_properties; DataFrame uses scoped nth-child CSS so the dtype row survives.
         """
-        # Use pandas' fast to_html() method
+        hl_mask = FilterSampleUtils.process_filter(hparams.get("highlight_filter"))
+        if hl_mask is not None and isinstance(df, Styler):
+            df = df.set_properties(
+                subset=pd.IndexSlice[getattr(df, "data").index[hl_mask], :],
+                **{"background-color": "rgba(255, 213, 79, 0.45)"},
+            )
 
-        html_params = {k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters}
-        base_html = df.to_html(**html_params)  # type: ignore
+        html_params: dict[str, t.Any] = {
+            k: v for k, v in hparams.items() if k in inspect.signature(df.to_html).parameters
+        }
+        if hl_mask is not None and isinstance(df, pd.DataFrame):
+            html_params["table_id"] = f"tbl-{np.random.randint(0, 1_000_000)}"
+
+        base_html = df.to_html(**html_params)
         if not isinstance(df, pd.DataFrame):
             return base_html
 
@@ -215,6 +221,12 @@ class PD_Display_Utils:
         else:
             # Fallback if structure is unexpected
             html = base_html
+
+        if hl_mask is not None and (tid := html_params.get("table_id")):
+            rows = [i + 1 for i, h in enumerate(hl_mask[df.index]) if h]
+            if rows:
+                sel = ", ".join(f"#{tid} tbody tr:nth-child({r})" for r in rows)
+                html = f"<style>{sel} {{ background-color: rgba(255, 213, 79, 0.45); }}</style>" + html
 
         # Inject a tfoot showing full dataset dimensions when show_dims=True.
         # n_cols + 1 to span the index column as well.
