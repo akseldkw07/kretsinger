@@ -3,6 +3,8 @@ import collections.abc as c_abc
 import csv
 import typing as t
 
+from kret_np_pd.filters import FILT_TYPE
+
 if t.TYPE_CHECKING:
     from pandas._typing import (
         Axes,
@@ -27,6 +29,8 @@ class DTTParams(t.TypedDict, total=False):
     num_cols: int | None
     show_dims: bool
     align_cols: bool  # NOTE not implemented
+    # Bool mask (any FILT_TYPE) that highlights matching rows in the rendered output.
+    highlight_filter: FILT_TYPE
 
 
 class Col_filter_TypedDict(t.TypedDict, total=False):

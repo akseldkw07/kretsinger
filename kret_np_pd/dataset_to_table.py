@@ -89,6 +89,8 @@ ViewHow = t.Literal["sample", "head", "tail"] | tuple[int, int]  # e.g. (10, 20)
 
 class PD_Display_Utils:
 
+    HIGHLIGHT_STYLE = "background-color: rgba(255, 213, 79, 0.45)"
+
     @classmethod
     def dtt(
         cls,
@@ -101,13 +103,9 @@ class PD_Display_Utils:
     ):
         """
         TODO ability to view slice of rows
-        TODO ability to pass a filter that highlights those rows (warn if filter rows are not in the passed filter)
         TODO better polars support - as of right now, polars DataFrames are coerced to pandas for display, which is slow for large DataFrames and loses some styling (e.g. for datatypes).
         TODO update show_dims to show total rows/cols pre- and post-filtering (both column filter and row filtering)
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
-
-        Pass `include=[...]` / `exclude=[...]` to forward column-name substring filters
-        to `UKS_NP_PD.col_filter` (applied per non-Styler arg after row filtering).
         """
 
         input = input if isinstance(input, (list)) else [*input] if isinstance(input, tuple) else [input]
@@ -141,6 +139,8 @@ class PD_Display_Utils:
         # Unique container ID scopes CSS/JS to this render only, preventing
         # styles from one dtt() call from overwriting those of previous calls
         num_cols = hparams.get("num_cols")
+        # hl = hparams.get("highlight_filter")
+        # hl = FilterSampleUtils.process_filter(hl) if hl is not None else None
 
         container_id = f"dtt-{np.random.randint(0, 1_000_000)}"
         html_str = f"<div id='{container_id}'>"
@@ -159,6 +159,11 @@ class PD_Display_Utils:
             # Add flex-shrink: 0 to prevent tables from shrinking
             html_str += PER_TABLE_DIV.format(addtl_width=0)
             assert "seed" in hparams, f"Seed must be set in hparams, got {hparams}"
+            # if hl is not None: TODO - fix later
+            #     # Styler.data is unsliced (filter applied via .hide); DataFrame is sliced.
+            #     df = cls._apply_row_highlight(
+            #         df, hl if isinstance(df, Styler) or row_filter is None else hl[row_filter]
+            #     )
             df_data = getattr(df, "data") if isinstance(df, Styler) else df
             mask = gen_display_mask(len(df_data), min(n, len(df_data)), hparams["seed"], how)
 
@@ -179,6 +184,22 @@ class PD_Display_Utils:
         html_str += "</div>" + ("</div>" if num_cols is not None else "")
         html_str += "</div>"  # close the container div
         display_html(html_str, raw=True)
+
+    @classmethod
+    def _apply_row_highlight(cls, df_or_styler: pd.DataFrame | Styler, mask: np.ndarray) -> Styler:
+        """Return a Styler with rows where `mask` is True highlighted (background color).
+
+        `mask` is a positional bool ndarray; len(mask) must equal the underlying df length.
+        """
+
+        def style_func(df_inner: pd.DataFrame) -> pd.DataFrame:
+            styles = pd.DataFrame("", index=df_inner.index, columns=df_inner.columns)
+            if len(mask) == len(df_inner):
+                styles.iloc[mask] = cls.HIGHLIGHT_STYLE
+            return styles
+
+        styler = df_or_styler if isinstance(df_or_styler, Styler) else df_or_styler.style
+        return styler.apply(style_func, axis=None)
 
     @classmethod
     def generate_table_with_dtypes(
