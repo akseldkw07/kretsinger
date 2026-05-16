@@ -11,20 +11,34 @@ from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 import polars as pl
 import datetime as dt
 
-FILT_TYPE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | pl.Series | pl.DataFrame | None
+FILT_NON_NONE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | pl.Series | pl.DataFrame
+FILT_TYPE = FILT_NON_NONE | None
+SHAPE_TYPE = tuple[int, ...] | tuple[int] | int
 
 
 class FilterSampleUtils:
+    # Overloads: (None, None) → None ; (None, shape) → ndarray ; (filter, ...) → ndarray.
+    # Plain np.ndarray return (not SingleReturnArray) so fancy-indexing keys like pd.Index work.
+    @t.overload
     @classmethod
-    def process_filter(cls, filter: FILT_TYPE, shape: tuple[int, ...] | tuple[int] | int | None = None):
+    def process_filter(cls, filter: None, shape: None = ...) -> None: ...  # type: ignore[overload-overlap]
+    @t.overload
+    @classmethod
+    def process_filter(cls, filter: None, shape: SHAPE_TYPE) -> np.ndarray: ...
+    @t.overload
+    @classmethod
+    def process_filter(cls, filter: FILT_NON_NONE, shape: SHAPE_TYPE | None = ...) -> np.ndarray: ...
+
+    @classmethod
+    def process_filter(cls, filter: FILT_TYPE, shape: SHAPE_TYPE | None = None) -> np.ndarray | None:
         if filter is None:
-            assert shape is not None, "Shape must be provided when filter is None"
+            if shape is None:
+                return None
             ret = np.full((shape[0] if isinstance(shape, tuple) else shape), True)
         else:
             ret = UTILS_rosetta.coerce_to_ndarray(filter, assert_1dim=True, attempt_flatten_1d=True)
         cls.assert_bool_dtype(ret)
-
-        return t.cast(SingleReturnArray[bool], ret)
+        return ret
 
     @classmethod
     @cache
