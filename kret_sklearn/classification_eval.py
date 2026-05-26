@@ -48,7 +48,6 @@ class BinaryEvalResult:
     def confusion_heatmap(self, ax: Axes | None = None, **kwargs):
         """
         Plot confusion matrix heatmap using sklearn's ConfusionMatrixDisplay.
-        TODO allow passing kwargs to disp.plot()
         """
 
         disp = ConfusionMatrixDisplay(

@@ -5,6 +5,7 @@ from kret_np_pd.filters import FilterSampleUtils
 from .categoricals import CategoricalUtils
 from .eda import EDA_Utils
 from .equality_utils import EqualityUtils
+from .nearby_rows import NearbyRows
 from .np_bool_utils import NP_Boolean_Utils
 from .np_dtype_utils import NP_Dtype_Utils
 from .pd_cleanup import PD_Cleanup
@@ -24,4 +25,5 @@ class NP_PD_Utils(
     SortUtils,
     EqualityUtils,
     EDA_Utils,
+    NearbyRows,
 ): ...

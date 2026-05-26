@@ -7,7 +7,6 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 
 from kret_decorators.class_property import classproperty
 from kret_decorators.post_init import post_init
-from kret_lightning._core.constants_lightning import LightningConstants  # type: ignore
 from kret_lightning.utils_lightning import LightningModuleAssert
 from kret_torch_utils._core.constants_torch import TorchConstants
 from kret_torch_utils.priors import PriorLosses

@@ -13,7 +13,7 @@ import typing as t
 import numpy as np
 import pandas as pd
 
-from kret_np_pd.filters import FilterSampleUtils
+from kret_np_pd.nearby_rows import NearbyRows
 
 
 @dc.dataclass
@@ -370,7 +370,7 @@ ALL_TEST_CASES: list[t.Callable[[], NearbyTestCase]] = [
 def run_one(case: NearbyTestCase) -> tuple[np.ndarray | None, bool, str | None]:
     """Returns (actual, passed, error_msg)."""
     try:
-        actual = FilterSampleUtils.get_nearby_rows(case.df, case.filt, **case.kwargs)
+        actual = NearbyRows.get_nearby_rows(case.df, case.filt, **case.kwargs)
     except Exception as e:
         return None, False, f"{type(e).__name__}: {e}"
     actual_np = np.asarray(actual)
