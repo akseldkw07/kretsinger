@@ -13,5 +13,6 @@ from kret_torch_utils._core.torch_nb_imports import *
 from kret_tqdm._core.tqdm_nb_imports import *
 from kret_type_hints._core.types_nb_imports import *
 from kret_utils._core.utils_nb_imports import *
+from kret_decorators._core.decorator_nb_imports import *
 
 # from kret_wandb._core.wandb_nb_imports import *  # NOTE this is slow to import

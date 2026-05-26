@@ -30,7 +30,7 @@ class DTTParams(t.TypedDict, total=False):
     show_dims: bool
     align_cols: bool  # NOTE not implemented
     # Bool mask (any FILT_TYPE) that highlights matching rows in the rendered output.
-    highlight_filter: FILT_TYPE
+    highlight_filter: "FILT_TYPE"
 
 
 class Col_filter_TypedDict(t.TypedDict, total=False):
