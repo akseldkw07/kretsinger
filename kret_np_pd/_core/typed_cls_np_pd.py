@@ -3,8 +3,6 @@ import collections.abc as c_abc
 import csv
 import typing as t
 
-from kret_np_pd.filters import FILT_TYPE
-
 if t.TYPE_CHECKING:
     from pandas._typing import (
         Axes,
@@ -21,6 +19,8 @@ if t.TYPE_CHECKING:
         StorageOptions,
         UsecolsArgType,
     )
+
+    from kret_np_pd.filters import FILT_TYPE
 
 
 class DTTParams(t.TypedDict, total=False):

@@ -1,18 +1,18 @@
+import datetime as dt
 import typing as t
 from functools import cache
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import torch
 from pandas.api.types import is_bool_dtype
 
 from kret_np_pd.single_ret_ndarray import SingleReturnArray
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
-import polars as pl
-import datetime as dt
 
-FILT_NON_NONE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | pl.Series | pl.DataFrame
-FILT_TYPE = FILT_NON_NONE | None
+FILT_NOT_NONE = np.ndarray | pd.Series | torch.Tensor | pd.DataFrame | pl.Series | pl.DataFrame
+FILT_TYPE = FILT_NOT_NONE | None
 SHAPE_TYPE = tuple[int, ...] | tuple[int] | int
 
 
@@ -27,7 +27,7 @@ class FilterSampleUtils:
     def process_filter(cls, filter: None, shape: SHAPE_TYPE) -> np.ndarray: ...
     @t.overload
     @classmethod
-    def process_filter(cls, filter: FILT_NON_NONE, shape: SHAPE_TYPE | None = ...) -> np.ndarray: ...
+    def process_filter(cls, filter: FILT_NOT_NONE, shape: SHAPE_TYPE | None = ...) -> np.ndarray: ...
 
     @classmethod
     def process_filter(cls, filter: FILT_TYPE, shape: SHAPE_TYPE | None = None) -> np.ndarray | None:

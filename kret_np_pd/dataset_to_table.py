@@ -9,7 +9,7 @@ import torch
 from IPython.display import display_html
 from pandas.io.formats.style import Styler
 
-from kret_np_pd.filters import FilterSampleUtils, FILT_TYPE
+from kret_np_pd.filters import FILT_TYPE, FilterSampleUtils
 from kret_np_pd.pd_convenience_utils import PD_Convenience_utils
 from kret_rosetta.UTILS_rosetta import UTILS_rosetta
 
