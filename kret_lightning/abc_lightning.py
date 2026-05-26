@@ -50,7 +50,7 @@ class ABCLM(ABC, L.LightningModule):
 
     @classproperty
     @abstractmethod
-    def classname(cls) -> Path: ...
+    def classname(cls) -> str: ...
 
     @classproperty
     @abstractmethod

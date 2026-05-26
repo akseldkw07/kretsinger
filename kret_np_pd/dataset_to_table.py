@@ -102,6 +102,7 @@ class PD_Display_Utils:
         """
         TODO ability to view slice of rows
         TODO better polars support - as of right now, polars DataFrames are coerced to pandas for display, which is slow for large DataFrames and loses some styling (e.g. for datatypes).
+            NOTE ^ : this should be implemented in coordination with nearby_rows, both face the same problem
         TODO update show_dims to show total rows/cols pre- and post-filtering (both column filter and row filtering)
         Display one or more DataFrames / arrays / tensors in a Jupyter notebook with datatypes shown below column headers.
         """

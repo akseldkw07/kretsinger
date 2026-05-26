@@ -65,7 +65,6 @@ class PandasColumnOrderBase(BaseEstimator, TransformerMixin):
         raise NotImplementedError("Subclasses must implement the _transform method.")
 
     def get_feature_names_out(self, *args, **kwargs):
-        # TODO return np.array(self.new_columns, dtype=object) if config set that way
         return np.array(self.new_columns, dtype=object)
 
     def get_feature_names_out_list(self, *args, **kwargs):

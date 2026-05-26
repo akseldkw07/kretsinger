@@ -77,7 +77,6 @@ class KretMatplotHelper:
 
 
 try:
-    # TODO this seems slow, maybe lazy registration?
     plt.colormaps.register(cmap=C.red_green_centered, name="RedWhiteGreen")
     plt.colormaps.register(cmap=C.white_green, name="WhiteGreen")
     plt.colormaps.register(cmap=C.white_red, name="WhiteRed")
