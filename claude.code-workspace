@@ -1,0 +1,22 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "name": ".claude",
+            "path": "../../.claude"
+        },
+        {
+            "path": "../claude"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "/Users/Akseldkw/.zshrc": false,
+            ".zshrc": false
+        },
+        "python.defaultInterpreterPath": "/Users/Akseldkw/micromamba/envs/kret_312/bin/python",
+        "chatgpt.openOnStartup": false
+    }
+}

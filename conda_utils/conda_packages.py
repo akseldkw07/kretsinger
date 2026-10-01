@@ -145,7 +145,10 @@ class CondaUtils:
         "anthropic",
         "openai",
     ]  # for querying LLMs. NOTE: these are not the same as the transformers library, which is for running LLMs locally. These are for querying APIs like OpenAI and Anthropic.
-    MISC = ["openpyxl", "youtube-transcript-api"]
+    MISC = [  # miscallaneous packages
+        "openpyxl",
+        "youtube-transcript-api",
+    ]
     PIP_ONLY = [
         "faster-coco-eval",
         "thop",
@@ -153,6 +156,9 @@ class CondaUtils:
         "faster-coco-eval",  # this is tough on macos for some reason, but pip works
         "vllm",  # uv pip install vllm
     ]  # packages that are only available via pip and not conda, will be installed separately in the setup script
+    CLAUDE_INSTALLED = [
+        "spotipy",
+    ]  # packages that claude installed
 
     ALL = (
         CORE
