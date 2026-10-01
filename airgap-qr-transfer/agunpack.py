@@ -304,7 +304,11 @@ def safe_extract(packed: bytes, out_dir: str):
                 raise ValueError(f"refusing unusual member type: {m.name}")
         os.makedirs(out_dir, exist_ok=True)
         for m in members:
-            tar.extract(m, out_dir)
+            # filter="data" is the 3.14 default and must be explicit before then,
+            # or extraction warns now and changes behaviour later. It keeps 0o755
+            # and 0o644 intact - the executable bits this transfer preserves - and
+            # strips setuid/setgid, which nothing here should ever carry anyway.
+            tar.extract(m, out_dir, filter="data")
             if m.isfile():
                 written.append(m.name)
         mpath = os.path.join(out_dir, ".agpack-manifest.json")

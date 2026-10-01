@@ -5,8 +5,14 @@ repo_md - flatten a repo into one markdown file, and rebuild it afterwards.
     import repo_md
 
     # on the offline machine
-    info = repo_md.to_markdown("~/kretsinger", "repo.md",
+    info = repo_md.to_markdown("~/kretsinger", "repo.md")   # DEFAULT_INCLUDE
+    info = repo_md.to_markdown("~/kretsinger", "repo.md",   # or pick your own
                                include=[".py", ".md", ".toml"])
+
+Notebooks are exported as input cells only - no outputs, no execution counts,
+no metadata - so a .ipynb rebuilds as a cleared notebook rather than a byte
+copy of the original. That is deliberate: stored output is usually 90%+ of a
+notebook's bytes and is regenerated for free by re-running.
 
     # on the receiving machine, after transcription
     result = repo_md.from_markdown("transcribed.md", "~/recovered")
@@ -20,7 +26,20 @@ corruption into a named list of files to re-check.
 Standard library only. Read-only with respect to `root`.
 """
 
-import fnmatch, hashlib, os, re
+import fnmatch, hashlib, json, os, re
+
+# What gets exported when include=None. Pass include=["*"] for every text file.
+DEFAULT_INCLUDE = [
+    ".py",
+    ".ipynb",
+    ".zsh",
+    ".md",
+    ".bash",
+    ".json",
+    ".sh",
+    ".toml",
+    ".code-workspace",
+]
 
 SKIP_DIRS = {
     ".git",
@@ -87,6 +106,8 @@ LANG = {
     ".json": "json",
     ".cfg": "ini",
     ".ini": "ini",
+    ".ipynb": "json",
+    ".code-workspace": "json",
 }
 
 # ---------------------------------------------------------------- markers
@@ -252,6 +273,53 @@ report it.
 """
 
 
+def _strip_notebook(raw):
+    """A notebook reduced to its input cells. Returns the bytes to export.
+
+    Everything a run produced is dropped: outputs, execution counts, and all
+    metadata (kernel, language version, cell ids, Colab and VSCode blocks).
+    On a real tree this is the difference between filming for an afternoon and
+    filming for a week - stored output is usually 90%+ of a notebook's bytes,
+    and it is the one part you regenerate for free by re-running.
+
+    `outputs` and `execution_count` survive as empty/null on code cells only
+    because the nbformat v4 schema requires the keys; no output travels.
+
+    Source stays a list of one string per line, which is both what nbformat
+    expects and what keeps one line of code on one line of the filmed page.
+    """
+    try:
+        nb = json.loads(raw)
+    except (ValueError, UnicodeDecodeError):
+        return raw  # not JSON we understand; export it untouched
+    cells = []
+    for c in nb.get("cells", []):
+        kind = c.get("cell_type")
+        if kind not in ("code", "markdown", "raw"):
+            continue
+        src = c.get("source", "")
+        cell = {
+            "cell_type": kind,
+            "metadata": {},
+            "source": src.splitlines(keepends=True) if isinstance(src, str) else src,
+        }
+        if kind == "code":
+            cell["execution_count"] = None
+            cell["outputs"] = []
+        cells.append(cell)
+    # minor 4 deliberately: 4.5 requires a per-cell "id" and we emit none, so
+    # declaring 5 would produce notebooks that are invalid by their own schema.
+    doc = {"cells": cells, "metadata": {}, "nbformat": nb.get("nbformat", 4), "nbformat_minor": 4}
+    return (json.dumps(doc, indent=1, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def _read(path, rel):
+    """Bytes as they should be exported: notebooks stripped, everything else raw."""
+    with open(path, "rb") as fh:
+        raw = fh.read()
+    return _strip_notebook(raw) if rel.endswith(".ipynb") else raw
+
+
 def _globs(pats):
     if pats is None:
         return None
@@ -265,9 +333,12 @@ def _hit(rel, name, globs):
 
 
 def collect(root, include=None, exclude=(), max_size=1 << 20, secrets=False):
-    """Relative paths that to_markdown() would write, in the order it writes them."""
+    """Relative paths that to_markdown() would write, in the order it writes them.
+
+    include=None means DEFAULT_INCLUDE. Pass include=["*"] for every text file.
+    """
     root = os.path.abspath(os.path.expanduser(root))
-    inc, exc = _globs(include), _globs(exclude) or []
+    inc, exc = _globs(DEFAULT_INCLUDE if include is None else include), _globs(exclude) or []
     out = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS)
@@ -282,7 +353,13 @@ def collect(root, include=None, exclude=(), max_size=1 << 20, secrets=False):
                 continue
             if exc and _hit(rel, name, exc):
                 continue
-            if os.path.getsize(full) > max_size:
+            # Notebooks are measured after stripping. A 7 MB notebook is 6.9 MB
+            # of stored output; judging it on disk size would drop the 100 KB
+            # of source we actually came for.
+            if rel.endswith(".ipynb"):
+                if len(_read(full, rel)) > max_size:
+                    continue
+            elif os.path.getsize(full) > max_size:
                 continue
             with open(full, "rb") as fh:
                 if b"\0" in fh.read(8192):
@@ -304,6 +381,9 @@ def to_markdown(
 ):
     """Write every matching file into one markdown document, in sorted order.
 
+    include=None means DEFAULT_INCLUDE (.py .ipynb .zsh .md .bash .json .sh
+    .toml .code-workspace). Pass include=["*"] for every text file.
+
     markers=True (default) makes indentation, tabs, trailing whitespace and
     line ends visible as glyphs, and prepends a decoding guide. This is what
     makes the document survive a camera: a reader with judgement repairs
@@ -323,10 +403,10 @@ def to_markdown(
     if not files:
         raise ValueError(f"no files matched under {root}")
 
-    blobs = []
-    for rel in files:
-        with open(os.path.join(root, rel), "rb") as fh:
-            blobs.append(fh.read())
+    # Notebooks are stripped to their input cells here, before anything else
+    # sees them, so the SHA, the manifest and the rebuild all describe the same
+    # bytes. What comes back out is a cleared notebook, not a byte-copy.
+    blobs = [_read(os.path.join(root, rel), rel) for rel in files]
     nonce = _pick_nonce(blobs)
     BEGIN, END = _delims(nonce)
 

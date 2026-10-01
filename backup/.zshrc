@@ -112,25 +112,27 @@ source $ZSH/oh-my-zsh.sh
 # START HERE
 
 # VARIABLES
-export KRET="$HOME/coding/kretsinger"
+export WALT="$HOME/coding/awalters"
+export WALT_PLATFORM="macbook"   # picks dotfiles/macbook -> backup/macbook in walt_backup
+export PROJ="$WALT"              # default target for `sod`
 export PY312_ENV="kret_312"
 export PY311_ENV="kret_311"
 export DESKTOP="$HOME/Desktop"
 export MM_PATH="$HOME/micromamba/envs"
 export PY312_PATH="${MM_PATH}/${PY312_ENV}/bin/python"
 export PY311_PATH="${MM_PATH}/${PY311_ENV}/bin/python"
-export NB_LOGFILE="${KRET}/data/nb_log.log"
+export NB_LOGFILE="${WALT}/data/nb_log.log"
 
-# Source all .zsh files in ${KRET}/zsh_scripts
+# Source all .zsh files in ${WALT}/zsh_scripts
 # Skip files starting with _ or .
-for script in "${KRET}"/zsh_scripts/*.zsh; do
+for script in "${WALT}"/zsh_scripts/*.zsh; do
   [[ -f "$script" ]] || continue
   filename="$(basename "$script")"
   [[ "$filename" == _* || "$filename" == .* ]] && continue
   source "$script"
 done
-# Source non-git-tracked files in ${KRET}/vault
-source "${KRET}/vault/source_tokens.zsh" 2>/dev/null || true
+# Source non-git-tracked files in ${WALT}/vault
+source "${WALT}/vault/source_tokens.zsh" 2>/dev/null || true
 
 # BUILT IN ALIAS
 alias l='ls -l'
@@ -149,13 +151,6 @@ alias gitnuke='rebase_nuclear_feature'
 col() {
   sod "${DESKTOP}/Columbia/"
   ld
-}
-tailkret() {
-  less +F "$NB_LOGFILE"
-}
-
-rgf() {
-  rg --files -g "**/*$@*" 2>/dev/null
 }
 
 # --- Homebrew ---
